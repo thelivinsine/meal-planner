@@ -8,10 +8,46 @@ Everything is saved in your own browser — no account, no server, nothing leave
 **Code:** https://github.com/thelivinsine/meal-planner
 **Stack:** one HTML file, one CSS file, one JS file. No frameworks, no build step, no dependencies.
 
+## Where things stand
+
+*Written for picking this up in a new session.*
+
+| | |
+|---|---|
+| **`main`** | Commit `5d97bc0`. Deployed and live at the link above |
+| **Open work** | Branch `feat/ui-polish`, 3 commits, PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) — open, mergeable, reviewed and approved verbally but **not merged** |
+| **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
+
+**Next jobs, in the order they'd earn their place:**
+
+1. **Merge PR #2**, then confirm the Pages build goes `built`.
+2. **Retake the screenshots.** All four in `Screenshots/` are from v1 and are now two rounds
+   stale — they show 25 recipes, no macro chips, no filter panel, the old dialog-only route into
+   a slot, and the misaligned week this round fixed. Nothing in the repo references them as
+   current, but they're the first thing a reader sees.
+3. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
+   extension wasn't connected, so alignment, density and the centred sheet were reasoned from
+   the CSS. See *Testing* for what that does and doesn't cover.
+
+**Two open questions, both yours to call:**
+
+- **The stub-DOM check scripts are thrown away each session.** The UI round was verified by 39
+  assertions in two throwaway Node scripts kept outside the repo, per the existing convention.
+  That means a fresh session rewrites them from scratch, and a regression between rounds has
+  nothing to catch it. Committing a single `check.mjs` would fix that; it also puts a test file
+  in a repo whose constraints say no test framework. Not done either way.
+- **`subgrid` has no fallback.** The week's alignment depends on CSS `subgrid` (Chrome 117+,
+  Safari 16+, Firefox 71+). On anything older the rows size per card, which is exactly the
+  misalignment this round set out to fix — it degrades to the old bug rather than to something
+  broken. Worth a fallback only if an old browser actually matters to you.
+
+---
+
 ## Screenshots
 
-In `Screenshots/`. **These are from v1 and now out of date** — they show 25 recipes, no macro tag
-chips, and the old dialog-only route into a slot. Due to be retaken.
+In `Screenshots/`. **All four are from v1, two rounds out of date** — 25 recipes, no macro chips,
+no filter panel, the dialog-only route into a slot, and the misaligned week. Retaking them is
+job 2 above.
 
 | File | Shows |
 |---|---|
@@ -233,11 +269,20 @@ question, not a width one.
 | **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root. Live at the link above |
 | **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
+| **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
+| **PR open** | [#2](https://github.com/thelivinsine/meal-planner/pull/2) against `main`, +350/-117 across 5 files. Not merged |
 
 ---
 
-## If you want it online
+## Deployment
 
-The repo is public, so GitHub Pages is a settings toggle away: **Settings → Pages → deploy from
-branch `main`, folder `/ (root)`**. It'll be served at `thelivinsine.github.io/meal-planner`.
-The app is already written for it — relative paths throughout, `index.html` at the root, no build step.
+GitHub Pages serves `main` from `/ (root)`, already enabled. Every push to `main` rebuilds; there
+is no workflow file and no build step, because there's nothing to build — relative paths
+throughout and `index.html` at the root.
+
+```
+gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq '{status, commit}'
+```
+
+`status` goes `building` → `built`, usually inside a minute. A stale-looking page after that is
+almost always the browser cache, not the deploy — hard-refresh before believing anything is wrong.

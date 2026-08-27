@@ -5,6 +5,8 @@ Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
 
 See `README.md` for what v1 does, the data model, and the decisions already taken.
 Read it before proposing changes — several things are missing on purpose, not by oversight.
+**Starting a session:** read *Where things stand* at the top of `README.md` first — it names the
+live commit, any open PR, and what's queued next.
 
 ## Working with me
 - Ask when something is unclear or a decision is uncertain. Don't guess silently.
@@ -49,6 +51,8 @@ Established in v1 — follow them or say why not:
 - **One box per level:** a card gets the border; the rows inside it get a hairline and a
   label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
   This applies inside the day cards — lists of recipes use the recipe card instead.
+- **A panel holding white cards is sunk:** `--surface-sunk`, never `--surface`. White on white
+  leaves the cards with no edge at all. Check a colour pair's contrast rather than eyeballing it.
 - **Subject gets the weight:** in a panel, the thing being acted on (the recipe) carries the
   large type; the action (`Add to week`) is a small uppercase eyebrow above it.
 - **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
