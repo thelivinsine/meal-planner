@@ -250,11 +250,17 @@ h1 { font-size: 1.75rem; }
 /* ---------- inline slot picker (week view) ---------- */
 .week-grid:focus { outline: none; }  /* programmatic focus target when the picker closes */
 
+/* Recessed tray, not another white surface: the recipe cards inside are white, and on a
+   white panel their edges disappeared. Sunk here means the cards read as cards. */
 .slot-picker {
   margin-top: 22px; padding: 18px;
-  background: var(--surface); border: 1px solid var(--line);
+  background: var(--surface-sunk); border: 1px solid var(--line);
   border-radius: var(--radius);
 }
+/* A firmer edge on the tray's cards, since they no longer have the page behind them. */
+.slot-picker .card { border-color: var(--line-strong); }
+/* ink-faint is too light on the sunk tray. */
+.slot-picker .view-sub { color: var(--ink-soft); }
 
 .slot-picker-head {
   display: flex; align-items: flex-start; justify-content: space-between;

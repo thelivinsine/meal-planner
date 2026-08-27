@@ -164,6 +164,7 @@ the saved blob can't grow forever.
 | Filter chips grouped and collapsible | Sixteen equal pills in one wrap is a tag dump, not a filter. Grouping says what each choice means; the count badge and **Clear all** show what's on |
 | Recipe name is the headline in the add sheet | "Add to week" is the same on every recipe, so it's the one thing there that doesn't need 22px of type |
 | The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
+| The picker panel is a sunk tray | White cards on a white panel had no edge at all (1.0:1). Recessing the panel to `--surface-sunk` lifts them without adding shadows |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
