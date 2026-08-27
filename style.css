@@ -120,12 +120,25 @@ h1 { font-size: 1.75rem; }
   display: flex; flex-direction: column; gap: 10px;
   box-shadow: var(--shadow);
 }
-.day.is-today { border-color: var(--accent); }
+.day.is-today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+
+/* Past days stay legible but visibly settled: no white surface, no accent. */
+.day.is-past { background: var(--surface-sunk); box-shadow: none; }
+.day.is-past .slot-recipe { background: #e6e1d9; color: var(--ink-soft); }
+.day.is-past .slot-recipe:hover { background: #ded8ce; }
+.day.is-past .slot-add { background: transparent; opacity: .65; }
 
 .day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
 .day-name { font-weight: 620; font-size: .9375rem; }
 .day-date { color: var(--ink-faint); font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .day.is-today .day-name { color: var(--accent); }
+.day.is-past .day-name, .day.is-past .day-date { color: var(--ink-faint); }
+
+.day-flag {
+  font-size: .625rem; text-transform: uppercase; letter-spacing: .07em;
+  font-weight: 700; color: #fff; background: var(--accent);
+  border-radius: 999px; padding: 2px 7px; margin-left: 4px; vertical-align: 1px;
+}
 
 .slot { border-top: 1px solid var(--line); padding-top: 10px; }
 .slot:first-of-type { border-top: 0; padding-top: 0; }
@@ -252,11 +265,18 @@ h1 { font-size: 1.75rem; }
 
 .field-label { font-size: .8125rem; font-weight: 600; color: var(--ink-soft); margin: 20px 0 7px; }
 
-.select {
-  width: 100%; min-height: var(--tap); padding: 10px 12px;
-  background: var(--surface); border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+.day-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+
+.day-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 8px 4px; min-height: 54px; line-height: 1.2;
 }
+.day-chip-name { font-weight: 620; font-size: .8125rem; }
+.day-chip-date { font-size: .6875rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.day-chip[aria-pressed="true"] .day-chip-date { color: rgba(255, 255, 255, .82); }
+.day-chip.is-past { border-style: dashed; }
+.day-chip.is-past .day-chip-name { color: var(--ink-faint); font-weight: 540; }
+.day-chip.is-past[aria-pressed="true"] .day-chip-name { color: #fff; }
 
 .segmented { display: flex; gap: 8px; }
 .segmented .chip { flex: 1; text-align: center; min-height: var(--tap); }

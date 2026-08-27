@@ -350,7 +350,7 @@ const el = {
   detailBody: document.getElementById('detail-body'),
   picker: document.getElementById('picker'),
   pickerRecipe: document.getElementById('picker-recipe'),
-  pickerDay: document.getElementById('picker-day'),
+  pickerDays: document.getElementById('picker-days'),
   pickerMeals: document.getElementById('picker-meals'),
   pickerNote: document.getElementById('picker-note'),
   pickerConfirm: document.getElementById('picker-confirm'),
@@ -404,6 +404,7 @@ function renderWeek() {
 
   el.weekGrid.innerHTML = weekDates(state.weekStart).map(function (date, i) {
     const iso = isoOf(date);
+    const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
     const slots = MEALS.map(function (meal) {
       const id = state.plan[slotKey(iso, meal)];
       const recipe = id ? RECIPE_BY_ID.get(id) : null;
@@ -420,9 +421,10 @@ function renderWeek() {
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
-    return '<article class="day' + (iso === todayIso ? ' is-today' : '') + '">' +
+    return '<article class="day ' + when + '">' +
         '<div class="day-head">' +
-          '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) + '</h2>' +
+          '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
+            (iso === todayIso ? ' <span class="day-flag">Today</span>' : '') + '</h2>' +
           '<p class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</p>' +
         '</div>' + slots +
       '</article>';
@@ -528,11 +530,7 @@ function openPicker(recipeId, iso, meal) {
   picker.meal = meal || 'Dinner';
 
   el.pickerRecipe.textContent = recipe.name;
-  el.pickerDay.innerHTML = weekDates(state.weekStart).map(function (date, i) {
-    const dayIso = isoOf(date);
-    return '<option value="' + dayIso + '"' + (dayIso === picker.iso ? ' selected' : '') + '>' +
-      DAY_NAMES[i] + ' — ' + escapeHtml(fmtDayMonth.format(date)) + '</option>';
-  }).join('');
+  renderPickerDays();
   el.pickerMeals.innerHTML = MEALS.map(function (m) {
     return '<button type="button" class="chip" data-action="picker-meal" data-meal="' + m + '" ' +
       'aria-pressed="' + (m === picker.meal) + '">' + m + '</button>';
@@ -542,17 +540,34 @@ function openPicker(recipeId, iso, meal) {
   el.picker.showModal();
 }
 
+function renderPickerDays() {
+  const todayIso = isoOf(new Date());
+  el.pickerDays.innerHTML = weekDates(state.weekStart).map(function (date, i) {
+    const dayIso = isoOf(date);
+    const past = dayIso < todayIso;
+    return '<button type="button" class="chip day-chip' + (past ? ' is-past' : '') + '" ' +
+        'data-action="picker-day" data-iso="' + dayIso + '" aria-pressed="' + (dayIso === picker.iso) + '">' +
+        '<span class="day-chip-name">' + DAY_NAMES[i].slice(0, 3) + '</span>' +
+        '<span class="day-chip-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+      '</button>';
+  }).join('');
+}
+
 function refreshPickerNote() {
   const existingId = state.plan[slotKey(picker.iso, picker.meal)];
   const existing = existingId ? RECIPE_BY_ID.get(existingId) : null;
+  const notes = [];
+
+  if (picker.iso < isoOf(new Date())) notes.push('That day has already passed.');
   if (existing && existing.id !== picker.id) {
-    el.pickerNote.textContent = 'That slot currently holds ' + existing.name + '. Adding will replace it.';
-    el.pickerNote.hidden = false;
+    notes.push('That slot currently holds ' + existing.name + '. Adding will replace it.');
     el.pickerConfirm.textContent = 'Replace';
   } else {
-    el.pickerNote.hidden = true;
     el.pickerConfirm.textContent = 'Add';
   }
+
+  el.pickerNote.textContent = notes.join(' ');
+  el.pickerNote.hidden = notes.length === 0;
 }
 
 function confirmPicker() {
@@ -626,6 +641,15 @@ document.addEventListener('click', function (event) {
     return;
   }
 
+  if (action === 'picker-day') {
+    picker.iso = target.dataset.iso;
+    el.pickerDays.querySelectorAll('.day-chip').forEach(function (chip) {
+      chip.setAttribute('aria-pressed', String(chip.dataset.iso === picker.iso));
+    });
+    refreshPickerNote();
+    return;
+  }
+
   if (action === 'picker-meal') {
     picker.meal = target.dataset.meal;
     el.pickerMeals.querySelectorAll('.chip').forEach(function (chip) {
@@ -645,11 +669,6 @@ document.addEventListener('click', function (event) {
     renderRecipes();
     return;
   }
-});
-
-el.pickerDay.addEventListener('change', function () {
-  picker.iso = el.pickerDay.value;
-  refreshPickerNote();
 });
 
 el.search.addEventListener('input', function () {
