@@ -64,7 +64,9 @@ Established in v1 — follow them or say why not:
 - **Escaping:** views are built as HTML strings, so run any text through `escapeHtml` before it
   goes into `innerHTML`.
 - **Markup:** semantic HTML, labels on inputs, native `<dialog>` for modals. Keyboard must work
-  without a mouse. Touch targets at least 44px.
+  without a mouse. Touch targets at least 44px — the week's meal rows are the one exception,
+  38px on a fine pointer and back to 44px under `@media (pointer: coarse)`. Deliberate, and the
+  only place it's allowed.
 - **CSS:** colours and spacing via the custom properties at the top of `style.css` — don't
   hardcode new hex values. One accent colour.
 

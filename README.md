@@ -46,7 +46,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 In `Screenshots/`. **All four are from v1, two rounds out of date** — 25 recipes, no macro chips,
 no filter panel, the dialog-only route into a slot, and the misaligned week. Retaking them is
-job 2 above.
+job 1 above.
 
 | File | Shows |
 |---|---|
@@ -108,11 +108,10 @@ storage box, which muddies testing.)
 - Monday–Sunday of a real week, with the actual dates shown
 - Move between weeks with ← / →, or jump back with **This week**
 - Three states are visually distinct: **past** days are greyed and settled, **today** carries an
-  accent border, **upcoming** days are clean and white
+  accent border and a dot beside the day name, **upcoming** days are clean and white
 - The three meal rows line up straight across all seven days, however long a recipe name runs
 - Each slot can be filled, replaced, or cleared
 - Past days stay editable, so you can log what you actually ate
-- Today is marked by an accent border and a dot beside the day name
 
 **Adding a meal — two ways in**
 
@@ -147,14 +146,15 @@ Three files, as the project constraints require:
 | File | Contains |
 |---|---|
 | `index.html` | The page shell: header nav, three `<section>` views, the inline slot picker, two `<dialog>` panels |
-| `style.css` | All styling. CSS custom properties for the palette, three breakpoints |
+| `style.css` | All styling. CSS custom properties for the palette, two width breakpoints and a coarse-pointer block |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 **The data model** is the part worth understanding. Two things exist:
 
 - `RECIPES` — the fixed catalogue, hardcoded. Never saved, never changes at runtime.
 - `state` — everything about *you*: which view you're on, which week you're looking at, your
-  plan, your bookmarks, your current search and filters.
+  plan, your bookmarks, your current search and filters, and whether the filter panel is open.
+  Only the plan and the bookmarks are saved — the rest is per-session by design.
 
 The plan is one flat object keyed by real date and meal:
 
@@ -269,7 +269,8 @@ question, not a width one.
 | **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
 | **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
-| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2` and deployed. Screenshots still not retaken |
+| **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in this file were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
+| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. Pages build `built`, live site serving it. Screenshots still not retaken |
 
 ---
 
