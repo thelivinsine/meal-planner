@@ -65,11 +65,20 @@
       </div>
 
       <div class="filters">
-        <div class="search">
-          <label class="sr-only" for="search">Search recipes</label>
-          <input type="search" id="search" placeholder="Search by name or ingredient…" autocomplete="off">
+        <div class="filter-bar">
+          <div class="search">
+            <label class="sr-only" for="search">Search recipes</label>
+            <input type="search" id="search" placeholder="Search by name or ingredient…" autocomplete="off">
+          </div>
+          <button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle"
+                  id="filter-toggle" aria-expanded="true" aria-controls="tag-filters">Filters</button>
         </div>
-        <div class="chips" id="tag-filters" role="group" aria-label="Filter by tag"></div>
+        <!-- Chips grouped by what they mean, so 16 tags read as four short lists. -->
+        <div class="filter-groups" id="tag-filters"></div>
+        <div class="filter-active" id="filter-active" hidden>
+          <p class="filter-count" id="filter-count"></p>
+          <button type="button" class="btn btn-quiet btn-sm" data-action="clear-tags">Clear all</button>
+        </div>
       </div>
 
       <div class="card-grid" id="recipe-grid"></div>
@@ -102,9 +111,9 @@
     <form method="dialog" class="sheet-close-form">
       <button class="icon-btn sheet-close" aria-label="Close">&times;</button>
     </form>
-    <div class="sheet-body">
-      <h2 id="picker-title" class="sheet-title">Add to week</h2>
-      <p class="sheet-sub" id="picker-recipe"></p>
+    <div class="sheet-body sheet-body-center">
+      <h2 id="picker-title" class="sheet-eyebrow">Add to week</h2>
+      <p class="picker-recipe" id="picker-recipe"></p>
 
       <p class="field-label" id="picker-day-label">Day</p>
       <div class="day-picker" id="picker-days" role="group" aria-labelledby="picker-day-label"></div>

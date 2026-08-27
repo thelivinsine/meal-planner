@@ -8,10 +8,46 @@ Everything is saved in your own browser — no account, no server, nothing leave
 **Code:** https://github.com/thelivinsine/meal-planner
 **Stack:** one HTML file, one CSS file, one JS file. No frameworks, no build step, no dependencies.
 
+## Where things stand
+
+*Written for picking this up in a new session.*
+
+| | |
+|---|---|
+| **`main`** | Commit `5d97bc0`. Deployed and live at the link above |
+| **Open work** | Branch `feat/ui-polish`, PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) — open, mergeable, reviewed and approved verbally but **not merged** |
+| **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
+
+**Next jobs, in the order they'd earn their place:**
+
+1. **Merge PR #2**, then confirm the Pages build goes `built`.
+2. **Retake the screenshots.** All four in `Screenshots/` are from v1 and are now two rounds
+   stale — they show 25 recipes, no macro chips, no filter panel, the old dialog-only route into
+   a slot, and the misaligned week this round fixed. Nothing in the repo references them as
+   current, but they're the first thing a reader sees.
+3. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
+   extension wasn't connected, so alignment, density and the centred sheet were reasoned from
+   the CSS. See *Testing* for what that does and doesn't cover.
+
+**Two open questions, both yours to call:**
+
+- **The stub-DOM check scripts are thrown away each session.** The UI round was verified by 39
+  assertions in two throwaway Node scripts kept outside the repo, per the existing convention.
+  That means a fresh session rewrites them from scratch, and a regression between rounds has
+  nothing to catch it. Committing a single `check.mjs` would fix that; it also puts a test file
+  in a repo whose constraints say no test framework. Not done either way.
+- **`subgrid` has no fallback.** The week's alignment depends on CSS `subgrid` (Chrome 117+,
+  Safari 16+, Firefox 71+). On anything older the rows size per card, which is exactly the
+  misalignment this round set out to fix — it degrades to the old bug rather than to something
+  broken. Worth a fallback only if an old browser actually matters to you.
+
+---
+
 ## Screenshots
 
-In `Screenshots/`. **These are from v1 and now out of date** — they show 25 recipes, no macro tag
-chips, and the old dialog-only route into a slot. Due to be retaken.
+In `Screenshots/`. **All four are from v1, two rounds out of date** — 25 recipes, no macro chips,
+no filter panel, the dialog-only route into a slot, and the misaligned week. Retaking them is
+job 2 above.
 
 | File | Shows |
 |---|---|
@@ -62,26 +98,37 @@ storage box, which muddies testing.)
 - Over half are Indian, and roughly three quarters are high-protein; the rest are tagged
   `balanced`. Both are ordinary tags, so the `indian` and `high-protein` chips filter on them
 - Search matches recipe names, tags **and** ingredients — so "chickpea" finds the curry
-- Tag chips filter the grid (pick several; a recipe matching any of them shows)
+- Filters live in one panel: search, then tag chips grouped under *Macros*, *Meal*, *Diet*,
+  *Cuisine & style* and *Main protein* — five short lists instead of one wrap of sixteen
+- **Filters** collapses the chips and carries a count badge; an active row underneath names what
+  you're filtering by, with **Clear all** beside it
+- Pick several chips; a recipe matching any of them shows
 - Tapping a card opens a detail panel; close it with the ×, the Escape key, or a tap outside
 
 **Week**
 - Monday–Sunday of a real week, with the actual dates shown
 - Move between weeks with ← / →, or jump back with **This week**
 - Three states are visually distinct: **past** days are greyed and settled, **today** carries an
-  accent border and a "Today" pill, **upcoming** days are clean and white
+  accent border, **upcoming** days are clean and white
+- The three meal rows line up straight across all seven days, however long a recipe name runs
 - Each slot can be filled, replaced, or cleared
 - Past days stay editable, so you can log what you actually ate
+- Today is marked by an accent border and a dot beside the day name
 
 **Adding a meal — two ways in**
 
 *From the week.* Tap **+ Add** on an empty slot and the recipe list opens in the space below
 your week. The day and meal are already known from the slot you tapped, so it never asks again:
-one tap on a recipe fills that slot and the list closes. There's a search box in the panel, and
-Escape, the ×, or moving to another week all close it. This route is for empty slots only —
-a filled slot is changed by clearing it and adding again, or through the dialog below.
+the recipes appear as the same cards you get on the Recipes page — name, time, tags, and a
+bookmark — except the button reads **Add to Thu breakfast** and fills the slot you tapped. Not
+sure about one? Tap the card to read the full recipe; the sheet knows the slot too, so its button
+also fills it, and Save sits beside it. There's a search box in the panel, and Escape, the ×, or
+moving to another week all close it. This route is for empty slots only — a filled slot is
+changed by clearing it and adding again, or through the dialog below.
 
-*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog.
+*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog. The
+recipe name is the headline there; "Add to week" sits above it as a small label, and everything
+below is centred.
 - Pick a day from seven day buttons and a meal from three — everything visible, two taps
 - Picking a day that's already gone is allowed but flagged: the dialog says so, and that day's
   button is drawn with a dashed border
@@ -147,6 +194,14 @@ the saved blob can't grow forever.
 | Past days editable, not locked | Useful for logging meals already eaten; the greying communicates enough |
 | Slot's **+ Add** opens the list inline, under the week | The slot already names the day and meal; asking again in a dialog was redundant, and the space below the week was empty |
 | The dialog stays for the recipe-first route | From a card nothing is known yet, so a day and meal still have to be picked |
+| Day cards share the grid's rows (CSS `subgrid`) | Their meal rows used to drift out of line whenever one card's header or recipe name was taller |
+| Today is a dot, not a pill | The pill pushed the date onto a second line, which is what knocked that column out of alignment |
+| No boxes inside the day card | Card border, then dashed slot boxes, then a filled pill inside that — three nested outlines to say one thing. A hairline and a label carry it |
+| Filter chips grouped and collapsible | Sixteen equal pills in one wrap is a tag dump, not a filter. Grouping says what each choice means; the count badge and **Clear all** show what's on |
+| Recipe name is the headline in the add sheet | "Add to week" is the same on every recipe, so it's the one thing there that doesn't need 22px of type |
+| The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
+| The picker panel is a sunk tray | White cards on a white panel had no edge at all (1.0:1). Recessing the panel to `--surface-sunk` lifts them without adding shadows |
+| The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
 
@@ -180,11 +235,24 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
   view change, and returns focus to the slot it was opened from
 - The dialog route: 7 day buttons with one preselected; add → replace → clear leaving exactly one
   correct entry
+- The filter panel: a chip for every catalogue tag and no duplicates, every tag landing in a
+  named group (nothing falling through to *More*), the count badge and active row appearing and
+  clearing, and the collapse toggle carrying `aria-expanded`
+- The week markup: no wrapping Today pill, one today dot, labelled **+ Add** buttons
+- The picker and the Recipes grid render byte-identical card markup apart from the primary
+  action, and a picker card's bookmark star follows a bookmark made from the open sheet
+- Viewing from a picker card: the sheet's primary button carries that slot, survives a bookmark
+  redraw, fills exactly that slot, closes both panels, and refuses an unknown meal
 - A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
   types, unknown recipe ids, invalid dates) all falling back to a clean state
 
-Not verified by machine: how it actually looks. Browser automation wasn't available during
-development, so layout on a real phone and a clean console during real use were checked by eye.
+Not verified by machine: how it actually looks. The Chrome extension wasn't connected during
+the UI round either, so every layout claim here — alignment, density, the centred sheet — was
+reasoned from the CSS, not seen. Worth a look on a real phone.
+
+One deliberate gap: the week rows are 38px on a mouse and return to the 44px touch floor under
+`@media (pointer: coarse)`, so a narrow *desktop* window has rows below 44px. That's a pointer
+question, not a width one.
 
 ---
 
@@ -199,11 +267,22 @@ development, so layout on a real phone and a clean console during real use were 
 | **Published** | Merged to `main` and pushed to GitHub as a public repo |
 | **Second round** | Branch `feat/slot-picker-and-indian-recipes`: the slot's **+ Add** now opens the recipe list inline under the week instead of asking for the day and meal a second time, and the catalogue grew to 50 with 27 Indian and 38 high-protein recipes |
 | **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root. Live at the link above |
+| **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
+| **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
+| **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
+| **PR open** | [#2](https://github.com/thelivinsine/meal-planner/pull/2) against `main`, across the same 5 files. Not merged |
 
 ---
 
-## If you want it online
+## Deployment
 
-The repo is public, so GitHub Pages is a settings toggle away: **Settings → Pages → deploy from
-branch `main`, folder `/ (root)`**. It'll be served at `thelivinsine.github.io/meal-planner`.
-The app is already written for it — relative paths throughout, `index.html` at the root, no build step.
+GitHub Pages serves `main` from `/ (root)`, already enabled. Every push to `main` rebuilds; there
+is no workflow file and no build step, because there's nothing to build — relative paths
+throughout and `index.html` at the root.
+
+```
+gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq '{status, commit}'
+```
+
+`status` goes `building` → `built`, usually inside a minute. A stale-looking page after that is
+almost always the browser cache, not the deploy — hard-refresh before believing anything is wrong.

@@ -19,6 +19,10 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` beats any class that sets `display` -- several panels here are grids and
+   flex rows toggled by the attribute. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -109,66 +113,92 @@ h1 { font-size: 1.75rem; }
 /* ---------- week ---------- */
 .week-nav { display: flex; gap: 8px; }
 
+/* Every day spans the same four rows -- header, then three meals -- and borrows the
+   grid's own tracks with subgrid, so the meal rows run straight across all seven days
+   however tall one recipe name gets.
+   ponytail: no fallback for browsers without subgrid; there the rows size per card,
+   which is where this started. */
 .week-grid {
-  display: grid; gap: 14px;
+  display: grid; gap: 10px 12px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto repeat(3, auto);
 }
 
 .day {
+  grid-row: span 4;
+  display: grid; grid-template-rows: subgrid;
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 14px 12px;
-  display: flex; flex-direction: column; gap: 10px;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius); padding: 12px;
 }
-.day.is-today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.day.is-today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 
 /* Past days stay legible but visibly settled: no white surface, no accent. */
-.day.is-past { background: var(--surface-sunk); box-shadow: none; }
-.day.is-past .slot-recipe { background: #e6e1d9; color: var(--ink-soft); }
-.day.is-past .slot-recipe:hover { background: #ded8ce; }
-.day.is-past .slot-add { background: transparent; opacity: .65; }
+.day.is-past { background: var(--surface-sunk); }
+.day.is-past .slot-recipe-name { color: var(--ink-soft); }
+.day.is-past .slot-add { opacity: .7; }
+/* Settled means no accent, hover included. */
+.day.is-past .slot-recipe:hover, .day.is-past .slot-add:hover { background: var(--line); color: var(--ink-soft); }
 
-.day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
-.day-name { font-weight: 620; font-size: .9375rem; }
-.day-date { color: var(--ink-faint); font-size: .8125rem; font-variant-numeric: tabular-nums; }
-.day.is-today .day-name { color: var(--accent); }
+.day-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 6px; flex-wrap: nowrap;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.day-name { font-weight: 620; font-size: .9375rem; white-space: nowrap; }
+.day-date {
+  color: var(--ink-faint); font-size: .8125rem;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.day.is-today .day-name, .day.is-today .day-date { color: var(--accent); }
 .day.is-past .day-name, .day.is-past .day-date { color: var(--ink-faint); }
 
-.day-flag {
-  font-size: .625rem; text-transform: uppercase; letter-spacing: .07em;
-  font-weight: 700; color: #fff; background: var(--accent);
-  border-radius: 999px; padding: 2px 7px; margin-left: 4px; vertical-align: 1px;
+/* Today's marker is a dot beside the day name. The old pill pushed the date onto a
+   second line, which made that one card taller than its neighbours. */
+.day-dot {
+  display: inline-block; width: 6px; height: 6px; margin-left: 5px;
+  border-radius: 50%; background: var(--accent); vertical-align: 1px;
 }
 
-.slot { border-top: 1px solid var(--line); padding-top: 10px; }
-.slot:first-of-type { border-top: 0; padding-top: 0; }
+/* Meal rows carry no box of their own: a hairline and a label is structure enough
+   inside a card that is already a box. */
+.slot { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.slot + .slot { border-top: 1px solid var(--line); padding-top: 8px; }
 .slot-label {
   font-size: .6875rem; text-transform: uppercase; letter-spacing: .07em;
-  color: var(--ink-faint); font-weight: 600; margin-bottom: 6px;
+  color: var(--ink-faint); font-weight: 600;
 }
 
-.slot-filled { display: flex; align-items: flex-start; gap: 6px; }
+.slot-filled { display: flex; align-items: flex-start; gap: 4px; min-width: 0; }
 .slot-recipe {
-  flex: 1; text-align: left; cursor: pointer;
-  background: var(--accent-soft); border: 0; border-radius: var(--radius-sm);
-  padding: 8px 10px; min-height: var(--tap);
-  color: var(--accent-ink); font-size: .875rem; font-weight: 540; line-height: 1.3;
+  flex: 1; min-width: 0; text-align: left; cursor: pointer;
+  background: none; border: 0; border-radius: var(--radius-sm);
+  padding: 5px 6px; margin-left: -6px; min-height: 38px;
+  font-size: .875rem; line-height: 1.3;
 }
-.slot-recipe:hover { background: #dfe9e2; }
-.slot-recipe .slot-time { display: block; font-weight: 420; font-size: .75rem; color: var(--ink-soft); margin-top: 3px; }
+.slot-recipe:hover { background: var(--accent-soft); }
+.slot-recipe-name { display: block; color: var(--accent-ink); font-weight: 560; }
+.slot-time { display: block; font-size: .75rem; color: var(--ink-faint); margin-top: 2px; }
 
-.slot-clear { flex: none; width: 34px; height: 34px; font-size: 1rem; }
+.slot-clear { flex: none; width: 30px; height: 30px; font-size: 1rem; }
 
 .slot-add {
-  width: 100%; cursor: pointer; min-height: var(--tap);
-  background: var(--surface-sunk); border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-sm); color: var(--ink-faint);
-  font-size: .8125rem; padding: 8px;
+  width: 100%; cursor: pointer; min-height: 38px;
+  background: none; border: 0; border-radius: var(--radius-sm);
+  padding: 5px 6px; margin-left: -6px;
+  color: var(--ink-faint); font-size: .8125rem; text-align: left;
 }
-.slot-add:hover { color: var(--accent); border-color: var(--accent); }
+.slot-add:hover { background: var(--accent-soft); color: var(--accent-ink); }
 
 /* ---------- filters ---------- */
-.filters { margin-bottom: 24px; display: flex; flex-direction: column; gap: 14px; }
+.filters {
+  margin-bottom: 28px; padding: 16px 18px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.filter-bar { display: flex; align-items: center; gap: 10px; }
+.filter-bar .search { flex: 1; }
 
 .search input {
   width: 100%; max-width: 460px;
@@ -178,24 +208,61 @@ h1 { font-size: 1.75rem; }
 }
 .search input::placeholder { color: var(--ink-faint); }
 
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-toggle { flex: none; }
+.filter-toggle::after {
+  content: ""; display: inline-block; margin-left: 8px;
+  border: 4px solid transparent; border-top-color: currentColor;
+  vertical-align: 2px; transition: transform .15s ease;
+}
+.filter-toggle[aria-expanded="false"]::after { transform: rotate(-90deg); }
+.filter-badge {
+  display: inline-block; margin-left: 7px; padding: 0 6px;
+  background: var(--accent); color: #fff; border-radius: 999px;
+  font-size: .75rem; font-weight: 620;
+}
+
+/* Four short labelled lists read faster than one wrap of sixteen chips. */
+.filter-groups {
+  display: grid; gap: 14px 26px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+.filter-group-label {
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ink-faint); font-weight: 600; margin-bottom: 8px;
+}
+
+.filter-active {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-top: 14px; border-top: 1px solid var(--line);
+}
+.filter-count { font-size: .875rem; color: var(--ink-soft); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip {
   cursor: pointer; border-radius: 999px;
-  padding: 7px 14px; min-height: 36px;
+  padding: 6px 13px; min-height: 34px;
   font-size: .8125rem; font-weight: 520;
   background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-soft);
 }
 .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+.btn-sm { min-height: 34px; padding: 5px 12px; font-size: .8125rem; }
+
 /* ---------- inline slot picker (week view) ---------- */
 .week-grid:focus { outline: none; }  /* programmatic focus target when the picker closes */
 
+/* Recessed tray, not another white surface: the recipe cards inside are white, and on a
+   white panel their edges disappeared. Sunk here means the cards read as cards. */
 .slot-picker {
   margin-top: 22px; padding: 18px;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); box-shadow: var(--shadow);
+  background: var(--surface-sunk); border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
+/* A firmer edge on the tray's cards, since they no longer have the page behind them. */
+.slot-picker .card { border-color: var(--line-strong); }
+/* ink-faint is too light on the sunk tray. */
+.slot-picker .view-sub { color: var(--ink-soft); }
 
 .slot-picker-head {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -204,25 +271,14 @@ h1 { font-size: 1.75rem; }
 .slot-picker-title { font-size: 1.0625rem; }
 .slot-picker .search { margin-bottom: 14px; }
 
+/* The picker shows the same cards as the Recipes view -- same markup, same component --
+   in a scrolling area so the week stays on screen above it. */
 .pick-grid {
-  display: grid; gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  max-height: 46vh; overflow-y: auto;
+  max-height: 52vh; overflow-y: auto;
+  padding: 2px 2px 4px;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
 }
-
-.pick {
-  cursor: pointer; text-align: left; min-height: var(--tap);
-  padding: 12px 14px;
-  background: var(--surface); border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 10px;
-}
-.pick:hover { border-color: var(--accent); background: var(--accent-soft); }
-.pick-name { font-weight: 600; letter-spacing: -0.01em; }
-.pick-meta {
-  color: var(--ink-faint); font-size: .8125rem; font-variant-numeric: tabular-nums;
-}
-.pick .card-tags { grid-column: 1 / -1; margin-top: 6px; }
 
 /* ---------- recipe cards ---------- */
 .card-grid {
@@ -232,10 +288,12 @@ h1 { font-size: 1.75rem; }
 
 .card {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); box-shadow: var(--shadow);
+  border-radius: var(--radius);
   display: flex; flex-direction: column;
   overflow: hidden;
+  transition: border-color .12s ease;
 }
+.card:hover { border-color: var(--line-strong); }
 
 .card-open {
   cursor: pointer; text-align: left; background: none; border: 0;
@@ -271,8 +329,8 @@ h1 { font-size: 1.75rem; }
 
 .empty {
   color: var(--ink-faint); text-align: center;
-  padding: 56px 20px; background: var(--surface);
-  border: 1px dashed var(--line-strong); border-radius: var(--radius);
+  padding: 48px 20px; background: var(--surface-sunk);
+  border-radius: var(--radius);
 }
 
 /* ---------- dialogs ---------- */
@@ -290,7 +348,24 @@ h1 { font-size: 1.75rem; }
 
 .sheet-body { padding: 24px 26px 26px; overflow-y: auto; max-height: inherit; }
 .sheet-title { font-size: 1.375rem; padding-right: 40px; }
-.sheet-sub { color: var(--ink-faint); font-size: .9375rem; margin-top: 6px; }
+/* "Add to week" is context, not the headline -- the recipe is. So the title shrinks to
+   an eyebrow and the name takes the weight it used to have. */
+.sheet-eyebrow {
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 600; color: var(--ink-faint); padding-right: 40px;
+}
+.picker-recipe {
+  font-size: 1.25rem; font-weight: 620; letter-spacing: -0.015em;
+  color: var(--ink); margin-top: 6px; line-height: 1.25;
+}
+
+/* Everything in the add-to-week sheet is centred except that eyebrow. */
+.sheet-body-center { text-align: center; }
+.sheet-body-center .sheet-eyebrow { text-align: left; }
+.sheet-body-center .day-picker { justify-content: center; }
+.sheet-body-center .segmented { justify-content: center; }
+.sheet-body-center .sheet-actions { justify-content: center; }
+.sheet-body-center .sheet-actions .btn { flex: 0 1 148px; }
 
 .detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 20px; }
 .detail-h { font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); font-weight: 600; margin-bottom: 8px; }
@@ -301,7 +376,8 @@ h1 { font-size: 1.75rem; }
 
 .field-label { font-size: .8125rem; font-weight: 600; color: var(--ink-soft); margin: 20px 0 7px; }
 
-.day-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.day-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.day-picker .day-chip { flex: 0 0 calc(25% - 6px); }
 
 .day-chip {
   display: flex; flex-direction: column; align-items: center; gap: 1px;
@@ -314,13 +390,12 @@ h1 { font-size: 1.75rem; }
 .day-chip.is-past .day-chip-name { color: var(--ink-faint); font-weight: 540; }
 .day-chip.is-past[aria-pressed="true"] .day-chip-name { color: #fff; }
 
-.segmented { display: flex; gap: 8px; }
-.segmented .chip { flex: 1; text-align: center; min-height: var(--tap); }
+.segmented { display: flex; flex-wrap: wrap; gap: 8px; }
+.segmented .chip { flex: 0 1 104px; text-align: center; min-height: var(--tap); }
 
 .picker-note {
-  margin-top: 16px; padding: 10px 12px;
-  background: var(--surface-sunk); border-radius: var(--radius-sm);
-  font-size: .875rem; color: var(--ink-soft);
+  margin-top: 18px; font-size: .875rem; color: var(--ink-soft);
+  padding: 0 4px;
 }
 
 .sheet-actions { display: flex; gap: 10px; margin-top: 24px; }
@@ -335,9 +410,19 @@ h1 { font-size: 1.75rem; }
   font-size: .875rem; box-shadow: var(--shadow);
 }
 
+/* ---------- touch ---------- */
+/* The week rows and chips are tighter than they were, which is the point on a mouse.
+   On a finger they go back to the 44px floor. */
+@media (pointer: coarse) {
+  .slot-recipe, .slot-add, .chip, .btn-sm { min-height: var(--tap); }
+  .slot-clear { width: 40px; height: 40px; }
+  .icon-btn { width: var(--tap); height: var(--tap); }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1000px) {
   .week-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-groups { gap: 14px 20px; }
 }
 
 @media (max-width: 620px) {
@@ -346,9 +431,15 @@ h1 { font-size: 1.75rem; }
   .nav { width: 100%; }
   .nav-btn { flex: 1; padding: 8px 6px; min-height: var(--tap); }
   h1 { font-size: 1.5rem; }
-  .week-grid { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: 1fr; grid-template-rows: none; }
+  /* Stacked days don't need shared tracks -- there is nothing beside them to line up with. */
+  .day { grid-row: auto; display: flex; flex-direction: column; gap: 8px; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 60vh; }
+  .filters { padding: 14px; }
+  .filter-bar { flex-wrap: wrap; }
+  .filter-toggle { width: 100%; }
+  .day-picker .day-chip { flex: 0 0 calc(33.333% - 6px); }
   .week-nav { width: 100%; }
   .week-nav .btn { flex: 1; min-height: var(--tap); }
   .sheet {

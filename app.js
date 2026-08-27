@@ -413,6 +413,16 @@ const RECIPE_BY_ID = new Map(RECIPES.map(function (r) { return [r.id, r]; }));
 const STORAGE_KEY = 'p5:mealplanner';
 const MEALS = ['Breakfast', 'Lunch', 'Dinner'];
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+// Filter chips, grouped by what the tag actually tells you. Anything in the catalogue
+// that isn't listed here still shows up, under "More" - so a new tag can't go missing.
+const TAG_GROUPS = [
+  { label: 'Macros', tags: ['high-protein', 'balanced'] },
+  { label: 'Meal', tags: ['breakfast', 'lunch', 'dinner'] },
+  { label: 'Diet', tags: ['vegetarian', 'vegan'] },
+  { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
+  { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
+];
 const KEEP_WEEKS = 4; // plan entries older than this are dropped on load
 
 // ---------------------------------------------------------------- dates
@@ -471,7 +481,8 @@ const state = {
   plan: {},
   bookmarks: [],
   search: '',
-  tags: []
+  tags: [],
+  filtersOpen: true
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -540,6 +551,9 @@ const el = {
   weekRange: document.getElementById('week-range'),
   search: document.getElementById('search'),
   tagFilters: document.getElementById('tag-filters'),
+  filterToggle: document.getElementById('filter-toggle'),
+  filterActive: document.getElementById('filter-active'),
+  filterCount: document.getElementById('filter-count'),
   recipeGrid: document.getElementById('recipe-grid'),
   recipesEmpty: document.getElementById('recipes-empty'),
   recipesCount: document.getElementById('recipes-count'),
@@ -576,6 +590,12 @@ function toast(message) {
   el.toast.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { el.toast.hidden = true; }, 2600);
+}
+
+// "Thu breakfast" - names a slot on a button without spelling out the whole date.
+function slotLabel(iso, meal) {
+  const date = dateOf(iso);
+  return DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3) + ' ' + meal.toLowerCase();
 }
 
 function tagsHtml(tags) {
@@ -616,39 +636,49 @@ function renderWeek() {
       const recipe = id ? RECIPE_BY_ID.get(id) : null;
       const body = recipe
         ? '<div class="slot-filled">' +
-            '<button type="button" class="slot-recipe" data-action="open-recipe" data-id="' + recipe.id + '">' +
-              escapeHtml(recipe.name) +
+            '<button type="button" class="slot-recipe" data-action="open-recipe" data-id="' + recipe.id + '" ' +
+              'title="View ' + escapeHtml(recipe.name) + '">' +
+              '<span class="slot-recipe-name">' + escapeHtml(recipe.name) + '</span>' +
               '<span class="slot-time">' + recipe.minutes + ' min</span>' +
             '</button>' +
             '<button type="button" class="icon-btn slot-clear" data-action="clear-slot" data-iso="' + iso + '" data-meal="' + meal + '" ' +
               'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">&times;</button>' +
           '</div>'
-        : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '">+ Add</button>';
+        : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '" ' +
+            'aria-label="Add ' + meal.toLowerCase() + ' on ' + DAY_NAMES[i] + '">+ Add</button>';
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
     return '<article class="day ' + when + '">' +
         '<div class="day-head">' +
           '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
-            (iso === todayIso ? ' <span class="day-flag">Today</span>' : '') + '</h2>' +
+            (iso === todayIso ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>' : '') + '</h2>' +
           '<p class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</p>' +
         '</div>' + slots +
       '</article>';
   }).join('');
 }
 
-function cardHtml(recipe) {
+// One card for every list of recipes in the app. Pass a slot ({ iso, meal }) and its
+// primary button fills that slot instead of opening the day-and-meal dialog; opening the
+// recipe from it carries the slot along too, so reading first costs nothing.
+function cardHtml(recipe, slot) {
   const saved = isBookmarked(recipe.id);
+  const slotAttrs = slot ? ' data-iso="' + slot.iso + '" data-meal="' + slot.meal + '"' : '';
+  const addBtn = slot
+    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" data-id="' + recipe.id + '"' +
+        slotAttrs + '>Add to ' + escapeHtml(slotLabel(slot.iso, slot.meal)) + '</button>'
+    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
+
   return '<article class="card">' +
-      '<button type="button" class="card-open" data-action="open-recipe" data-id="' + recipe.id + '">' +
+      '<button type="button" class="card-open" data-action="open-recipe" data-id="' + recipe.id + '"' + slotAttrs + '>' +
         '<div class="card-top">' +
           '<h2 class="card-name">' + escapeHtml(recipe.name) + '</h2>' +
           '<span class="card-time">' + recipe.minutes + ' min</span>' +
         '</div>' +
         '<div class="card-tags">' + tagsHtml(recipe.tags) + '</div>' +
       '</button>' +
-      '<div class="card-actions">' +
-        '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>' +
+      '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
           'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? '&#9733;' : '&#9734;') + '</button>' +
@@ -669,49 +699,91 @@ function matchingRecipes(search, tags) {
   });
 }
 
+function chipHtml(tag) {
+  return '<button type="button" class="chip" data-action="tag" data-tag="' + tag + '" ' +
+    'aria-pressed="' + (state.tags.indexOf(tag) !== -1) + '">' + escapeHtml(tag) + '</button>';
+}
+
 function renderTagFilters() {
   const all = [];
   RECIPES.forEach(function (r) {
     r.tags.forEach(function (t) { if (all.indexOf(t) === -1) all.push(t); });
   });
-  all.sort();
-  el.tagFilters.innerHTML = all.map(function (t) {
-    return '<button type="button" class="chip" data-action="tag" data-tag="' + t + '" ' +
-      'aria-pressed="' + (state.tags.indexOf(t) !== -1) + '">' + escapeHtml(t) + '</button>';
+  const grouped = [];
+  const groups = TAG_GROUPS.map(function (g) {
+    const tags = g.tags.filter(function (t) { grouped.push(t); return all.indexOf(t) !== -1; });
+    return { label: g.label, tags: tags };
+  }).filter(function (g) { return g.tags.length > 0; });
+
+  const rest = all.filter(function (t) { return grouped.indexOf(t) === -1; }).sort();
+  if (rest.length) groups.push({ label: 'More', tags: rest });
+
+  el.tagFilters.innerHTML = groups.map(function (g, i) {
+    const labelId = 'filter-group-' + i;
+    return '<div class="filter-group">' +
+        '<p class="filter-group-label" id="' + labelId + '">' + escapeHtml(g.label) + '</p>' +
+        '<div class="chips" role="group" aria-labelledby="' + labelId + '">' +
+          g.tags.map(chipHtml).join('') +
+        '</div>' +
+      '</div>';
   }).join('');
 }
 
-function renderRecipes() {
-  const list = matchingRecipes(state.search, state.tags);
-  el.recipeGrid.innerHTML = list.map(cardHtml).join('');
-  el.recipesEmpty.hidden = list.length > 0;
-  el.recipesCount.textContent = list.length === RECIPES.length
-    ? RECIPES.length + ' recipes'
-    : list.length + ' of ' + RECIPES.length + ' recipes';
+function renderFilterState() {
+  const active = state.tags.length;
+  el.tagFilters.hidden = !state.filtersOpen;
+  el.filterToggle.setAttribute('aria-expanded', String(state.filtersOpen));
+  el.filterToggle.innerHTML = 'Filters' +
+    (active ? '<span class="filter-badge">' + active + '</span>' : '');
+  el.filterActive.hidden = active === 0;
+  el.filterCount.textContent = active
+    ? 'Showing recipes tagged ' + state.tags.join(', ')
+    : '';
   el.tagFilters.querySelectorAll('.chip').forEach(function (chip) {
     chip.setAttribute('aria-pressed', String(state.tags.indexOf(chip.dataset.tag) !== -1));
   });
 }
 
+function renderRecipes() {
+  const list = matchingRecipes(state.search, state.tags);
+  // not list.map(cardHtml): map would pass the index as cardHtml's slot argument.
+  el.recipeGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
+  el.recipesEmpty.hidden = list.length > 0;
+  el.recipesCount.textContent = list.length === RECIPES.length
+    ? RECIPES.length + ' recipes'
+    : list.length + ' of ' + RECIPES.length + ' recipes';
+  renderFilterState();
+}
+
 function renderSaved() {
   const list = state.bookmarks.map(function (id) { return RECIPE_BY_ID.get(id); }).filter(Boolean);
-  el.savedGrid.innerHTML = list.map(cardHtml).join('');
+  el.savedGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
   el.savedEmpty.hidden = list.length > 0;
   el.savedCount.textContent = list.length === 1 ? '1 recipe' : list.length + ' recipes';
 }
 
 // ---------------------------------------------------------------- detail dialog
 
-function openDetail(id) {
+// Set when the detail sheet is opened from a week slot, so its primary button can fill
+// that slot instead of asking for a day and meal that are already known.
+let detailSlot = null;
+
+function openDetail(id, slot) {
   const recipe = RECIPE_BY_ID.get(id);
   if (!recipe) return;
   const saved = isBookmarked(id);
+  detailSlot = slot || null;
+
+  const addBtn = detailSlot
+    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" ' +
+        'data-id="' + recipe.id + '" data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '">' +
+        'Add to ' + escapeHtml(slotLabel(detailSlot.iso, detailSlot.meal)) + '</button>'
+    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
 
   el.detailBody.innerHTML =
     '<h2 class="sheet-title" id="detail-name">' + escapeHtml(recipe.name) + '</h2>' +
     '<div class="detail-meta">' + tagsHtml(recipe.tags) + '<span class="tag">' + recipe.minutes + ' min</span></div>' +
-    '<div class="sheet-actions" style="margin-top:0">' +
-      '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>' +
+    '<div class="sheet-actions" style="margin-top:0">' + addBtn +
       '<button type="button" class="btn btn-quiet" data-action="bookmark" data-id="' + recipe.id + '" aria-pressed="' + saved + '">' +
         (saved ? '&#9733; Saved' : '&#9734; Save') + '</button>' +
     '</div>' +
@@ -764,13 +836,11 @@ function closeSlotPicker() {
 }
 
 function renderSlotPicker() {
+  if (!slotPick.iso) return;   // nothing to fill, so nothing to draw
   const list = matchingRecipes(slotPick.search, []);
+  const slot = { iso: slotPick.iso, meal: slotPick.meal };
   el.slotPickerGrid.innerHTML = list.map(function (r) {
-    return '<button type="button" class="pick" data-action="pick-for-slot" data-id="' + r.id + '">' +
-        '<span class="pick-name">' + escapeHtml(r.name) + '</span>' +
-        '<span class="pick-meta">' + r.minutes + ' min</span>' +
-        '<span class="card-tags">' + tagsHtml(r.tags) + '</span>' +
-      '</button>';
+    return cardHtml(r, slot);
   }).join('');
   el.slotPickerEmpty.hidden = list.length > 0;
 }
@@ -865,7 +935,8 @@ document.addEventListener('click', function (event) {
   }
 
   if (action === 'open-recipe') {
-    openDetail(target.dataset.id);
+    const iso = target.dataset.iso;
+    openDetail(target.dataset.id, iso ? { iso: iso, meal: target.dataset.meal } : null);
     return;
   }
 
@@ -875,9 +946,11 @@ document.addEventListener('click', function (event) {
     if (at === -1) state.bookmarks.push(id);
     else state.bookmarks.splice(at, 1);
     saveState();
-    // The same recipe can appear on a card and inside the open dialog — redraw both.
+    // The same recipe can appear on a card, in the open picker and inside the open
+    // dialog — redraw all three.
     render();
-    if (el.detail.open) openDetail(id);
+    if (!el.slotPicker.hidden) renderSlotPicker();
+    if (el.detail.open) openDetail(id, detailSlot);
     return;
   }
 
@@ -891,16 +964,17 @@ document.addEventListener('click', function (event) {
     return;
   }
 
-  if (action === 'pick-for-slot') {
+  if (action === 'fill-slot') {
     const recipe = RECIPE_BY_ID.get(target.dataset.id);
-    if (!recipe || !slotPick.iso) return;
-    const dayName = DAY_NAMES[(dateOf(slotPick.iso).getDay() + 6) % 7];
-    const meal = slotPick.meal;
-    state.plan[slotKey(slotPick.iso, meal)] = recipe.id;
+    const iso = target.dataset.iso;
+    const meal = target.dataset.meal;
+    if (!recipe || !iso || MEALS.indexOf(meal) === -1) return;
+    state.plan[slotKey(iso, meal)] = recipe.id;
     saveState();
+    el.detail.close();
     renderWeek();
     closeSlotPicker();
-    toast(recipe.name + ' → ' + dayName + ' ' + meal.toLowerCase());
+    toast(recipe.name + ' \u2192 ' + DAY_NAMES[(dateOf(iso).getDay() + 6) % 7] + ' ' + meal.toLowerCase());
     return;
   }
 
@@ -941,6 +1015,18 @@ document.addEventListener('click', function (event) {
     renderRecipes();
     return;
   }
+
+  if (action === 'clear-tags') {
+    state.tags = [];
+    renderRecipes();
+    return;
+  }
+
+  if (action === 'filters-toggle') {
+    state.filtersOpen = !state.filtersOpen;
+    renderFilterState();
+    return;
+  }
 });
 
 el.search.addEventListener('input', function () {
@@ -960,6 +1046,8 @@ document.addEventListener('keydown', function (event) {
   closeSlotPicker();
 });
 
+el.detail.addEventListener('close', function () { detailSlot = null; });
+
 // Click on the backdrop (outside the panel) closes either dialog.
 [el.detail, el.picker].forEach(function (dialog) {
   dialog.addEventListener('click', function (event) {
@@ -971,4 +1059,5 @@ document.addEventListener('keydown', function (event) {
 
 loadState();
 renderTagFilters();
+renderFilterState();
 setView('week');

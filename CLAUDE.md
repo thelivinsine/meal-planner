@@ -5,6 +5,8 @@ Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
 
 See `README.md` for what v1 does, the data model, and the decisions already taken.
 Read it before proposing changes — several things are missing on purpose, not by oversight.
+**Starting a session:** read *Where things stand* at the top of `README.md` first — it names the
+live commit, any open PR, and what's queued next.
 
 ## Working with me
 - Ask when something is unclear or a decision is uncertain. Don't guess silently.
@@ -38,11 +40,25 @@ Established in v1 — follow them or say why not:
   high-protein, so adding recipes means checking those ratios still hold.
 - **Two ways to add a meal:** from an *empty* week slot, the inline picker under the week (day and
   meal already known — never ask again); from a recipe card, the `#picker` dialog. Don't merge them.
+- **One recipe card:** `cardHtml(recipe, slot)` draws every list of recipes — Recipes, Saved and
+  the week's slot picker. Pass a slot and its primary button fills that slot; leave it out and the
+  button opens the day-and-meal dialog. Don't fork it for a new list.
 - **Plan shape:** flat, keyed by real date and meal — `state.plan['2026-08-26|Dinner'] = recipeId`.
   Keyed by date, not weekday, so each week is genuinely its own plan.
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in
   try/catch — quota errors and private mode are real. Validate on load and drop anything
   unrecognised; never trust what's in storage.
+- **One box per level:** a card gets the border; the rows inside it get a hairline and a
+  label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
+  This applies inside the day cards — lists of recipes use the recipe card instead.
+- **A panel holding white cards is sunk:** `--surface-sunk`, never `--surface`. White on white
+  leaves the cards with no edge at all. Check a colour pair's contrast rather than eyeballing it.
+- **Subject gets the weight:** in a panel, the thing being acted on (the recipe) carries the
+  large type; the action (`Add to week`) is a small uppercase eyebrow above it.
+- **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
+  renders, under *More* — so adding a recipe tag can never make a chip disappear.
+- **Week alignment:** the seven day cards share the week grid's row tracks via CSS `subgrid`,
+  so meal rows line up across days. Don't reintroduce anything in a day header that can wrap.
 - **Rendering:** change state, then redraw the whole view from it. No diffing, no partial updates.
 - **Events:** no inline `onclick`. One delegated listener in `app.js` dispatching on `data-action`.
 - **Escaping:** views are built as HTML strings, so run any text through `escapeHtml` before it
