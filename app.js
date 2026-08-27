@@ -592,6 +592,12 @@ function toast(message) {
   toastTimer = setTimeout(function () { el.toast.hidden = true; }, 2600);
 }
 
+// "Thu breakfast" - names a slot on a button without spelling out the whole date.
+function slotLabel(iso, meal) {
+  const date = dateOf(iso);
+  return DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3) + ' ' + meal.toLowerCase();
+}
+
 function tagsHtml(tags) {
   return tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 }
@@ -653,18 +659,26 @@ function renderWeek() {
   }).join('');
 }
 
-function cardHtml(recipe) {
+// One card for every list of recipes in the app. Pass a slot ({ iso, meal }) and its
+// primary button fills that slot instead of opening the day-and-meal dialog; opening the
+// recipe from it carries the slot along too, so reading first costs nothing.
+function cardHtml(recipe, slot) {
   const saved = isBookmarked(recipe.id);
+  const slotAttrs = slot ? ' data-iso="' + slot.iso + '" data-meal="' + slot.meal + '"' : '';
+  const addBtn = slot
+    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" data-id="' + recipe.id + '"' +
+        slotAttrs + '>Add to ' + escapeHtml(slotLabel(slot.iso, slot.meal)) + '</button>'
+    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
+
   return '<article class="card">' +
-      '<button type="button" class="card-open" data-action="open-recipe" data-id="' + recipe.id + '">' +
+      '<button type="button" class="card-open" data-action="open-recipe" data-id="' + recipe.id + '"' + slotAttrs + '>' +
         '<div class="card-top">' +
           '<h2 class="card-name">' + escapeHtml(recipe.name) + '</h2>' +
           '<span class="card-time">' + recipe.minutes + ' min</span>' +
         '</div>' +
         '<div class="card-tags">' + tagsHtml(recipe.tags) + '</div>' +
       '</button>' +
-      '<div class="card-actions">' +
-        '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>' +
+      '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
           'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? '&#9733;' : '&#9734;') + '</button>' +
@@ -732,7 +746,8 @@ function renderFilterState() {
 
 function renderRecipes() {
   const list = matchingRecipes(state.search, state.tags);
-  el.recipeGrid.innerHTML = list.map(cardHtml).join('');
+  // not list.map(cardHtml): map would pass the index as cardHtml's slot argument.
+  el.recipeGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
   el.recipesEmpty.hidden = list.length > 0;
   el.recipesCount.textContent = list.length === RECIPES.length
     ? RECIPES.length + ' recipes'
@@ -742,7 +757,7 @@ function renderRecipes() {
 
 function renderSaved() {
   const list = state.bookmarks.map(function (id) { return RECIPE_BY_ID.get(id); }).filter(Boolean);
-  el.savedGrid.innerHTML = list.map(cardHtml).join('');
+  el.savedGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
   el.savedEmpty.hidden = list.length > 0;
   el.savedCount.textContent = list.length === 1 ? '1 recipe' : list.length + ' recipes';
 }
@@ -753,11 +768,6 @@ function renderSaved() {
 // that slot instead of asking for a day and meal that are already known.
 let detailSlot = null;
 
-function slotLabel(iso, meal) {
-  const date = dateOf(iso);
-  return DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3) + ' ' + meal.toLowerCase();
-}
-
 function openDetail(id, slot) {
   const recipe = RECIPE_BY_ID.get(id);
   if (!recipe) return;
@@ -765,7 +775,7 @@ function openDetail(id, slot) {
   detailSlot = slot || null;
 
   const addBtn = detailSlot
-    ? '<button type="button" class="btn btn-primary" data-action="fill-slot-from-detail" ' +
+    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" ' +
         'data-id="' + recipe.id + '" data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '">' +
         'Add to ' + escapeHtml(slotLabel(detailSlot.iso, detailSlot.meal)) + '</button>'
     : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
@@ -826,17 +836,11 @@ function closeSlotPicker() {
 }
 
 function renderSlotPicker() {
+  if (!slotPick.iso) return;   // nothing to fill, so nothing to draw
   const list = matchingRecipes(slotPick.search, []);
+  const slot = { iso: slotPick.iso, meal: slotPick.meal };
   el.slotPickerGrid.innerHTML = list.map(function (r) {
-    return '<div class="pick-row">' +
-        '<button type="button" class="pick" data-action="pick-for-slot" data-id="' + r.id + '">' +
-          '<span class="pick-name">' + escapeHtml(r.name) + '</span>' +
-          '<span class="pick-meta">' + r.minutes + ' min</span>' +
-          '<span class="card-tags">' + tagsHtml(r.tags) + '</span>' +
-        '</button>' +
-        '<button type="button" class="icon-btn pick-view" data-action="view-for-slot" data-id="' + r.id + '" ' +
-          'aria-label="View ' + escapeHtml(r.name) + '" title="View recipe">&#9432;</button>' +
-      '</div>';
+    return cardHtml(r, slot);
   }).join('');
   el.slotPickerEmpty.hidden = list.length > 0;
 }
@@ -931,7 +935,8 @@ document.addEventListener('click', function (event) {
   }
 
   if (action === 'open-recipe') {
-    openDetail(target.dataset.id);
+    const iso = target.dataset.iso;
+    openDetail(target.dataset.id, iso ? { iso: iso, meal: target.dataset.meal } : null);
     return;
   }
 
@@ -941,8 +946,10 @@ document.addEventListener('click', function (event) {
     if (at === -1) state.bookmarks.push(id);
     else state.bookmarks.splice(at, 1);
     saveState();
-    // The same recipe can appear on a card and inside the open dialog — redraw both.
+    // The same recipe can appear on a card, in the open picker and inside the open
+    // dialog — redraw all three.
     render();
+    if (!el.slotPicker.hidden) renderSlotPicker();
     if (el.detail.open) openDetail(id, detailSlot);
     return;
   }
@@ -957,27 +964,7 @@ document.addEventListener('click', function (event) {
     return;
   }
 
-  if (action === 'pick-for-slot') {
-    const recipe = RECIPE_BY_ID.get(target.dataset.id);
-    if (!recipe || !slotPick.iso) return;
-    const dayName = DAY_NAMES[(dateOf(slotPick.iso).getDay() + 6) % 7];
-    const meal = slotPick.meal;
-    state.plan[slotKey(slotPick.iso, meal)] = recipe.id;
-    saveState();
-    renderWeek();
-    closeSlotPicker();
-    toast(recipe.name + ' → ' + dayName + ' ' + meal.toLowerCase());
-    return;
-  }
-
-  if (action === 'view-for-slot') {
-    // Read it first, then decide: the sheet's primary button fills this same slot.
-    const slot = slotPick.iso ? { iso: slotPick.iso, meal: slotPick.meal } : null;
-    openDetail(target.dataset.id, slot);
-    return;
-  }
-
-  if (action === 'fill-slot-from-detail') {
+  if (action === 'fill-slot') {
     const recipe = RECIPE_BY_ID.get(target.dataset.id);
     const iso = target.dataset.iso;
     const meal = target.dataset.meal;

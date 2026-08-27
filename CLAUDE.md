@@ -38,6 +38,9 @@ Established in v1 — follow them or say why not:
   high-protein, so adding recipes means checking those ratios still hold.
 - **Two ways to add a meal:** from an *empty* week slot, the inline picker under the week (day and
   meal already known — never ask again); from a recipe card, the `#picker` dialog. Don't merge them.
+- **One recipe card:** `cardHtml(recipe, slot)` draws every list of recipes — Recipes, Saved and
+  the week's slot picker. Pass a slot and its primary button fills that slot; leave it out and the
+  button opens the day-and-meal dialog. Don't fork it for a new list.
 - **Plan shape:** flat, keyed by real date and meal — `state.plan['2026-08-26|Dinner'] = recipeId`.
   Keyed by date, not weekday, so each week is genuinely its own plan.
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in
@@ -45,6 +48,7 @@ Established in v1 — follow them or say why not:
   unrecognised; never trust what's in storage.
 - **One box per level:** a card gets the border; the rows inside it get a hairline and a
   label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
+  This applies inside the day cards — lists of recipes use the recipe card instead.
 - **Subject gets the weight:** in a panel, the thing being acted on (the recipe) carries the
   large type; the action (`Add to week`) is a small uppercase eyebrow above it.
 - **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
