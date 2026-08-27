@@ -136,6 +136,8 @@ h1 { font-size: 1.75rem; }
 .day.is-past { background: var(--surface-sunk); }
 .day.is-past .slot-recipe-name { color: var(--ink-soft); }
 .day.is-past .slot-add { opacity: .7; }
+/* Settled means no accent, hover included. */
+.day.is-past .slot-recipe:hover, .day.is-past .slot-add:hover { background: var(--line); color: var(--ink-soft); }
 
 .day-head {
   display: flex; align-items: baseline; justify-content: space-between;

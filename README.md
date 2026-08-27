@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `5d97bc0`. Deployed and live at the link above |
-| **Open work** | Branch `feat/ui-polish`, 3 commits, PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) — open, mergeable, reviewed and approved verbally but **not merged** |
+| **Open work** | Branch `feat/ui-polish`, PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) — open, mergeable, reviewed and approved verbally but **not merged** |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
@@ -109,7 +109,7 @@ storage box, which muddies testing.)
 - Monday–Sunday of a real week, with the actual dates shown
 - Move between weeks with ← / →, or jump back with **This week**
 - Three states are visually distinct: **past** days are greyed and settled, **today** carries an
-  accent border and a "Today" pill, **upcoming** days are clean and white
+  accent border, **upcoming** days are clean and white
 - The three meal rows line up straight across all seven days, however long a recipe name runs
 - Each slot can be filled, replaced, or cleared
 - Past days stay editable, so you can log what you actually ate
@@ -270,7 +270,7 @@ question, not a width one.
 | **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
 | **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
-| **PR open** | [#2](https://github.com/thelivinsine/meal-planner/pull/2) against `main`, +350/-117 across 5 files. Not merged |
+| **PR open** | [#2](https://github.com/thelivinsine/meal-planner/pull/2) against `main`, across the same 5 files. Not merged |
 
 ---
 
