@@ -4,7 +4,8 @@ Plan what you're eating this week. Browse a catalogue of 50 recipes, drop them i
 breakfast / lunch / dinner slots on real dates, and bookmark the ones you like.
 Everything is saved in your own browser — no account, no server, nothing leaves your machine.
 
-**Live code:** https://github.com/thelivinsine/meal-planner
+**Live app:** https://thelivinsine.github.io/meal-planner/
+**Code:** https://github.com/thelivinsine/meal-planner
 **Stack:** one HTML file, one CSS file, one JS file. No frameworks, no build step, no dependencies.
 
 ## Screenshots
@@ -195,8 +196,9 @@ development, so layout on a real phone and a clean console during real use were 
 | **Scope** | Settled on v1: three views, ~25 recipes, week planning, bookmarks. Month calendar and drag-and-drop explicitly excluded |
 | **v1 built** | `index.html` / `style.css` / `app.js` on branch `feat/v1-meal-planner`. Week view moved to real dates during planning, at your request |
 | **First review** | Two changes from your feedback: past days now visually distinct from upcoming ones, and the day dropdown in the add dialog became a grid of day buttons |
-| **Published** | Merged to `main` and pushed to GitHub as a public repo. GitHub Pages not yet enabled |
+| **Published** | Merged to `main` and pushed to GitHub as a public repo |
 | **Second round** | Branch `feat/slot-picker-and-indian-recipes`: the slot's **+ Add** now opens the recipe list inline under the week instead of asking for the day and meal a second time, and the catalogue grew to 50 with 27 Indian and 38 high-protein recipes |
+| **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root. Live at the link above |
 
 ---
 
