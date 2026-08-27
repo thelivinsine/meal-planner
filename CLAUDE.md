@@ -22,7 +22,7 @@ Read it before proposing changes — several things are missing on purpose, not 
 
 ## Layout
 ```
-index.html   page shell: nav, three view sections, two <dialog> panels
+index.html   page shell: nav, three view sections, inline slot picker, two <dialog> panels
 style.css    all styling
 app.js       recipe catalogue, state, rendering, one event handler
 README.md    documentation
@@ -33,6 +33,11 @@ Add files only when one gets unwieldy.
 Established in v1 — follow them or say why not:
 
 - **State:** one `state` object for everything about the user. `RECIPES` is fixed and never stored.
+- **Recipe tags:** every recipe carries exactly one macro tag — `high-protein` or `balanced` — and
+  Indian ones carry `indian`. The catalogue is meant to stay over half Indian and over two thirds
+  high-protein, so adding recipes means checking those ratios still hold.
+- **Two ways to add a meal:** from a week slot, the inline picker under the week (day and meal
+  already known — never ask again); from a recipe card, the `#picker` dialog. Don't merge them.
 - **Plan shape:** flat, keyed by real date and meal — `state.plan['2026-08-26|Dinner'] = recipeId`.
   Keyed by date, not weekday, so each week is genuinely its own plan.
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in

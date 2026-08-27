@@ -67,7 +67,7 @@ your week. The day and meal are already known from the slot you tapped, so it ne
 one tap on a recipe fills that slot and the list closes. There's a search box in the panel, and
 Escape, the ×, or moving to another week all close it.
 
-*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog
+*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog.
 - Pick a day from seven day buttons and a meal from three — everything visible, two taps
 - Picking a day that's already gone is allowed but flagged: the dialog says so, and that day's
   button is drawn with a dashed border
@@ -86,7 +86,7 @@ Three files, as the project constraints require:
 
 | File | Contains |
 |---|---|
-| `index.html` | The page shell: header nav, three `<section>` views, two `<dialog>` panels |
+| `index.html` | The page shell: header nav, three `<section>` views, the inline slot picker, two `<dialog>` panels |
 | `style.css` | All styling. CSS custom properties for the palette, three breakpoints |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
@@ -106,7 +106,7 @@ Keying by actual date, rather than by "Wednesday", is what makes next week a gen
 plan instead of the same seven slots relabelled. It also means one assignment fills a slot and one
 `delete` clears it — no nested structures to walk.
 
-**Rendering** is deliberately dumb: change state, then redraw the whole view from it. With 25
+**Rendering** is deliberately dumb: change state, then redraw the whole view from it. With 50
 recipes that's instant, and it removes a whole class of bug where the screen and the data disagree.
 
 **Events** go through a single click listener on `document`, dispatching on a `data-action`
@@ -131,8 +131,8 @@ the saved blob can't grow forever.
 | One recipe per slot | "Cleared or replaced" reads as singular |
 | Day buttons, not a dropdown | A `<select>` opens the OS wheel on mobile and hides the dates; seven buttons show everything at once |
 | Past days editable, not locked | Useful for logging meals already eaten; the greying communicates enough |
-| Slot's **+ Add** opens the list inline, below the week | The slot already says which day and meal; re-asking in a dialog was pure redundancy. It fills the empty space under the week rather than navigating away |
-| The dialog stays for the recipe-first route | Coming from a card, nothing is known yet, so a day and meal still have to be picked |
+| Slot's **+ Add** opens the list inline, under the week | The slot already names the day and meal; asking again in a dialog was redundant, and the space below the week was empty |
+| The dialog stays for the recipe-first route | From a card nothing is known yet, so a day and meal still have to be picked |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
 
@@ -152,23 +152,22 @@ Left out on purpose, roughly in the order they'd earn their place:
 
 ## Testing
 
-There's no test framework in the repo, per the project constraints. Verification was:
+There's no test framework in the repo, per the project constraints. Verification was manual —
+open it and use it — plus two throwaway Node scripts run during development (kept outside the
+repo), loading `app.js` against a stub DOM. Between them they asserted:
 
-- **Manual** — open it and use it.
-- **A throwaway Node script** run during development (kept outside the repo). It loaded `app.js`
-  against a stub DOM and asserted: 25 unique complete recipes; week-start arithmetic landing on a
-  Monday across month, year and leap-day boundaries; 7 day cards and 21 slots rendered; the right
-  number of past / today / upcoming days for the real date; 7 day buttons in the picker with one
-  preselected; add → replace → clear leaving exactly one correct entry; search and filters
-  returning sane sets; a save/reload round-trip; and nine kinds of corrupt storage (truncated JSON,
-  `null`, `[]`, wrong types, unknown recipe ids, invalid dates) all falling back to a clean state.
-
-A second throwaway script was run for the inline slot picker: it asserted the panel starts hidden,
-opens with the tapped day and meal in its heading, offers all 50 recipes, filters on its own search
-box without disturbing the Recipes view, writes exactly the slot that was tapped on one click
-without the dialog ever opening, says *Replace* on an occupied slot, and closes on Escape, week
-navigation and view changes. It also re-checked the catalogue thresholds and that every recipe
-carries either `high-protein` or `balanced`.
+- 50 unique, complete recipes, each tagged `high-protein` or `balanced`, and both catalogue
+  thresholds (over half Indian, over two thirds high-protein)
+- Week-start arithmetic landing on a Monday across month, year and leap-day boundaries
+- 7 day cards and 21 slots rendered, with the right past / today / upcoming split for the real date
+- The inline slot picker: hidden on load, opens with the tapped day and meal in its heading, offers
+  all 50 recipes, filters on its own search without disturbing the Recipes view, fills exactly the
+  tapped slot in one click without the dialog opening, says *Replace* on an occupied slot, and
+  closes on Escape, week navigation and view change
+- The dialog route: 7 day buttons with one preselected; add → replace → clear leaving exactly one
+  correct entry
+- A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
+  types, unknown recipe ids, invalid dates) all falling back to a clean state
 
 Not verified by machine: how it actually looks. Browser automation wasn't available during
 development, so layout on a real phone and a clean console during real use were checked by eye.
