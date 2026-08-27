@@ -14,18 +14,17 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `5d97bc0`. Deployed and live at the link above |
-| **Open work** | Branch `feat/ui-polish`, PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) — open, mergeable, reviewed and approved verbally but **not merged** |
+| **`main`** | Commit `409d7d2` — the UI round, squash-merged from `feat/ui-polish` (PR [#2](https://github.com/thelivinsine/meal-planner/pull/2), now closed and the branch deleted). Deployed and live at the link above |
+| **Open work** | None. Next jobs below are all unstarted |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Merge PR #2**, then confirm the Pages build goes `built`.
-2. **Retake the screenshots.** All four in `Screenshots/` are from v1 and are now two rounds
+1. **Retake the screenshots.** All four in `Screenshots/` are from v1 and are now two rounds
    stale — they show 25 recipes, no macro chips, no filter panel, the old dialog-only route into
    a slot, and the misaligned week this round fixed. Nothing in the repo references them as
    current, but they're the first thing a reader sees.
-3. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
+2. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
    extension wasn't connected, so alignment, density and the centred sheet were reasoned from
    the CSS. See *Testing* for what that does and doesn't cover.
 
@@ -270,7 +269,7 @@ question, not a width one.
 | **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
 | **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
-| **PR open** | [#2](https://github.com/thelivinsine/meal-planner/pull/2) against `main`, across the same 5 files. Not merged |
+| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2` and deployed. Screenshots still not retaken |
 
 ---
 
