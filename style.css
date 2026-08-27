@@ -188,6 +188,40 @@ h1 { font-size: 1.75rem; }
 .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+/* ---------- inline slot picker (week view) ---------- */
+.slot-picker {
+  margin-top: 22px; padding: 18px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+
+.slot-picker-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px;
+}
+.slot-picker-title { font-size: 1.0625rem; }
+.slot-picker .search { margin-bottom: 14px; }
+
+.pick-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  max-height: 46vh; overflow-y: auto;
+}
+
+.pick {
+  cursor: pointer; text-align: left; min-height: var(--tap);
+  padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 10px;
+}
+.pick:hover { border-color: var(--accent); background: var(--accent-soft); }
+.pick-name { font-weight: 600; letter-spacing: -0.01em; }
+.pick-meta {
+  color: var(--ink-faint); font-size: .8125rem; font-variant-numeric: tabular-nums;
+}
+.pick .card-tags { grid-column: 1 / -1; margin-top: 6px; }
+
 /* ---------- recipe cards ---------- */
 .card-grid {
   display: grid; gap: 16px;
@@ -312,6 +346,7 @@ h1 { font-size: 1.75rem; }
   h1 { font-size: 1.5rem; }
   .week-grid { grid-template-columns: 1fr; }
   .card-grid { grid-template-columns: 1fr; }
+  .pick-grid { grid-template-columns: 1fr; max-height: 60vh; }
   .week-nav { width: 100%; }
   .week-nav .btn { flex: 1; min-height: var(--tap); }
   .sheet {

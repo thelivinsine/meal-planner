@@ -35,6 +35,24 @@
         </div>
       </div>
       <div class="week-grid" id="week-grid"></div>
+
+      <!-- Fills the space below the week: opened by a slot's "+ Add", so the day
+           and meal are already known and never asked for again. -->
+      <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" hidden>
+        <div class="slot-picker-head">
+          <div>
+            <h2 class="slot-picker-title" id="slot-picker-title"></h2>
+            <p class="view-sub">Tap a recipe to fill that slot.</p>
+          </div>
+          <button type="button" class="icon-btn" data-action="slot-picker-close" aria-label="Cancel">&times;</button>
+        </div>
+        <div class="search">
+          <label class="sr-only" for="slot-search">Search recipes</label>
+          <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
+        </div>
+        <div class="pick-grid" id="slot-picker-grid"></div>
+        <p class="empty" id="slot-picker-empty" hidden>No recipes match that search.</p>
+      </div>
     </section>
 
     <!-- RECIPES -->
