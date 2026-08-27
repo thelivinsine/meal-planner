@@ -20,10 +20,9 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Retake the screenshots.** All four in `Screenshots/` are from v1 and are now two rounds
-   stale — they show 25 recipes, no macro chips, no filter panel, the old dialog-only route into
-   a slot, and the misaligned week this round fixed. Nothing in the repo references them as
-   current, but they're the first thing a reader sees.
+1. **Take the screenshots.** There are none in the repo — the v1 set was two rounds stale and
+   you deleted it. Nothing breaks without them, but they're the first thing a reader sees, so
+   the README has an empty spot until they exist. See *Screenshots* for the four worth taking.
 2. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
    extension wasn't connected, so alignment, density and the centred sheet were reasoned from
    the CSS. See *Testing* for what that does and doesn't cover.
@@ -44,16 +43,18 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 ## Screenshots
 
-In `Screenshots/`. **All four are from v1, two rounds out of date** — 25 recipes, no macro chips,
-no filter panel, the dialog-only route into a slot, and the misaligned week. Retaking them is
-job 1 above.
+**None in the repo right now.** The v1 set was two rounds out of date — 25 recipes, no macro
+chips, no filter panel, the dialog-only route into a slot, the misaligned week — and was deleted
+rather than left to mislead. Taking a fresh set is job 1 above.
 
-| File | Shows |
+Four worth taking, from the live site:
+
+| Shows | Where |
 |---|---|
-| `Screenshot 2026-08-27 153939.png` | The full page: nav, week header, seven day cards |
-| `Screenshot 2026-08-27 153928.png` | Week view close up — past / today / upcoming days |
-| `Screenshot 2026-08-27 153909.png` | Recipes view — search box, tag chips, cards |
-| `Screenshot 2026-08-27 153716.png` | The **Add to week** dialog on a past day with the slot taken |
+| The full page: nav, week header, seven day cards | Week view, wide window |
+| Past / today / upcoming days, and the meal rows lining up across all seven | Week view, close up |
+| Search, the grouped filter panel with a chip or two on, and the cards | Recipes view |
+| The picker under the week: same cards, **Add to Thu breakfast** on the button | Week view, **+ Add** on an empty slot |
 
 ---
 
@@ -270,7 +271,7 @@ question, not a width one.
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
 | **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
 | **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in this file were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
-| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. Pages build `built`, live site serving it. Screenshots still not retaken |
+| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. Pages build `built`, live site serving it. The stale v1 screenshots were deleted; no fresh set yet |
 
 ---
 
