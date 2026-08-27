@@ -729,19 +729,20 @@ function openDetail(id) {
 // Opened from a slot's "+ Add": the day and meal are already chosen, so all that's
 // left is picking a recipe. One tap fills the slot and the panel closes again.
 
-const slotPick = { iso: null, meal: null, search: '' };
+// ponytail: only empty slots offer "+ Add", so the heading is always "Choose". Replacing
+// in place would need a swap button on filled slots — clear then add covers it for now.
+const slotPick = { iso: null, meal: null, search: '', opener: null };
 
-function openSlotPicker(iso, meal) {
+function openSlotPicker(iso, meal, opener) {
   slotPick.iso = iso;
   slotPick.meal = meal;
   slotPick.search = '';
+  slotPick.opener = opener;
   el.slotSearch.value = '';
 
   const date = dateOf(iso);
   const dayName = DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3);
-  const existingId = state.plan[slotKey(iso, meal)];
-  const existing = existingId ? RECIPE_BY_ID.get(existingId) : null;
-  el.slotPickerTitle.textContent = (existing ? 'Replace ' : 'Choose ') + meal.toLowerCase() +
+  el.slotPickerTitle.textContent = 'Choose ' + meal.toLowerCase() +
     ' — ' + dayName + ' ' + fmtDayMonth.format(date);
 
   renderSlotPicker();
@@ -751,8 +752,15 @@ function openSlotPicker(iso, meal) {
 }
 
 function closeSlotPicker() {
+  const opener = slotPick.opener;
   slotPick.iso = null;
+  slotPick.opener = null;
   el.slotPicker.hidden = true;
+  // Focus was inside the panel we just hid, so hand it back: to the slot that opened the
+  // picker if it's still there, otherwise to the week itself.
+  if (!el.slotPicker.contains(document.activeElement) && document.activeElement !== document.body) return;
+  if (opener && opener.isConnected) opener.focus();
+  else el.weekGrid.focus();
 }
 
 function renderSlotPicker() {
@@ -879,7 +887,7 @@ document.addEventListener('click', function (event) {
   }
 
   if (action === 'slot-add') {
-    openSlotPicker(target.dataset.iso, target.dataset.meal);
+    openSlotPicker(target.dataset.iso, target.dataset.meal, target);
     return;
   }
 
@@ -890,8 +898,8 @@ document.addEventListener('click', function (event) {
     const meal = slotPick.meal;
     state.plan[slotKey(slotPick.iso, meal)] = recipe.id;
     saveState();
-    closeSlotPicker();
     renderWeek();
+    closeSlotPicker();
     toast(recipe.name + ' → ' + dayName + ' ' + meal.toLowerCase());
     return;
   }
@@ -947,7 +955,9 @@ el.slotSearch.addEventListener('input', function () {
 
 // Escape closes the inline picker, matching what it does in the dialogs.
 document.addEventListener('keydown', function (event) {
-  if (event.key === 'Escape' && !el.slotPicker.hidden) closeSlotPicker();
+  if (event.key !== 'Escape' || el.slotPicker.hidden) return;
+  if (el.detail.open || el.picker.open) return;  // that Escape belongs to the dialog
+  closeSlotPicker();
 });
 
 // Click on the backdrop (outside the panel) closes either dialog.

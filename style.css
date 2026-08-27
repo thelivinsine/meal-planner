@@ -189,6 +189,8 @@ h1 { font-size: 1.75rem; }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* ---------- inline slot picker (week view) ---------- */
+.week-grid:focus { outline: none; }  /* programmatic focus target when the picker closes */
+
 .slot-picker {
   margin-top: 22px; padding: 18px;
   background: var(--surface); border: 1px solid var(--line);

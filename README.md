@@ -7,6 +7,18 @@ Everything is saved in your own browser — no account, no server, nothing leave
 **Live code:** https://github.com/thelivinsine/meal-planner
 **Stack:** one HTML file, one CSS file, one JS file. No frameworks, no build step, no dependencies.
 
+## Screenshots
+
+In `Screenshots/`. **These are from v1 and now out of date** — they show 25 recipes, no macro tag
+chips, and the old dialog-only route into a slot. Due to be retaken.
+
+| File | Shows |
+|---|---|
+| `Screenshot 2026-08-27 153939.png` | The full page: nav, week header, seven day cards |
+| `Screenshot 2026-08-27 153928.png` | Week view close up — past / today / upcoming days |
+| `Screenshot 2026-08-27 153909.png` | Recipes view — search box, tag chips, cards |
+| `Screenshot 2026-08-27 153716.png` | The **Add to week** dialog on a past day with the slot taken |
+
 ---
 
 ## For anyone reading this without a technical background
@@ -65,7 +77,8 @@ storage box, which muddies testing.)
 *From the week.* Tap **+ Add** on an empty slot and the recipe list opens in the space below
 your week. The day and meal are already known from the slot you tapped, so it never asks again:
 one tap on a recipe fills that slot and the list closes. There's a search box in the panel, and
-Escape, the ×, or moving to another week all close it.
+Escape, the ×, or moving to another week all close it. This route is for empty slots only —
+a filled slot is changed by clearing it and adding again, or through the dialog below.
 
 *From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog.
 - Pick a day from seven day buttons and a meal from three — everything visible, two taps
@@ -162,8 +175,8 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
 - 7 day cards and 21 slots rendered, with the right past / today / upcoming split for the real date
 - The inline slot picker: hidden on load, opens with the tapped day and meal in its heading, offers
   all 50 recipes, filters on its own search without disturbing the Recipes view, fills exactly the
-  tapped slot in one click without the dialog opening, says *Replace* on an occupied slot, and
-  closes on Escape, week navigation and view change
+  tapped slot in one click without the dialog opening, closes on Escape, week navigation and
+  view change, and returns focus to the slot it was opened from
 - The dialog route: 7 day buttons with one preselected; add → replace → clear leaving exactly one
   correct entry
 - A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
