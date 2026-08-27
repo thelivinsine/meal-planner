@@ -62,7 +62,11 @@ storage box, which muddies testing.)
 - Over half are Indian, and roughly three quarters are high-protein; the rest are tagged
   `balanced`. Both are ordinary tags, so the `indian` and `high-protein` chips filter on them
 - Search matches recipe names, tags **and** ingredients — so "chickpea" finds the curry
-- Tag chips filter the grid (pick several; a recipe matching any of them shows)
+- Filters live in one panel: search, then tag chips grouped under *Macros*, *Meal*, *Diet*,
+  *Cuisine & style* and *Main protein* — five short lists instead of one wrap of sixteen
+- **Filters** collapses the chips and carries a count badge; an active row underneath names what
+  you're filtering by, with **Clear all** beside it
+- Pick several chips; a recipe matching any of them shows
 - Tapping a card opens a detail panel; close it with the ×, the Escape key, or a tap outside
 
 **Week**
@@ -70,18 +74,24 @@ storage box, which muddies testing.)
 - Move between weeks with ← / →, or jump back with **This week**
 - Three states are visually distinct: **past** days are greyed and settled, **today** carries an
   accent border and a "Today" pill, **upcoming** days are clean and white
+- The three meal rows line up straight across all seven days, however long a recipe name runs
 - Each slot can be filled, replaced, or cleared
 - Past days stay editable, so you can log what you actually ate
+- Today is marked by an accent border and a dot beside the day name
 
 **Adding a meal — two ways in**
 
 *From the week.* Tap **+ Add** on an empty slot and the recipe list opens in the space below
 your week. The day and meal are already known from the slot you tapped, so it never asks again:
-one tap on a recipe fills that slot and the list closes. There's a search box in the panel, and
-Escape, the ×, or moving to another week all close it. This route is for empty slots only —
-a filled slot is changed by clearing it and adding again, or through the dialog below.
+one tap on a recipe fills that slot and the list closes. Not sure about a recipe? The **ⓘ**
+button on its row opens the full recipe, and from there **Add to Thu breakfast** fills the slot
+you started from — or you can just save it and pick something else. There's a search box in the
+panel, and Escape, the ×, or moving to another week all close it. This route is for empty slots
+only — a filled slot is changed by clearing it and adding again, or through the dialog below.
 
-*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog.
+*From a recipe.* **Add to week** on any card (or in the detail panel) opens a small dialog. The
+recipe name is the headline there; "Add to week" sits above it as a small label, and everything
+below is centred.
 - Pick a day from seven day buttons and a meal from three — everything visible, two taps
 - Picking a day that's already gone is allowed but flagged: the dialog says so, and that day's
   button is drawn with a dashed border
@@ -147,6 +157,12 @@ the saved blob can't grow forever.
 | Past days editable, not locked | Useful for logging meals already eaten; the greying communicates enough |
 | Slot's **+ Add** opens the list inline, under the week | The slot already names the day and meal; asking again in a dialog was redundant, and the space below the week was empty |
 | The dialog stays for the recipe-first route | From a card nothing is known yet, so a day and meal still have to be picked |
+| Day cards share the grid's rows (CSS `subgrid`) | Their meal rows used to drift out of line whenever one card's header or recipe name was taller |
+| Today is a dot, not a pill | The pill pushed the date onto a second line, which is what knocked that column out of alignment |
+| No boxes inside the day card | Card border, then dashed slot boxes, then a filled pill inside that — three nested outlines to say one thing. A hairline and a label carry it |
+| Filter chips grouped and collapsible | Sixteen equal pills in one wrap is a tag dump, not a filter. Grouping says what each choice means; the count badge and **Clear all** show what's on |
+| Recipe name is the headline in the add sheet | "Add to week" is the same on every recipe, so it's the one thing there that doesn't need 22px of type |
+| A view button on each picker row | Choosing a recipe from the week meant committing without reading it; now the sheet you land in can fill the slot you came from |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
 
@@ -180,11 +196,22 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
   view change, and returns focus to the slot it was opened from
 - The dialog route: 7 day buttons with one preselected; add → replace → clear leaving exactly one
   correct entry
+- The filter panel: a chip for every catalogue tag and no duplicates, every tag landing in a
+  named group (nothing falling through to *More*), the count badge and active row appearing and
+  clearing, and the collapse toggle carrying `aria-expanded`
+- The week markup: no wrapping Today pill, one today dot, labelled **+ Add** buttons
+- Viewing from a picker row: the sheet's primary button carries that slot, survives a bookmark
+  redraw, fills exactly that slot, closes both panels, and refuses an unknown meal
 - A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
   types, unknown recipe ids, invalid dates) all falling back to a clean state
 
-Not verified by machine: how it actually looks. Browser automation wasn't available during
-development, so layout on a real phone and a clean console during real use were checked by eye.
+Not verified by machine: how it actually looks. The Chrome extension wasn't connected during
+the UI round either, so every layout claim here — alignment, density, the centred sheet — was
+reasoned from the CSS, not seen. Worth a look on a real phone.
+
+One deliberate gap: the week rows are 38px on a mouse and return to the 44px touch floor under
+`@media (pointer: coarse)`, so a narrow *desktop* window has rows below 44px. That's a pointer
+question, not a width one.
 
 ---
 
@@ -199,6 +226,7 @@ development, so layout on a real phone and a clean console during real use were 
 | **Published** | Merged to `main` and pushed to GitHub as a public repo |
 | **Second round** | Branch `feat/slot-picker-and-indian-recipes`: the slot's **+ Add** now opens the recipe list inline under the week instead of asking for the day and meal a second time, and the catalogue grew to 50 with 27 Indian and 38 high-protein recipes |
 | **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root. Live at the link above |
+| **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 
 ---
 

@@ -43,6 +43,14 @@ Established in v1 — follow them or say why not:
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in
   try/catch — quota errors and private mode are real. Validate on load and drop anything
   unrecognised; never trust what's in storage.
+- **One box per level:** a card gets the border; the rows inside it get a hairline and a
+  label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
+- **Subject gets the weight:** in a panel, the thing being acted on (the recipe) carries the
+  large type; the action (`Add to week`) is a small uppercase eyebrow above it.
+- **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
+  renders, under *More* — so adding a recipe tag can never make a chip disappear.
+- **Week alignment:** the seven day cards share the week grid's row tracks via CSS `subgrid`,
+  so meal rows line up across days. Don't reintroduce anything in a day header that can wrap.
 - **Rendering:** change state, then redraw the whole view from it. No diffing, no partial updates.
 - **Events:** no inline `onclick`. One delegated listener in `app.js` dispatching on `data-action`.
 - **Escaping:** views are built as HTML strings, so run any text through `escapeHtml` before it
