@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `f0dfe07` and later, docs and screenshots only. The last *code* commit is still `236ce5b`, the narrow week squash-merged from `mobile-week` (PR [#3](https://github.com/thelivinsine/meal-planner/pull/3), branch deleted). Pages build `built`, live at the link above |
-| **Open work** | None on a branch. Three known defects shipped with PR #3, see *Next jobs* |
+| **Open work** | Two design-direction proposals, both open, neither meant to merge as-is: PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) `design/bold-consumer` and PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) `design/app-shell`. Each is a full refactor of the three files in a different direction, and each fixes all three known defects. Neither has been seen in a browser — the Chrome extension would not connect. Pick one, or take pieces of both |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
