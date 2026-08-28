@@ -755,7 +755,9 @@ function renderWeek() {
           '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
         '</button>';
 
-    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '">' +
+    const label = DAY_NAMES[i] + ' ' + fmtDayMonth.format(date) + (iso === todayIso ? ', today' : '');
+    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '" ' +
+        'aria-label="' + escapeHtml(label) + '">' +
         '<h2 class="day-name">' + head + '</h2>' + slots +
       '</article>';
   }).join('');

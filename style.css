@@ -26,7 +26,7 @@
   --radius-sm: 9px;
   --radius-pill: 999px;
   --tap: 44px;
-  --rail-w: 46px;            /* a collapsed day column in the wide accordion */
+  --rail-w: 76px;            /* a collapsed day column in the wide accordion */
 
   --shadow-sm: 0 1px 2px rgba(28, 20, 16, .05);
   --shadow: 0 1px 2px rgba(28, 20, 16, .05), 0 10px 26px -16px rgba(28, 20, 16, .30);
@@ -127,17 +127,24 @@ button, input, select { font: inherit; color: inherit; }
   border-radius: 5px;
 }
 
-.nav-wrap { margin-left: auto; }
+/* The view switch leaves the top bar and docks over the content, centred. The top bar
+   keeps the wordmark and the theme control. */
+.nav-wrap {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  z-index: 30;
+}
 .nav {
-  display: flex; gap: 2px; list-style: none; padding: 3px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  display: flex; gap: 2px; list-style: none; padding: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-btn {
   border: 0; background: none; cursor: pointer;
-  padding: 5px 13px; border-radius: 7px;
+  padding: 6px 16px; border-radius: var(--radius-pill);
   color: var(--ink-soft); font-weight: 600; font-size: .8125rem;
   min-height: 28px;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
@@ -146,7 +153,7 @@ button, input, select { font: inherit; color: inherit; }
 .nav-btn[aria-current="page"] { background: var(--accent); color: var(--on-accent); }
 
 .theme-btn {
-  flex: none; cursor: pointer;
+  flex: none; margin-left: auto; cursor: pointer;
   width: 32px; height: 32px;
   display: grid; place-items: center;
   background: var(--surface); color: var(--ink-soft);
@@ -161,7 +168,7 @@ button, input, select { font: inherit; color: inherit; }
 [data-theme="dark"] .theme-icon-moon { display: block; }
 
 /* ---------- page + views ---------- */
-.page { max-width: 1180px; margin: 0 auto; padding: 30px 20px 76px; }
+.page { max-width: 1180px; margin: 0 auto; padding: 30px 20px 104px; }
 
 /* One entrance per view switch. Deliberately not per card: the whole view is
    re-rendered on every keystroke, so a card-level stagger would replay while
@@ -224,7 +231,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    accordion, seven equal columns in expand-all. The grid element itself survives the
    innerHTML swap, so the transition below animates the widths between the two. */
 .week-grid {
-  display: grid; gap: 10px;
+  display: grid; gap: 12px;
   grid-template-columns: var(--week-cols, repeat(7, minmax(0, 1fr)));
   grid-template-rows: auto repeat(3, auto);
   transition: grid-template-columns .34s var(--ease);
@@ -252,8 +259,11 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .day.is-today .slot-label { color: color-mix(in srgb, var(--bg) 62%, transparent); }
 .day.is-today .day-head { border-bottom-color: color-mix(in srgb, var(--bg) 26%, transparent); }
 .day.is-today .slot + .slot { border-top-color: color-mix(in srgb, var(--bg) 18%, transparent); }
-.day.is-today .slot-add { color: color-mix(in srgb, var(--bg) 66%, transparent); }
-.day.is-today .slot-add:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); color: var(--bg); }
+.day.is-today .slot-add {
+  background: color-mix(in srgb, var(--bg) 13%, transparent);
+  color: color-mix(in srgb, var(--bg) 74%, transparent);
+}
+.day.is-today .slot-add:hover { background: color-mix(in srgb, var(--bg) 24%, transparent); color: var(--bg); }
 
 /* Past days stay legible but visibly settled: flatter, quieter, no accent. */
 .day.is-past { background: var(--surface-sunk); border-color: var(--line); }
@@ -263,7 +273,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .day.is-past .slot-add { opacity: .7; }
 
 /* ---- collapsed day: a rail you click to expand ---- */
-.day.is-collapsed { padding: 10px 3px; background: var(--surface-sunk); overflow: hidden; }
+.day.is-collapsed { padding: 12px 6px; background: var(--surface-sunk); overflow: hidden; }
 .day.is-collapsed:hover { background: var(--accent-soft); border-color: var(--accent); }
 .day.is-collapsed > .day-name { grid-row: 1 / -1; display: flex; min-height: 0; }
 
@@ -278,8 +288,9 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   white-space: nowrap; overflow: hidden;
 }
 /* Rails to the LEFT of the open day face the other way, so both sides read as if
-   they lean into the day you have open. */
-.day.is-before .day-rail { transform: rotate(180deg); }
+   they lean into the day you have open. The rotation also flips the running order, so
+   the flex axis is reversed to put the name back above the date on both sides. */
+.day.is-before .day-rail { transform: rotate(180deg); flex-direction: row-reverse; }
 .rail-name { font-size: .875rem; font-weight: 800; letter-spacing: -0.01em; }
 .rail-date {
   font-family: var(--font-body); font-weight: 600; font-size: .6875rem;
@@ -361,15 +372,17 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 .slot-clear { flex: none; width: 26px; height: auto; }
 
 .slot-add {
-  width: 100%; cursor: pointer; min-height: 34px;
-  background: none; border: 1px dashed var(--line-strong);
+  align-self: flex-start;      /* as wide as the word, not as wide as the column */
+  cursor: pointer; min-height: 30px;
+  background: var(--surface-sunk); border: 0;
   border-radius: var(--radius-sm);
-  padding: 5px 9px;
-  color: var(--ink-faint); font-size: .75rem; font-weight: 600; text-align: left;
-  transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease),
-              background var(--fast) var(--ease);
+  padding: 5px 12px;
+  color: var(--ink-soft); font-size: .75rem; font-weight: 600; text-align: left;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+              transform var(--fast) var(--ease);
 }
-.slot-add:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.slot-add:hover { background: var(--accent-soft); color: var(--accent-ink); }
+.slot-add:active { transform: scale(.94); background: var(--accent); color: var(--on-accent); }
 
 /* ---------- filters ---------- */
 .filters {
@@ -464,12 +477,25 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 
 /* The picker shows the same cards as the Recipes view — same markup, same component —
    in a scrolling area so the week stays on screen above it. */
+/* The scrollbar belongs against the tray's own edge, not squeezed between the cards
+   and it — hence the negative margin, which lets the track sit in the tray's padding.
+   The UA track is white by default; both properties below tint it to the tray. */
 .pick-grid {
   max-height: 50vh; overflow-y: auto;
-  padding: 2px 2px 4px;
+  padding: 2px 12px 4px 2px;
+  margin-right: -13px;
   display: grid; gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
+.pick-grid::-webkit-scrollbar { width: 9px; }
+.pick-grid::-webkit-scrollbar-track { background: transparent; }
+.pick-grid::-webkit-scrollbar-thumb {
+  background: var(--line-strong); border-radius: var(--radius-pill);
+  border: 2px solid transparent; background-clip: content-box;
+}
+.pick-grid::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
 
 /* ---------- recipe cards ---------- */
 .card-grid {
@@ -645,6 +671,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   .btn, .btn-sm, .btn-icon, .nav-btn, .chip, .slot-recipe, .slot-add, .segmented .chip {
     min-height: var(--tap);
   }
+  .slot-add { min-width: var(--tap); }
   .btn-icon { width: var(--tap); }
   .icon-btn, .theme-btn, .bookmark { width: var(--tap); height: var(--tap); }
   .slot-clear { width: var(--tap); }
@@ -661,11 +688,19 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   /* DEFECT 3, fixed: four columns, not seven. Seven across a 360px viewport gives
      43px chips, under the 44px floor. Wrapping 4 + 3 gives roughly 77px and still
      shows the whole week — no horizontal scroll, no day hidden off-screen. */
+  /* Wrapping 4 + 3 leaves the second row short, so the strip centres rather than
+     grid-aligning: the three sit under the middle of the four. */
   .day-strip {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
-    max-width: 540px; margin: 0 auto 16px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+    max-width: 420px; margin: 0 auto 14px;
   }
-  .day-strip .day-chip { padding: 7px 2px; min-height: 52px; }
+  .day-strip .day-chip {
+    flex: 0 0 calc(25% - 5px);
+    padding: 5px 2px; min-height: 44px; gap: 0;
+    background: var(--surface); border-color: var(--line-strong);
+  }
+  .day-strip .day-chip-name { font-size: .75rem; }
+  .day-strip .day-chip-date { font-size: .5625rem; }
   .day-strip .day-chip.is-today .day-chip-name { color: var(--accent-ink); }
   .day-strip .day-chip.is-today[aria-pressed="true"] .day-chip-name { color: var(--on-accent); }
   /* A day with meals on it is tinted, so the strip shows the shape of the week at a
@@ -689,6 +724,11 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   /* Expand-all has nothing to do here — only one day is on screen either way. */
   .week-nav [data-action="expand-all"] { display: none; }
 
+  /* The chip directly above already names the day and its date, so the card's own
+     header row is dropped. DEFECT 2 stays fixed: renderWeek puts the same name on the
+     card as an aria-label, so nothing is hidden that the card needed. */
+  .day.is-open > .day-name { display: none; }
+
   /* Room across, not down: the meal label sits beside its meal instead of above it. */
   .slot { flex-direction: row; align-items: center; gap: 12px; }
   .slot + .slot { padding-top: 8px; }
@@ -701,14 +741,10 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 }
 
 @media (max-width: 620px) {
-  .page { padding: 22px 14px 72px; }
-  .topbar-inner { padding: 10px 14px; gap: 10px; flex-wrap: wrap; }
-  .nav-wrap { order: 3; width: 100%; margin-left: 0; }
-  .theme-btn { margin-left: auto; }
-  .nav { width: 100%; }
-  .nav-btn { flex: 1; padding: 6px 4px; }
-  .day-strip { gap: 5px; }
-  .day-strip .day-chip-date { font-size: .5625rem; }
+  .page { padding: 22px 14px 100px; }
+  .topbar-inner { padding: 10px 14px; gap: 10px; }
+  .nav-wrap { bottom: 14px; }
+  .nav-btn { padding: 6px 13px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 58vh; }
   .filters { padding: 14px; }
