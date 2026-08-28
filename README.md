@@ -54,9 +54,9 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 **None in the repo right now.** The v1 set was two rounds out of date — 25 recipes, no macro
 chips, no filter panel, the dialog-only route into a slot, the misaligned week — and was deleted
-rather than left to mislead. Taking a fresh set is job 1 above.
+rather than left to mislead. Taking a fresh set is job 2 above.
 
-Four worth taking, from the live site:
+Five worth taking, from the live site:
 
 | Shows | Where |
 |---|---|
@@ -64,6 +64,7 @@ Four worth taking, from the live site:
 | Past / today / upcoming days, and the meal rows lining up across all seven | Week view, close up |
 | Search, the grouped filter panel with a chip or two on, and the cards | Recipes view |
 | The picker under the week: same cards, **Add to Thu breakfast** on the button | Week view, **+ Add** on an empty slot |
+| The day strip and the single open day | Week view, window narrowed under 1000px |
 
 ---
 
@@ -78,6 +79,10 @@ week and your bookmarks there, so closing the tab and coming back later keeps ev
 The catch is that it's per-browser and per-device: your plan on your laptop is not the same plan
 as on your phone, and clearing your browsing data clears it. That's the honest trade for having
 no accounts and no server to run.
+
+**On a phone.** The seven-day grid can't fit across a phone screen, so it turns into a row of
+seven day buttons with one day open below them. The tinted buttons are the days you've already
+planned something for, so you can still see the shape of your week at a glance.
 
 **What it deliberately does not do yet.** No shopping list, no month calendar, no adding your own
 recipes, no sharing a plan with anyone else. Those are all sensible next steps, not oversights —
@@ -122,6 +127,13 @@ storage box, which muddies testing.)
 - The three meal rows line up straight across all seven days, however long a recipe name runs
 - Each slot can be filled, replaced, or cleared
 - Past days stay editable, so you can log what you actually ate
+- **On a narrow screen** seven columns stop fitting, so the week becomes a strip of seven day
+  buttons and the one day it selects. The strip is the overview the seven cards give you on a
+  wide window: which day you're on, which is today, and which days already have something
+  planned (those are tinted). Tap a day to show it. It opens on today when today is in the week
+  on screen, Monday otherwise, and it resets that way whenever you move to another week — which
+  day you were looking at isn't worth remembering between sessions. The day card itself is the
+  same card as the wide layout, with its meal labels beside the meals instead of above them
 
 **Adding a meal — two ways in**
 
@@ -156,14 +168,15 @@ Three files, as the project constraints require:
 | File | Contains |
 |---|---|
 | `index.html` | The page shell: header nav, three `<section>` views, the inline slot picker, two `<dialog>` panels |
-| `style.css` | All styling. CSS custom properties for the palette, two width breakpoints and a coarse-pointer block |
+| `style.css` | All styling. CSS custom properties for the palette, two width breakpoints (1000px, 620px) and a coarse-pointer block |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 **The data model** is the part worth understanding. Two things exist:
 
 - `RECIPES` — the fixed catalogue, hardcoded. Never saved, never changes at runtime.
-- `state` — everything about *you*: which view you're on, which week you're looking at, your
-  plan, your bookmarks, your current search and filters, and whether the filter panel is open.
+- `state` — everything about *you*: which view you're on, which week you're looking at, which
+  day is open on a narrow screen (`focusDay`), your plan, your bookmarks, your current search and
+  filters, and whether the filter panel is open.
   Only the plan and the bookmarks are saved — the rest is per-session by design.
 
 The plan is one flat object keyed by real date and meal:
@@ -211,6 +224,9 @@ the saved blob can't grow forever.
 | The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
 | The picker panel is a sunk tray | White cards on a white panel had no edge at all (1.0:1). Recessing the panel to `--surface-sunk` lifts them without adding shadows |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
+| A narrow week shows one day, not seven squeezed | Seven columns below ~1000px gives each day about 130px, which is narrower than a recipe name. A day strip plus one full-width card keeps the card readable and the week glanceable |
+| The same day card on both layouts | A second set of week markup for mobile is two things to keep in step, and they drift. CSS hides the six days that aren't focused instead |
+| Which day you're looking at isn't saved | It means nothing next session, and reopening on a day you happened to tap last Tuesday would be stranger than opening on today |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
 
@@ -255,13 +271,21 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
 - A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
   types, unknown recipe ids, invalid dates) all falling back to a clean state
 
+**The narrow week was not verified at all.** No stub-DOM script was run against it and no
+browser was opened — not at any width, not once. The three defects listed at the top of this file
+were found by reading the diff, and were merged knowingly rather than fixed. Assume there are
+others of the same kind that reading didn't catch.
+
 Not verified by machine: how it actually looks. The Chrome extension wasn't connected during
 the UI round either, so every layout claim here — alignment, density, the centred sheet — was
 reasoned from the CSS, not seen. Worth a look on a real phone.
 
 One deliberate gap: the week rows are 38px on a mouse and return to the 44px touch floor under
 `@media (pointer: coarse)`, so a narrow *desktop* window has rows below 44px. That's a pointer
-question, not a width one.
+question, not a width one, and it is the only sanctioned exception.
+
+The day chips are *not* that exception — at a 360px viewport they compute to about 43px wide,
+which is simply under the floor. Defect 3 above.
 
 ---
 
@@ -281,6 +305,10 @@ question, not a width one.
 | **Contrast** | One wrong turn worth recording: the picker cards reading as flush was diagnosed as a page-wide figure/ground problem and the whole palette was darkened. That wasn't it, and it was reverted (`5a70694` in the reflog if the numbers are ever useful). The actual cause was local — white cards on a white panel — and the fix was to recess that one panel |
 | **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in this file were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
 | **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. Pages build `built`, live site serving it. The stale v1 screenshots were deleted; no fresh set yet |
+
+| **Narrow week** | Branch `mobile-week`. Started as a CSS-only compaction of the meal rows below 1000px, then grew on the same branch into the day strip: seven day buttons plus the one day they select, the same card as the wide layout with six hidden. `focusDay` added to state, not persisted |
+| **Reviewed twice** | The first review covered the compaction and produced one fixup — a duplicate `@media (max-width: 1000px)` block folded back into the existing one, which had been sitting after the 620px block and overriding it. The branch then grew two more commits, so the PR was re-read from scratch. That pass found the three defects now listed at the top |
+| **Merged anyway** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) squash-merged to `main` as `236ce5b` with the three defects open, at your call. Pages build `built`. Still never opened in a browser — the day strip has not been seen rendered by anyone |
 
 ---
 
