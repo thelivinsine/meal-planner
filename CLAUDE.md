@@ -62,6 +62,9 @@ Established in v1 — follow them or say why not:
   renders, under *More* — so adding a recipe tag can never make a chip disappear.
 - **Week alignment:** the seven day cards share the week grid's row tracks via CSS `subgrid`,
   so meal rows line up across days. Don't reintroduce anything in a day header that can wrap.
+- **Narrow week:** under 1000px the week is a strip of seven day buttons plus the one day
+  it selects (`state.focusDay`, never persisted). Same day card as the wide layout — CSS
+  hides the six that aren't focused. Don't build a second set of week markup for mobile.
 - **Rendering:** change state, then redraw the whole view from it. No diffing, no partial updates.
 - **Events:** no inline `onclick`. One delegated listener in `app.js` dispatching on `data-action`.
 - **Escaping:** views are built as HTML strings, so run any text through `escapeHtml` before it
