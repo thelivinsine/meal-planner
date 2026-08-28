@@ -270,9 +270,14 @@ Left out on purpose, roughly in the order they'd earn their place:
 
 ## Testing
 
-There's no test framework in the repo, per the project constraints. Verification was manual —
-open it and use it — plus two throwaway Node scripts run during development (kept outside the
-repo), loading `app.js` against a stub DOM. Between them they asserted:
+There's no test framework in the repo, per the project constraints. Every check has been a
+throwaway Node script run against a stub DOM — load `app.js`, drive `state` and the delegated
+click handler, assert on the HTML strings that come back — and then deleted.
+
+### Before the redesign
+
+These assertions were written against the pre-redesign app. Most still describe behaviour that
+did not change, but none of them have been re-run since:
 
 - 50 unique, complete recipes, each tagged `high-protein` or `balanced`, and both catalogue
   thresholds (over half Indian, over two thirds high-protein)
@@ -295,46 +300,38 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
 - A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
   types, unknown recipe ids, invalid dates) all falling back to a clean state
 
-The redesign round added a further 68 assertions in the same throwaway style, covering the
-accordion (rail sides, which day is open, the expand-all toggle and its relabelling, and that
-every column track is the same type so the animation can run at all), the day-switch focus
-restoration, the recipe dialog's two tool states, and the theme round-trip. Those were thrown away
-with the rest.
+### The redesign round
 
-**Nothing in the redesign was ever opened in a browser.** Not once, across nine rounds. Contrast
-was computed, touch targets are arithmetic, and the accordion has only ever existed as HTML
-strings in a stub-DOM script. A deliberate review pass near the end found six real bugs, three of
-which a browser would have shown in a second — both dialogs rendering in the page at all times,
-the column animation never running, and a frosted halo that was the wrong shape. Assume there are
-others of the same kind that reading didn't catch.
+The bold-consumer round replaced all three files and was checked no better than the rounds
+before it: `node --check`, contrast computed rather than eyeballed, and 89 stub-DOM assertions —
+68 during the build, 21 more added at review. Between them they covered the seven-column and
+accordion renders, rail sides and count, that every column track is the same type so the width
+animation can run at all, focus restoration on both the wide and narrow layouts, the expand-all
+toggle and its relabelling, plan writes and clears, bookmarks, tag filters, theme persistence and
+restore, the recipe dialog's two tool states, and the fill-slot route out of the inline picker.
+Thrown away with the rest.
 
-**What the screenshots since then do and don't settle.** They're the first time anything in this
-project has actually been looked at. They confirm the wide week — alignment, the past/today split,
-the today dot not wrapping — and they confirm the day strip renders with one day open. They do
-*not* touch the three defects: focus order isn't visible in a screenshot, an accessible name isn't
-either, and nothing here was shot at 360px, so the 43px chip figure is still arithmetic.
+### What has never been seen
 
-Everything else is still unseen: the Recipes view, the filter panel, the inline picker, the add
-sheet, and the whole app on a real phone rather than a narrow desktop window.
+**Nobody has opened the current app in a browser. Not once, across nine build rounds and two
+reviews.** There are no screenshots either. Everything below is reasoning about source code:
 
-One deliberate gap: the week rows are 38px on a mouse and return to the 44px touch floor under
-`@media (pointer: coarse)`, so a narrow *desktop* window has rows below 44px. That's a pointer
-question, not a width one, and it is the only sanctioned exception.
+- How any of it looks, in either theme.
+- The accordion's column animation, the docked nav switch, the frosted top bar.
+- Every contrast pair — computed, and several sit within 0.1 of the 4.5 floor.
+- Every touch target, including the 44px floors that only apply under `@media (pointer: coarse)`.
+- The day strip wrapping 4 + 3 at 360px, and the roughly 77px chips that arithmetic gives.
+- The whole app on a real phone rather than a narrow desktop window.
 
-**Everything above describes the pre-redesign app.** The bold-consumer round replaced all three
-files and was verified the same way and no better: `node --check`, contrast computed rather than
-eyeballed, and 89 stub-DOM assertions across the round (68 claimed by the PR, 21 added at review) — the seven-column and accordion renders,
-rail sides and count, focus restoration on both layouts, expand-all and its relabelling, plan
-writes and clears, bookmarks, tag filters, theme persistence and restore, the dialog's two tool
-states, and the fill-slot route out of the inline picker.
+Two rounds of reading found nine real bugs between them, and six of those were the kind only a
+browser shows — both dialogs rendering in the page at all times, the column animation never
+running, a frosted halo that was the wrong shape, and the three fixed at review. Assume there are
+others of the same kind that reading did not catch.
 
-None of it was opened in a browser. The accordion's column animation, the docked nav switch, the
-frosted top bar, dark mode, the 44px floors under `@media (pointer: coarse)`, the wrapped 4 + 3
-day strip and every contrast pair are unobserved. Those three defects were fixed by reading, the
-same way they were found by reading.
-
-The day chips are no longer the exception they were — the strip now wraps 4 + 3 and centres,
-giving roughly 77px chips at 360px. That figure is arithmetic too.
+One deliberate gap, unchanged: the week's meal rows are 38px on a mouse and return to 44px under
+`@media (pointer: coarse)`, so a narrow *desktop* window has rows below the floor. That is a
+pointer question, not a width one, and it is the only sanctioned exception. The day chips used to
+be an accidental second one; the wrapped strip fixed that.
 
 ---
 

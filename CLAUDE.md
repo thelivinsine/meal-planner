@@ -98,13 +98,14 @@ Established in v1 and extended since — follow them or say why not:
 - **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
   renders, under *More* — so adding a recipe tag can never make a chip disappear.
 - **Wide week is an accordion:** one day open, the other six collapsed to vertical rails that
-  expand on click (`state.focusDay`). `expandAll` gives all seven equal columns. In expand-all a
-  day header stops being a button rather than becoming one that does nothing. `--week-cols` is
-  set on the grid as a custom property, not as inline `grid-template-columns`, so the narrow
-  media query can still override it — and **every track must be the same type** (`minmax(0, Nfr)`
-  throughout), or `grid-template-columns` will not interpolate and the widths snap instead of
-  animating. Under expand-all the day cards share the grid's row tracks via `subgrid` so meal rows
-  line up across all seven; don't put anything in a day header that can wrap.
+  expand on click (`state.focusDay`). `expandAll` gives all seven equal columns. **An open day's
+  header is never a button** — the rails are the controls, and a header claiming `aria-expanded`
+  that cannot collapse anything is worse than plain text. `--week-cols` is set on the grid as a
+  custom property, not as inline `grid-template-columns`, so the narrow media query can still
+  override it — and **every track must be the same type** (`minmax(0, Nfr)` throughout), or
+  `grid-template-columns` will not interpolate and the widths snap instead of animating. Under
+  expand-all the day cards share the grid's row tracks via `subgrid` so meal rows line up across
+  all seven; don't put anything in a day header that can wrap.
 - **Narrow week:** under 1000px the week is a strip of seven day buttons, wrapped 4 + 3 and
   centred, plus the one day it selects. Same day card as the wide layout — CSS hides the six
   that aren't focused. Don't build a second set of week markup for mobile.
@@ -125,39 +126,35 @@ Every defect this project has shipped has been one of these, so it gets its own 
 - **Keyboard must work without a mouse.** Redrawing a view destroys whatever was focused — if the
   control the user just activated lives inside what gets re-rendered, put focus back afterwards.
   `closeSlotPicker()` is the worked example; the day strip is where it was forgotten.
-- **Never leave a card unnamed, and never hide a focusable control from sight.** The narrow week
-  drops the day header entirely and puts the name on the `<article>` as an `aria-label` — `.sr-only`
-  would have kept a button in the tab order that nobody can see.
+- **Never leave a card unnamed, and never hide a focusable control from sight.** Under 1000px the
+  day header is redundant with the chip above it, so it is hidden with `.sr-only` — never
+  `display: none`, which takes the `<h2>` out of the heading outline. That is only safe because
+  the header is a `<span>`; if it were ever a button again, `.sr-only` would leave something
+  focusable that nobody can see, and the name would have to move to the `<article>` instead.
 - **Touch targets at least 44px**, width as well as height, measured at 360px rather than at
   whatever your own window happens to be. Controls are compact on a fine pointer and the
   `pointer: coarse` block lifts them back — so a rule that outranks that block on specificity
   silently breaks the floor, which has already happened to the dialog's icon buttons.
-
-## Known defects
-
-None open — PR #4 fixed all three that shipped with PR #3. But **what is unverified is a longer
-list than what is broken**: the whole redesign shipped without anyone opening a browser. See
-*Where things stand* in `README.md` for the seven small things left knowingly, and for what has
-never been looked at.
 
 ## Scope
 Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag-and-drop,
 sharing/syncing. Don't add these unless asked. See *Not in v1* in `README.md`.
 
 ## Testing
-Open `index.html` in a browser — for anything visual that *is* the test, and it is the step that
-keeps getting skipped. No test framework unless asked.
-**Nothing in the current design has been seen, and there are no screenshots at all.** The two
-pre-redesign shots were deleted rather than left captioned as stale — this project has now had
-three rounds of stale screenshots committed and removed, and a screenshot of the wrong version is
-worse than none. Taking a fresh set is the top job. Hard-refresh before shooting.
+No open defects — PR #4 fixed all three that shipped with PR #3. **What is unverified is a much
+longer list than what is broken**, and it is the whole app: nobody has opened the current design
+in a browser, and there are no screenshots. Taking a fresh set is the top job.
 
-For logic changes, a throwaway Node script against a stub DOM is the cheap check: stub the few
-DOM pieces `app.js` touches on load, import it, drive `state` and the delegated click handler
-directly, and assert on the HTML strings that come back. Keep it outside the repo unless we
-decide otherwise — see the open question about committing a `check.mjs` in `README.md`.
+Open `index.html` in a browser. For anything visual that *is* the test — and it is the step that
+keeps getting skipped, round after round. Hard-refresh before shooting; this project has had
+three rounds of stale screenshots committed and removed, and a shot of the wrong version is worse
+than none. No test framework unless asked.
+
+For logic, a throwaway Node script against a stub DOM is the cheap check: stub the few DOM pieces
+`app.js` touches on load, drive `state` and the delegated click handler, assert on the HTML
+strings that come back. Kept outside the repo — see the open question about committing a
+`check.mjs` in `README.md`.
 
 That script cannot tell you how anything looks. Width-dependent behaviour, contrast, touch target
-sizes and focus order need a real browser at a real width — three of the six bugs in the last
-review were exactly that kind. See *Testing* in `README.md` for what has been verified and what
-never has.
+sizes and focus order need a real browser at a real width — six of the nine bugs found in the two
+review passes were exactly that kind. See *Testing* in `README.md` for the full ledger.
