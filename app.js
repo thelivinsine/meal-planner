@@ -747,20 +747,19 @@ function renderWeek() {
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
-    // Expand-all makes the header inert - there is nothing left to expand - so it stops
-    // being a button rather than becoming one that does nothing.
-    const head = state.expandAll
-      ? '<span class="day-head">' +
-          '<span class="day-short">' + DAY_NAMES[i].slice(0, 3) + dot + '</span>' +
-          '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
-        '</span>'
-      : '<button type="button" class="day-head" data-action="week-day" data-i="' + i + '" aria-expanded="true">' +
-          '<span class="day-short">' + DAY_NAMES[i] + dot + '</span>' +
-          '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
-        '</button>';
+    // An open day's header is never a control: in expand-all there is nothing left to
+    // expand, and in the accordion the day it would expand is the one already open. The
+    // six rails are what you click. So it is a span in both cases, not a button that
+    // claims aria-expanded and then does nothing when pressed.
+    const head = '<span class="day-head">' +
+        '<span class="day-short">' + (state.expandAll ? DAY_NAMES[i].slice(0, 3) : DAY_NAMES[i]) + dot + '</span>' +
+        '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+      '</span>';
 
+    // tabindex so focus has somewhere to land after a rail expands this day - the
+    // control that was clicked no longer exists once the rail becomes a full card.
     const label = DAY_NAMES[i] + ' ' + fmtDayMonth.format(date) + (iso === todayIso ? ', today' : '');
-    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '" ' +
+    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '" tabindex="-1" ' +
         'aria-label="' + escapeHtml(label) + '">' +
         '<h2 class="day-name">' + head + '</h2>' + slots +
       '</article>';
@@ -882,12 +881,16 @@ function openDetail(id, slot) {
   const saved = isBookmarked(id);
   detailSlot = slot || null;
 
-  // Both actions sit beside the close button as icons. "Add to week" opens the
-  // day-and-meal dialog, so it is dropped when a slot is already in play: the day and
-  // the meal are known, and asking again is the one thing this app never does.
+  // Both actions sit beside the close button as icons. When a slot is already in play
+  // the add button fills it directly rather than opening the day-and-meal dialog: the
+  // day and the meal are known, and asking again is the one thing this app never does.
+  const where = detailSlot ? slotLabel(detailSlot.iso, detailSlot.meal) : '';
   el.detailTools.innerHTML =
     (detailSlot
-      ? ''
+      ? '<button type="button" class="icon-btn" data-action="fill-slot" data-id="' + recipe.id + '" ' +
+          'data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '" ' +
+          'aria-label="Add ' + escapeHtml(recipe.name) + ' to ' + escapeHtml(where) + '" ' +
+          'title="Add to ' + escapeHtml(where) + '">' + ICON.calendarPlus + '</button>'
       : '<button type="button" class="icon-btn" data-action="add-to-week" data-id="' + recipe.id + '" ' +
           'aria-label="Add ' + escapeHtml(recipe.name) + ' to the week" title="Add to week">' +
           ICON.calendarPlus + '</button>') +
@@ -1051,14 +1054,15 @@ document.addEventListener('click', function (event) {
     state.focusDay = Number(target.dataset.i);
     closeSlotPicker();
     renderWeek();
-    // renderWeek() rebuilt the strip, destroying the chip that was just pressed and
-    // dropping focus to <body>. Put it back on the equivalent chip in the new strip —
-    // same move closeSlotPicker() already makes for the slot picker.
-    // Put focus back in whichever control the click came from: the narrow strip, or
-    // the day's own header in the wide accordion. Focusing the strip chip on a wide
-    // screen would hand focus to a display:none element, which drops it to <body>.
-    const scope = el.dayStrip.contains(target) ? el.dayStrip : el.weekGrid;
-    const again = scope.querySelector('[data-i="' + state.focusDay + '"]');
+    // renderWeek() rebuilt the week, destroying the control that was just pressed and
+    // dropping focus to <body> — same move closeSlotPicker() already makes. Where it
+    // goes back depends on where the click came from: the narrow strip still has an
+    // equivalent chip, but a wide rail has become the open day card, so focus lands on
+    // the card itself. Focusing the strip chip on a wide screen would hand focus to a
+    // display:none element, which drops it to <body> again.
+    const again = el.dayStrip.contains(target)
+      ? el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]')
+      : el.weekGrid.querySelector('.day.is-focus');
     if (again) again.focus();
     return;
   }

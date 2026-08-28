@@ -345,8 +345,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 0 0 8px; border: 0; border-bottom: 1px solid var(--line);
   background: none; color: inherit; font: inherit; text-align: left;
 }
-button.day-head { cursor: pointer; }
-button.day-head:hover .day-short { color: var(--accent-ink); }
 .day-short {
   font-family: var(--font-display); font-weight: 800;
   font-size: .9375rem; letter-spacing: -0.02em;
@@ -764,18 +762,18 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   .day { grid-row: auto; display: flex; flex-direction: column; gap: 8px; }
   .day:not(.is-focus) { display: none; }
 
-  /* DEFECT 2, fixed: the day card keeps a visible heading. The first build hid it with
-     display:none and took the card's accessible name with it; hiding it with .sr-only
-     instead would leave a focusable control nobody can see, now that the header is a
-     button. Mildly redundant with the chip above, and worth it for both reasons. */
-
   /* Expand-all has nothing to do here — only one day is on screen either way. */
   .week-nav [data-action="expand-all"] { display: none; }
 
-  /* The chip directly above already names the day and its date, so the card's own
-     header row is dropped. DEFECT 2 stays fixed: renderWeek puts the same name on the
-     card as an aria-label, so nothing is hidden that the card needed. */
-  .day.is-open > .day-name { display: none; }
+  /* DEFECT 2, fixed. The chip directly above already names the day and its date, so
+     the card's header row is redundant on screen — but display:none would take the
+     <h2> with it and leave the card unnamed, which is the defect. .sr-only keeps the
+     heading in the outline, and it is safe here because an open day's header is a
+     span: there is no focusable control being hidden. */
+  .day.is-open > .day-name {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
 
   /* Room across, not down: the meal label sits beside its meal instead of above it. */
   .slot { flex-direction: row; align-items: center; gap: 12px; }
