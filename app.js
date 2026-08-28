@@ -423,6 +423,20 @@ const TAG_GROUPS = [
   { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
   { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
 ];
+// One of these greets you on the week view. Picked once per load, not per render, so
+// it stays put while you are using the app and changes when you come back to it.
+const WEEK_GREETINGS = [
+  'Let’s plan your week',
+  'What’s cooking this week?',
+  'Seven days, twenty-one meals',
+  'Fill the week, one meal at a time',
+  'Right then — what are we eating?',
+  'Your week, sorted',
+  'Time to fill the table',
+  'A week’s worth of dinners awaits'
+];
+const WEEK_GREETING = WEEK_GREETINGS[Math.floor(Math.random() * WEEK_GREETINGS.length)];
+
 const KEEP_WEEKS = 4; // plan entries older than this are dropped on load
 
 // ---------------------------------------------------------------- dates
@@ -457,20 +471,6 @@ function weekDates(mondayIso) {
 }
 
 const fmtDayMonth = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-const fmtRangeMonth = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' });
-
-function weekRangeLabel(mondayIso) {
-  const days = weekDates(mondayIso);
-  const first = days[0];
-  const last = days[6];
-  const sameYear = first.getFullYear() === last.getFullYear();
-  const tail = fmtRangeMonth.format(last) + (sameYear ? ' ' + last.getFullYear() : '');
-  const head = sameYear && first.getMonth() === last.getMonth()
-    ? String(first.getDate())
-    : fmtRangeMonth.format(first) + (sameYear ? '' : ' ' + first.getFullYear());
-  return head + ' – ' + tail;
-}
-
 function slotKey(iso, meal) { return iso + '|' + meal; }
 
 // Narrow screens show one day at a time -- this is which one. Today when the week on
@@ -566,7 +566,7 @@ const el = {
   },
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
-  weekRange: document.getElementById('week-range'),
+  weekHeading: document.getElementById('week-heading'),
   search: document.getElementById('search'),
   tagFilters: document.getElementById('tag-filters'),
   filterToggle: document.getElementById('filter-toggle'),
@@ -671,8 +671,6 @@ function render() {
 
 function renderWeek() {
   const todayIso = isoOf(new Date());
-  el.weekRange.textContent = weekRangeLabel(state.weekStart);
-
   const days = weekDates(state.weekStart);
 
   // The strip is the week overview the seven columns give on a wide screen: which day
@@ -717,7 +715,8 @@ function renderWeek() {
     // Collapsed: the whole rail is the control that expands it, and it carries the full
     // day name and the same date format, turned on its side.
     if (!isOpen) {
-      return '<article class="day is-collapsed ' + when + '">' +
+      const side = i < state.focusDay ? ' is-before' : ' is-after';
+      return '<article class="day is-collapsed' + side + ' ' + when + '">' +
           '<h2 class="day-name"><button type="button" class="day-rail" data-action="week-day" data-i="' + i + '" ' +
             'aria-expanded="false" aria-label="Expand ' + DAY_NAMES[i] + '">' +
             '<span class="rail-name">' + DAY_NAMES[i] + dot + '</span>' +
@@ -1195,6 +1194,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 
 loadState();
 applyTheme();
+el.weekHeading.textContent = WEEK_GREETING;
 renderTagFilters();
 renderFilterState();
 setView('week');
