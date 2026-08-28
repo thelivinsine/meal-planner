@@ -488,6 +488,9 @@ const state = {
   focusDay: defaultFocusDay(isoOf(mondayOf(new Date()))),
   plan: {},
   bookmarks: [],
+  // Persisted alongside the plan. View, week, search and filters stay per-session on
+  // purpose, but a theme the user picked and then lost on reload is just a bug.
+  theme: 'light',
   search: '',
   tags: [],
   filtersOpen: true
@@ -530,13 +533,15 @@ function loadState() {
   if (Array.isArray(saved.bookmarks)) {
     state.bookmarks = saved.bookmarks.filter(function (id) { return RECIPE_BY_ID.has(id); });
   }
+  if (saved.theme === 'dark' || saved.theme === 'light') state.theme = saved.theme;
 }
 
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       plan: state.plan,
-      bookmarks: state.bookmarks
+      bookmarks: state.bookmarks,
+      theme: state.theme
     }));
   } catch (err) {
     console.warn('Could not save — changes will be lost on refresh.', err);
@@ -582,8 +587,20 @@ const el = {
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
   slotSearch: document.getElementById('slot-search'),
+  themeToggle: document.getElementById('theme-toggle'),
   toast: document.getElementById('toast')
 };
+
+// ---------------------------------------------------------------- theme
+
+// The inline script in <head> has already painted the stored theme, so this only has
+// to keep the toggle's own labelling honest after a change.
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme;
+  const dark = state.theme === 'dark';
+  el.themeToggle.setAttribute('aria-pressed', String(dark));
+  el.themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+}
 
 // ---------------------------------------------------------------- helpers
 
@@ -610,6 +627,19 @@ function slotLabel(iso, meal) {
 function tagsHtml(tags) {
   return tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 }
+
+// Inline SVG rather than the &#9733; / &times; glyphs the first build used: these take
+// currentColor, scale with the button, and do not depend on a font shipping the
+// character. Same 24px grid, same stroke weight, one visual family.
+const STAR_PATH = 'M12 3.5l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17.3l-5.38 2.85 1.03-6L3.3 9.9l6-.9z';
+const ICON = {
+  starOn: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">' +
+    '<path d="' + STAR_PATH + '"></path></svg>',
+  starOff: '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="' + STAR_PATH + '"></path></svg>',
+  close: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>'
+};
 
 // ---------------------------------------------------------------- rendering
 
@@ -670,7 +700,7 @@ function renderWeek() {
               '<span class="slot-time">' + recipe.minutes + ' min</span>' +
             '</button>' +
             '<button type="button" class="icon-btn slot-clear" data-action="clear-slot" data-iso="' + iso + '" data-meal="' + meal + '" ' +
-              'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">&times;</button>' +
+              'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">' + ICON.close + '</button>' +
           '</div>'
         : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '" ' +
             'aria-label="Add ' + meal.toLowerCase() + ' on ' + DAY_NAMES[i] + '">+ Add</button>';
@@ -709,7 +739,7 @@ function cardHtml(recipe, slot) {
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? '&#9733;' : '&#9734;') + '</button>' +
+          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>' +
       '</div>' +
     '</article>';
 }
@@ -813,7 +843,7 @@ function openDetail(id, slot) {
     '<div class="detail-meta">' + tagsHtml(recipe.tags) + '<span class="tag">' + recipe.minutes + ' min</span></div>' +
     '<div class="sheet-actions" style="margin-top:0">' + addBtn +
       '<button type="button" class="btn btn-quiet" data-action="bookmark" data-id="' + recipe.id + '" aria-pressed="' + saved + '">' +
-        (saved ? '&#9733; Saved' : '&#9734; Save') + '</button>' +
+        (saved ? ICON.starOn + ' Saved' : ICON.starOff + ' Save') + '</button>' +
     '</div>' +
     '<div class="detail-block"><p class="detail-h">Ingredients</p><ul>' +
       recipe.ingredients.map(function (i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
@@ -968,6 +998,18 @@ document.addEventListener('click', function (event) {
     state.focusDay = Number(target.dataset.i);
     closeSlotPicker();
     renderWeek();
+    // renderWeek() rebuilt the strip, destroying the chip that was just pressed and
+    // dropping focus to <body>. Put it back on the equivalent chip in the new strip —
+    // same move closeSlotPicker() already makes for the slot picker.
+    const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
+    if (again) again.focus();
+    return;
+  }
+
+  if (action === 'theme') {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveState();
     return;
   }
 
@@ -1095,6 +1137,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 // ---------------------------------------------------------------- start
 
 loadState();
+applyTheme();
 renderTagFilters();
 renderFilterState();
 setView('week');

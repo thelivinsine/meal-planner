@@ -1,25 +1,68 @@
-/* ---------- tokens ---------- */
+/* ============================================================================
+   Mise — "Bold consumer" direction.
+   High contrast, one saturated accent, oversized display type, colour-blocked
+   week. Light and dark palettes; every colour comes from a token below.
+   ========================================================================= */
+
+/* ---------- tokens: light ---------- */
 :root {
-  --bg: #faf8f5;
+  --bg: #fdf4e9;
   --surface: #ffffff;
-  --surface-sunk: #f3efe9;
-  --ink: #1f1d1a;
-  --ink-soft: #5f5a52;
-  --ink-faint: #8d867c;
-  --line: #e7e1d8;
-  --line-strong: #d6cec2;
-  --accent: #3f6b52;
-  --accent-soft: #eaf1ec;
-  --accent-ink: #2c4c3a;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --shadow: 0 1px 2px rgba(31, 29, 26, .05), 0 6px 20px -12px rgba(31, 29, 26, .18);
+  --surface-sunk: #f6e9d8;
+  --ink: #191309;
+  --ink-soft: #5a4b39;
+  --ink-faint: #7a6850;
+  --line: #e8d8c2;
+  --line-strong: #d6c0a2;
+
+  --accent: #d93f14;
+  --accent-soft: #fde7de;
+  --accent-ink: #a8320f;
+  --on-accent: #ffffff;
+
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
   --tap: 44px;
+
+  --shadow-sm: 0 1px 2px rgba(25, 19, 9, .06), 0 2px 6px -2px rgba(25, 19, 9, .10);
+  --shadow: 0 2px 4px rgba(25, 19, 9, .05), 0 14px 30px -18px rgba(25, 19, 9, .32);
+  --shadow-lg: 0 30px 70px -24px rgba(25, 19, 9, .42);
+  --shadow-accent: 0 8px 20px -10px rgba(217, 63, 20, .55);
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-body: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --ease: cubic-bezier(.2, .8, .3, 1);
+  --fast: .14s;
+  --mid: .24s;
+}
+
+/* ---------- tokens: dark ---------- */
+[data-theme="dark"] {
+  --bg: #140f0a;
+  --surface: #211a13;
+  --surface-sunk: #191309;
+  --ink: #faf2e8;
+  --ink-soft: #c3b39e;
+  --ink-faint: #9b8a75;
+  --line: #33291f;
+  --line-strong: #46392b;
+
+  --accent: #ff6b3d;
+  --accent-soft: #33200f;
+  --accent-ink: #ffa585;
+  --on-accent: #1a1209;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+  --shadow: 0 2px 4px rgba(0, 0, 0, .4), 0 14px 30px -18px rgba(0, 0, 0, .8);
+  --shadow-lg: 0 30px 70px -24px rgba(0, 0, 0, .9);
+  --shadow-accent: 0 8px 22px -10px rgba(255, 107, 61, .5);
 }
 
 * { box-sizing: border-box; }
 
-/* `hidden` beats any class that sets `display` -- several panels here are grids and
+/* `hidden` beats any class that sets `display` — several panels here are grids and
    flex rows toggled by the attribute. */
 [hidden] { display: none !important; }
 
@@ -29,13 +72,21 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background var(--mid) var(--ease), color var(--mid) var(--ease);
 }
 
-h1, h2, h3 { margin: 0; font-weight: 620; letter-spacing: -0.015em; }
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
 p { margin: 0; }
 ul, ol { margin: 0; }
 
@@ -46,80 +97,144 @@ button, input, select { font: inherit; color: inherit; }
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* The eyebrow above every view heading — small, loud, accent. */
+.eyebrow {
+  font-size: .6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .14em;
+  color: var(--accent);
+}
 
 /* ---------- top bar ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 20;
-  background: rgba(250, 248, 245, .88);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border-bottom: 2px solid var(--ink);
 }
 
 .topbar-inner {
-  max-width: 1180px; margin: 0 auto;
-  padding: 14px 20px;
-  display: flex; align-items: center; gap: 24px;
+  max-width: 1240px; margin: 0 auto;
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 20px;
 }
 
 .brand {
-  font-weight: 660; font-size: 1.0625rem; letter-spacing: -0.02em;
-  color: var(--accent-ink);
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--font-display);
+  font-weight: 800; font-size: 1.375rem; letter-spacing: -0.04em;
+  color: var(--ink);
+}
+/* A solid accent lozenge instead of a logo we do not have. */
+.brand-mark {
+  width: 18px; height: 18px; flex: none;
+  background: var(--accent);
+  border-radius: 6px 12px 6px 12px;
+  box-shadow: var(--shadow-accent);
 }
 
-.nav { display: flex; gap: 4px; list-style: none; padding: 0; }
+.nav-wrap { margin-left: auto; }
+.nav {
+  display: flex; gap: 2px; list-style: none; padding: 4px;
+  background: var(--surface-sunk);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+}
 
 .nav-btn {
   border: 0; background: none; cursor: pointer;
-  padding: 8px 14px; border-radius: 999px;
-  color: var(--ink-soft); font-weight: 520;
+  padding: 8px 18px; border-radius: var(--radius-pill);
+  color: var(--ink-soft); font-weight: 600; font-size: .9375rem;
   min-height: 38px;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-.nav-btn:hover { background: var(--surface-sunk); color: var(--ink); }
-.nav-btn[aria-current="page"] { background: var(--accent); color: #fff; }
+.nav-btn:hover { color: var(--ink); }
+.nav-btn[aria-current="page"] {
+  background: var(--ink); color: var(--bg);
+}
+
+.theme-btn {
+  flex: none; cursor: pointer;
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: var(--radius-pill);
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.theme-btn:hover { background: var(--accent-soft); }
+.theme-btn:active { transform: scale(.94); }
+.theme-icon { display: none; }
+.theme-icon-sun { display: block; }
+[data-theme="dark"] .theme-icon-sun { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: block; }
 
 /* ---------- page + views ---------- */
-.page { max-width: 1180px; margin: 0 auto; padding: 32px 20px 72px; }
+.page { max-width: 1240px; margin: 0 auto; padding: 40px 24px 96px; }
+
+/* One entrance per view switch. Deliberately not per card: the whole view is
+   re-rendered on every keystroke, so a card-level stagger would replay while
+   you type in the search box. */
+.view { animation: view-in var(--mid) var(--ease) both; }
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
 
 .view-head {
   display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+  gap: 20px; flex-wrap: wrap; margin-bottom: 32px;
 }
-h1 { font-size: 1.75rem; }
-.view-sub { color: var(--ink-faint); font-size: .9375rem; margin-top: 4px; }
+.view-head-text { display: flex; flex-direction: column; gap: 6px; }
+h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
+.view-sub {
+  color: var(--ink-soft); font-size: 1rem; font-weight: 500;
+}
 
 /* ---------- buttons ---------- */
 .btn {
-  cursor: pointer; border-radius: var(--radius-sm);
-  padding: 9px 16px; min-height: 40px;
-  font-weight: 540; white-space: nowrap;
-  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
-  transition: background .12s ease, border-color .12s ease;
+  cursor: pointer; border-radius: var(--radius-pill);
+  padding: 10px 20px; min-height: var(--tap);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-weight: 600; white-space: nowrap;
+  border: 2px solid var(--ink); background: var(--surface); color: var(--ink);
+  transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
+              box-shadow var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-.btn:hover { border-color: var(--ink-faint); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
-.btn-quiet { background: transparent; border-color: var(--line); color: var(--ink-soft); }
-.btn-quiet:hover { background: var(--surface); color: var(--ink); }
+.btn:hover { background: var(--accent-soft); }
+.btn:active { transform: translateY(1px) scale(.985); }
+
+.btn-primary {
+  background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+  box-shadow: var(--shadow-accent);
+}
+.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--on-accent); }
+
+.btn-quiet { background: var(--surface); border-color: var(--line-strong); color: var(--ink-soft); }
+.btn-quiet:hover { border-color: var(--ink); color: var(--ink); background: var(--surface); }
+
+.btn-icon { padding: 10px; width: var(--tap); }
+.btn-sm { min-height: 38px; padding: 6px 14px; font-size: .875rem; }
 
 .icon-btn {
-  cursor: pointer; border: 1px solid transparent; background: none;
-  color: var(--ink-faint); border-radius: var(--radius-sm);
-  width: 36px; height: 36px; display: grid; place-items: center;
-  font-size: 1.25rem; line-height: 1;
+  cursor: pointer; border: 2px solid transparent; background: none;
+  color: var(--ink-faint); border-radius: var(--radius-pill);
+  width: 40px; height: 40px; display: grid; place-items: center;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+              transform var(--fast) var(--ease);
 }
-.icon-btn:hover { background: var(--surface-sunk); color: var(--ink); }
+.icon-btn:hover { background: var(--accent-soft); color: var(--accent-ink); }
+.icon-btn:active { transform: scale(.92); }
 
 /* ---------- week ---------- */
 .week-nav { display: flex; gap: 8px; }
 
-/* Every day spans the same four rows -- header, then three meals -- and borrows the
+/* Every day spans the same four rows — header, then three meals — and borrows the
    grid's own tracks with subgrid, so the meal rows run straight across all seven days
    however tall one recipe name gets.
-   ponytail: no fallback for browsers without subgrid; there the rows size per card,
-   which is where this started. */
+   ponytail: no fallback for browsers without subgrid; there the rows size per card. */
 .week-grid {
-  display: grid; gap: 10px 12px;
+  display: grid; gap: 12px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-template-rows: auto repeat(3, auto);
 }
@@ -127,127 +242,165 @@ h1 { font-size: 1.75rem; }
 .day {
   grid-row: span 4;
   display: grid; grid-template-rows: subgrid;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 12px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 14px;
+  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
 }
-.day.is-today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.day:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+/* Today is not a hairline difference: the whole card flips to ink. */
+.day.is-today {
+  background: var(--ink); border-color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.day.is-today .day-name, .day.is-today .day-date { color: var(--bg); }
+.day.is-today .slot-label { color: color-mix(in srgb, var(--bg) 62%, transparent); }
+.day.is-today .day-head { border-bottom-color: color-mix(in srgb, var(--bg) 26%, transparent); }
+.day.is-today .slot + .slot { border-top-color: color-mix(in srgb, var(--bg) 18%, transparent); }
+.day.is-today .slot-add { color: color-mix(in srgb, var(--bg) 66%, transparent); }
+.day.is-today .slot-add:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); color: var(--bg); }
 
 /* Past days stay legible but visibly settled: no white surface, no accent. */
-.day.is-past { background: var(--surface-sunk); }
-.day.is-past .slot-recipe-name { color: var(--ink-soft); }
+.day.is-past { background: var(--surface-sunk); border-color: var(--line-strong); }
+.day.is-past:hover { transform: none; box-shadow: none; }
+.day.is-past .slot-recipe { background: var(--line); color: var(--ink-soft); }
+.day.is-past .slot-recipe:hover { background: var(--line-strong); }
 .day.is-past .slot-add { opacity: .7; }
-/* Settled means no accent, hover included. */
-.day.is-past .slot-recipe:hover, .day.is-past .slot-add:hover { background: var(--line); color: var(--ink-soft); }
 
 .day-head {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 6px; flex-wrap: nowrap;
-  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  padding-bottom: 10px; border-bottom: 2px solid var(--line);
 }
-.day-name { font-weight: 620; font-size: .9375rem; white-space: nowrap; }
+.day-name {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.0625rem; letter-spacing: -0.02em; white-space: nowrap;
+}
 .day-date {
-  color: var(--ink-faint); font-size: .8125rem;
+  color: var(--ink-faint); font-size: .75rem; font-weight: 600;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.day.is-today .day-name, .day.is-today .day-date { color: var(--accent); }
-.day.is-past .day-name, .day.is-past .day-date { color: var(--ink-faint); }
 
-/* Today's marker is a dot beside the day name. The old pill pushed the date onto a
+/* Today's marker is a dot beside the day name. A pill pushed the date onto a
    second line, which made that one card taller than its neighbours. */
 .day-dot {
-  display: inline-block; width: 6px; height: 6px; margin-left: 5px;
+  display: inline-block; width: 7px; height: 7px; margin-left: 6px;
   border-radius: 50%; background: var(--accent); vertical-align: 1px;
 }
 
 /* Meal rows carry no box of their own: a hairline and a label is structure enough
    inside a card that is already a box. */
-.slot { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.slot + .slot { border-top: 1px solid var(--line); padding-top: 8px; }
+.slot { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.slot + .slot { border-top: 1px solid var(--line); padding-top: 10px; }
 .slot-label {
-  font-size: .6875rem; text-transform: uppercase; letter-spacing: .07em;
-  color: var(--ink-faint); font-weight: 600;
+  font-size: .625rem; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--ink-faint); font-weight: 700;
 }
 
-.slot-filled { display: flex; align-items: flex-start; gap: 4px; min-width: 0; }
+.slot-filled { display: flex; align-items: stretch; gap: 4px; min-width: 0; }
+
+/* A filled slot is a solid block, not a line of text. This is the single loudest
+   move in this direction: a planned week reads as colour from across the room. */
 .slot-recipe {
   flex: 1; min-width: 0; text-align: left; cursor: pointer;
-  background: none; border: 0; border-radius: var(--radius-sm);
-  padding: 5px 6px; margin-left: -6px; min-height: 38px;
-  font-size: .875rem; line-height: 1.3;
+  background: var(--accent-soft); border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px; min-height: 38px;
+  font-size: .8125rem; line-height: 1.25;
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
-.slot-recipe:hover { background: var(--accent-soft); }
-.slot-recipe-name { display: block; color: var(--accent-ink); font-weight: 560; }
-.slot-time { display: block; font-size: .75rem; color: var(--ink-faint); margin-top: 2px; }
+.slot-recipe:hover { background: var(--accent); transform: translateY(-1px); }
+.slot-recipe:hover .slot-recipe-name, .slot-recipe:hover .slot-time { color: var(--on-accent); }
+.slot-recipe:active { transform: none; }
+.slot-recipe-name { display: block; color: var(--accent-ink); font-weight: 600; }
+.slot-time {
+  display: block; font-size: .6875rem; font-weight: 500;
+  color: color-mix(in srgb, var(--accent-ink) 72%, transparent); margin-top: 2px;
+}
 
-.slot-clear { flex: none; width: 30px; height: 30px; font-size: 1rem; }
+.slot-clear { flex: none; width: 32px; height: auto; border-radius: var(--radius-sm); }
 
 .slot-add {
   width: 100%; cursor: pointer; min-height: 38px;
-  background: none; border: 0; border-radius: var(--radius-sm);
-  padding: 5px 6px; margin-left: -6px;
-  color: var(--ink-faint); font-size: .8125rem; text-align: left;
+  background: none; border: 2px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--ink-faint); font-size: .8125rem; font-weight: 600; text-align: left;
+  transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease),
+              background var(--fast) var(--ease);
 }
-.slot-add:hover { background: var(--accent-soft); color: var(--accent-ink); }
+.slot-add:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
 
 /* ---------- filters ---------- */
 .filters {
-  margin-bottom: 28px; padding: 16px 18px;
-  background: var(--surface); border: 1px solid var(--line);
+  margin-bottom: 32px; padding: 20px;
+  background: var(--surface); border: 2px solid var(--ink);
   border-radius: var(--radius);
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: 18px;
+  box-shadow: var(--shadow-sm);
 }
 
-.filter-bar { display: flex; align-items: center; gap: 10px; }
+.filter-bar { display: flex; align-items: center; gap: 12px; }
 .filter-bar .search { flex: 1; }
 
 .search input {
-  width: 100%; max-width: 460px;
-  padding: 11px 14px; min-height: var(--tap);
-  background: var(--surface); border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  width: 100%; max-width: 520px;
+  padding: 12px 18px; min-height: var(--tap);
+  background: var(--surface-sunk); color: var(--ink);
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
 }
+.search input:focus { background: var(--surface); border-color: var(--ink); }
 .search input::placeholder { color: var(--ink-faint); }
 
 .filter-toggle { flex: none; }
 .filter-toggle::after {
-  content: ""; display: inline-block; margin-left: 8px;
-  border: 4px solid transparent; border-top-color: currentColor;
-  vertical-align: 2px; transition: transform .15s ease;
+  content: ""; display: inline-block; margin-left: 2px;
+  border: 5px solid transparent; border-top-color: currentColor;
+  vertical-align: 2px; transition: transform var(--fast) var(--ease);
 }
 .filter-toggle[aria-expanded="false"]::after { transform: rotate(-90deg); }
 .filter-badge {
-  display: inline-block; margin-left: 7px; padding: 0 6px;
-  background: var(--accent); color: #fff; border-radius: 999px;
-  font-size: .75rem; font-weight: 620;
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px;
+  padding: 0 6px;
+  background: var(--accent); color: var(--on-accent); border-radius: var(--radius-pill);
+  font-size: .75rem; font-weight: 700;
 }
 
 /* Four short labelled lists read faster than one wrap of sixteen chips. */
 .filter-groups {
-  display: grid; gap: 14px 26px;
+  display: grid; gap: 18px 28px;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
 .filter-group-label {
-  font-size: .6875rem; text-transform: uppercase; letter-spacing: .07em;
-  color: var(--ink-faint); font-weight: 600; margin-bottom: 8px;
+  font-size: .625rem; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--ink-faint); font-weight: 700; margin-bottom: 10px;
 }
 
 .filter-active {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding-top: 14px; border-top: 1px solid var(--line);
+  padding-top: 16px; border-top: 2px solid var(--line);
 }
-.filter-count { font-size: .875rem; color: var(--ink-soft); }
+.filter-count { font-size: .875rem; color: var(--ink-soft); font-weight: 500; }
 
-.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  cursor: pointer; border-radius: 999px;
-  padding: 6px 13px; min-height: 34px;
-  font-size: .8125rem; font-weight: 520;
-  background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-soft);
+  cursor: pointer; border-radius: var(--radius-pill);
+  padding: 7px 15px; min-height: 38px;
+  font-size: .8125rem; font-weight: 600;
+  background: var(--surface); border: 2px solid var(--line-strong); color: var(--ink-soft);
+  transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
+              border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-.chip:hover { border-color: var(--ink-faint); color: var(--ink); }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-.btn-sm { min-height: 34px; padding: 5px 12px; font-size: .8125rem; }
+.chip:hover { border-color: var(--ink); color: var(--ink); }
+.chip:active { transform: scale(.96); }
+.chip[aria-pressed="true"] {
+  background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+  box-shadow: var(--shadow-accent);
+}
 
 /* ---------- inline slot picker (week view) ---------- */
 .week-grid:focus { outline: none; }  /* programmatic focus target when the picker closes */
@@ -255,108 +408,130 @@ h1 { font-size: 1.75rem; }
 /* Recessed tray, not another white surface: the recipe cards inside are white, and on a
    white panel their edges disappeared. Sunk here means the cards read as cards. */
 .slot-picker {
-  margin-top: 22px; padding: 18px;
-  background: var(--surface-sunk); border: 1px solid var(--line);
+  margin-top: 28px; padding: 22px;
+  background: var(--surface-sunk); border: 2px solid var(--ink);
   border-radius: var(--radius);
+  animation: tray-in var(--mid) var(--ease) both;
 }
-/* A firmer edge on the tray's cards, since they no longer have the page behind them. */
-.slot-picker .card { border-color: var(--line-strong); }
+@keyframes tray-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: none; }
+}
 /* ink-faint is too light on the sunk tray. */
 .slot-picker .view-sub { color: var(--ink-soft); }
 
 .slot-picker-head {
   display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px; margin-bottom: 14px;
+  gap: 12px; margin-bottom: 16px;
 }
-.slot-picker-title { font-size: 1.0625rem; }
-.slot-picker .search { margin-bottom: 14px; }
+.slot-picker-title { font-size: 1.5rem; margin-top: 4px; }
+.slot-picker .search { margin-bottom: 16px; }
 
-/* The picker shows the same cards as the Recipes view -- same markup, same component --
+/* The picker shows the same cards as the Recipes view — same markup, same component —
    in a scrolling area so the week stays on screen above it. */
 .pick-grid {
   max-height: 52vh; overflow-y: auto;
-  padding: 2px 2px 4px;
+  padding: 3px 3px 6px;
   display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
 }
 
 /* ---------- recipe cards ---------- */
 .card-grid {
   display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
 }
 
 .card {
-  background: var(--surface); border: 1px solid var(--line);
+  background: var(--surface); border: 2px solid var(--ink);
   border-radius: var(--radius);
   display: flex; flex-direction: column;
   overflow: hidden;
-  transition: border-color .12s ease;
+  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
 }
-.card:hover { border-color: var(--line-strong); }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 
 .card-open {
   cursor: pointer; text-align: left; background: none; border: 0;
-  padding: 18px 18px 14px; flex: 1;
+  padding: 20px 20px 16px; flex: 1;
 }
 .card-open:hover .card-name { color: var(--accent); }
 
-.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.card-name { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; }
-.card-time {
-  flex: none; color: var(--ink-faint); font-size: .8125rem;
-  font-variant-numeric: tabular-nums; padding-top: 2px;
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.card-name {
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.12;
+  transition: color var(--fast) var(--ease);
 }
-.card-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.card-time {
+  flex: none; color: var(--ink-soft); font-size: .75rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-sunk); border-radius: var(--radius-pill);
+  padding: 4px 10px;
+}
+.card-tags { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
-  font-size: .6875rem; letter-spacing: .03em; text-transform: uppercase;
-  font-weight: 600; color: var(--ink-soft);
-  background: var(--surface-sunk); border-radius: 999px; padding: 4px 9px;
+  font-size: .625rem; letter-spacing: .1em; text-transform: uppercase;
+  font-weight: 700; color: var(--ink-soft);
+  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 5px 10px;
 }
 
 .card-actions {
   display: flex; align-items: center; gap: 8px;
-  padding: 12px 14px 14px; border-top: 1px solid var(--line);
+  padding: 14px 16px 16px; border-top: 2px solid var(--line);
 }
 .card-actions .btn { flex: 1; }
 
 .bookmark {
-  flex: none; width: 40px; height: 40px; font-size: 1.125rem;
-  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  flex: none; width: 44px; height: 44px; font-size: 1.125rem;
+  border: 2px solid var(--line-strong); border-radius: var(--radius-pill);
   color: var(--ink-faint);
 }
-.bookmark[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.bookmark[aria-pressed="true"] {
+  color: var(--accent); border-color: var(--accent); background: var(--accent-soft);
+}
 
 .empty {
-  color: var(--ink-faint); text-align: center;
-  padding: 48px 20px; background: var(--surface-sunk);
+  color: var(--ink-soft); text-align: center; font-weight: 500;
+  padding: 64px 24px; background: var(--surface-sunk);
+  border: 2px dashed var(--line-strong);
   border-radius: var(--radius);
 }
 
 /* ---------- dialogs ---------- */
 .sheet {
-  border: 0; padding: 0; background: var(--surface);
-  border-radius: var(--radius); box-shadow: 0 24px 60px -20px rgba(31, 29, 26, .35);
-  width: min(560px, calc(100vw - 32px)); max-height: min(86vh, 760px);
+  border: 2px solid var(--ink); padding: 0; background: var(--surface);
+  border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  width: min(600px, calc(100vw - 32px)); max-height: min(86vh, 780px);
   color: var(--ink);
 }
-.sheet-sm { width: min(420px, calc(100vw - 32px)); }
-.sheet::backdrop { background: rgba(31, 29, 26, .38); }
+.sheet-sm { width: min(440px, calc(100vw - 32px)); }
+.sheet::backdrop { background: rgba(25, 19, 9, .55); backdrop-filter: blur(3px); }
+
+.sheet[open] { animation: sheet-in var(--mid) var(--ease); }
+.sheet[open]::backdrop { animation: fade-in var(--mid) var(--ease); }
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .sheet-close-form { position: sticky; top: 0; float: right; z-index: 2; }
-.sheet-close { margin: 10px 10px 0 0; background: var(--surface); }
+.sheet-close { margin: 12px 12px 0 0; background: var(--surface); }
 
-.sheet-body { padding: 24px 26px 26px; overflow-y: auto; max-height: inherit; }
-.sheet-title { font-size: 1.375rem; padding-right: 40px; }
-/* "Add to week" is context, not the headline -- the recipe is. So the title shrinks to
+.sheet-body { padding: 28px 30px 30px; overflow-y: auto; max-height: inherit; }
+.sheet-title { font-size: 2rem; padding-right: 44px; }
+/* "Add to week" is context, not the headline — the recipe is. So the title shrinks to
    an eyebrow and the name takes the weight it used to have. */
 .sheet-eyebrow {
-  font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em;
-  font-weight: 600; color: var(--ink-faint); padding-right: 40px;
+  font-family: var(--font-body);
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .14em;
+  font-weight: 600; color: var(--accent); padding-right: 44px;
 }
 .picker-recipe {
-  font-size: 1.25rem; font-weight: 620; letter-spacing: -0.015em;
-  color: var(--ink); margin-top: 6px; line-height: 1.25;
+  font-family: var(--font-display);
+  font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--ink); margin-top: 8px; line-height: 1.1;
 }
 
 /* Everything in the add-to-week sheet is centred except that eyebrow. */
@@ -365,51 +540,67 @@ h1 { font-size: 1.75rem; }
 .sheet-body-center .day-picker { justify-content: center; }
 .sheet-body-center .segmented { justify-content: center; }
 .sheet-body-center .sheet-actions { justify-content: center; }
-.sheet-body-center .sheet-actions .btn { flex: 0 1 148px; }
+.sheet-body-center .sheet-actions .btn { flex: 0 1 152px; }
 
-.detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 20px; }
-.detail-h { font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); font-weight: 600; margin-bottom: 8px; }
-.detail-block + .detail-block { margin-top: 22px; }
-.detail-block ul, .detail-block ol { padding-left: 20px; }
-.detail-block li { margin-bottom: 6px; color: var(--ink-soft); }
-.detail-block li::marker { color: var(--ink-faint); }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 22px; }
+.detail-h {
+  font-size: .625rem; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--accent); font-weight: 700; margin-bottom: 10px;
+}
+.detail-block + .detail-block { margin-top: 26px; }
+.detail-block ul, .detail-block ol { padding-left: 22px; }
+.detail-block li { margin-bottom: 8px; color: var(--ink-soft); }
+.detail-block li::marker { color: var(--accent); font-weight: 700; }
 
-.field-label { font-size: .8125rem; font-weight: 600; color: var(--ink-soft); margin: 20px 0 7px; }
+.field-label {
+  font-size: .625rem; text-transform: uppercase; letter-spacing: .12em;
+  font-weight: 700; color: var(--ink-faint); margin: 24px 0 9px;
+}
 
 .day-picker { display: flex; flex-wrap: wrap; gap: 8px; }
 .day-picker .day-chip { flex: 0 0 calc(25% - 6px); }
 
 .day-chip {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 8px 4px; min-height: 54px; line-height: 1.2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 8px 4px; min-height: 56px; line-height: 1.15;
 }
-.day-chip-name { font-weight: 620; font-size: .8125rem; }
-.day-chip-date { font-size: .6875rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
-.day-chip[aria-pressed="true"] .day-chip-date { color: rgba(255, 255, 255, .82); }
+.day-chip-name { font-weight: 700; font-size: .8125rem; }
+.day-chip-date {
+  font-size: .6875rem; color: var(--ink-faint); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.day-chip[aria-pressed="true"] .day-chip-date { color: color-mix(in srgb, var(--on-accent) 82%, transparent); }
 .day-chip.is-past { border-style: dashed; }
-/* Today's dot is accent on white, so on a selected (accent) chip it has to flip. */
-.day-chip[aria-pressed="true"] .day-dot { background: #fff; }
-.day-chip.is-past .day-chip-name { color: var(--ink-faint); font-weight: 540; }
-.day-chip.is-past[aria-pressed="true"] .day-chip-name { color: #fff; }
+/* Today's dot is accent on the card, so on a selected (accent) chip it has to flip. */
+.day-chip[aria-pressed="true"] .day-dot { background: var(--on-accent); }
+.day-chip.is-past .day-chip-name { color: var(--ink-faint); font-weight: 600; }
+.day-chip.is-past[aria-pressed="true"] .day-chip-name { color: var(--on-accent); }
 
 .segmented { display: flex; flex-wrap: wrap; gap: 8px; }
-.segmented .chip { flex: 0 1 104px; text-align: center; min-height: var(--tap); }
+.segmented .chip { flex: 0 1 110px; text-align: center; min-height: var(--tap); justify-content: center; }
 
 .picker-note {
-  margin-top: 18px; font-size: .875rem; color: var(--ink-soft);
-  padding: 0 4px;
+  margin-top: 20px; font-size: .875rem; color: var(--ink-soft);
+  background: var(--accent-soft); color: var(--accent-ink);
+  padding: 12px 16px; border-radius: var(--radius-sm); text-align: left;
+  font-weight: 500;
 }
 
-.sheet-actions { display: flex; gap: 10px; margin-top: 24px; }
+.sheet-actions { display: flex; gap: 10px; margin-top: 26px; }
 .sheet-actions .btn { flex: 1; }
 
 /* ---------- toast ---------- */
 .toast {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
   z-index: 40; max-width: calc(100vw - 32px);
-  background: var(--ink); color: #fff;
-  padding: 11px 18px; border-radius: 999px;
-  font-size: .875rem; box-shadow: var(--shadow);
+  background: var(--ink); color: var(--bg);
+  padding: 13px 22px; border-radius: var(--radius-pill);
+  font-size: .875rem; font-weight: 600; box-shadow: var(--shadow-lg);
+  animation: toast-in var(--mid) var(--ease);
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 16px) scale(.94); }
+  to   { opacity: 1; transform: translateX(-50%); }
 }
 
 /* ---------- touch ---------- */
@@ -417,28 +608,30 @@ h1 { font-size: 1.75rem; }
    On a finger they go back to the 44px floor. */
 @media (pointer: coarse) {
   .slot-recipe, .slot-add, .chip, .btn-sm { min-height: var(--tap); }
-  .slot-clear { width: 40px; height: 40px; }
+  .slot-clear { width: 44px; }
   .icon-btn { width: var(--tap); height: var(--tap); }
 }
 
 /* ---------- responsive ---------- */
 /* Seven day cards never fit a narrow screen. Below the wide layout the week becomes a
-   strip of seven day buttons plus the one day it selects -- the same day card, six of
+   strip of seven day buttons plus the one day it selects — the same day card, six of
    them hidden, so there is no second week layout to keep in step. */
 .day-strip { display: none; }
 
 @media (max-width: 1000px) {
+  /* DEFECT 3, fixed: four columns, not seven. Seven across a 360px viewport gives
+     43px chips, under the 44px floor. Wrapping 4 + 3 gives roughly 77px and still
+     shows the whole week — no horizontal scroll, no day hidden off-screen. */
   .day-strip {
-    display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;
-    max-width: 560px; margin: 0 auto 16px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+    max-width: 560px; margin: 0 auto 20px;
   }
-  .day-strip .day-chip { padding: 7px 2px; min-height: 56px; }
-  .day-strip .day-chip-date { white-space: nowrap; }
+  .day-strip .day-chip { padding: 8px 2px; min-height: 58px; }
   .day-strip .day-chip.is-today .day-chip-name { color: var(--accent); }
-  .day-strip .day-chip.is-today[aria-pressed="true"] .day-chip-name { color: #fff; }
+  .day-strip .day-chip.is-today[aria-pressed="true"] .day-chip-name { color: var(--on-accent); }
   /* A day with meals on it is tinted, so the strip shows the shape of the week at a
-     glance -- planned, today and selected each read differently. */
-  .day-strip .day-chip.has-meals { background: var(--accent-soft); border-color: var(--accent-soft); }
+     glance — planned, today and selected each read differently. */
+  .day-strip .day-chip.has-meals { background: var(--accent-soft); border-color: var(--accent); }
   .day-strip .day-chip.has-meals[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 
   .week-grid {
@@ -446,44 +639,63 @@ h1 { font-size: 1.75rem; }
     max-width: 560px; margin: 0 auto;
   }
   /* One day on screen: nothing beside it to share row tracks with. */
-  .day { grid-row: auto; display: flex; flex-direction: column; gap: 8px; }
+  .day { grid-row: auto; display: flex; flex-direction: column; gap: 10px; }
   .day:not(.is-focus) { display: none; }
-  /* The selected chip right above already names the day and its date. */
-  .day-head { display: none; }
+  .day:hover { transform: none; }
+
+  /* DEFECT 2, fixed: the selected chip above already names the day, so the heading is
+     hidden — visually. `display: none` took the day card's accessible name with it. */
+  .day-head {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
 
   /* Room across, not down: the meal label sits beside its meal instead of above it. */
   .slot { flex-direction: row; align-items: center; gap: 12px; }
-  .slot + .slot { padding-top: 8px; }
-  .slot-label { flex: none; width: 76px; }
-  .slot-filled, .slot-add { flex: 1; min-width: 0; margin-left: 0; }
-  .slot-recipe { margin-left: 0; }
+  .slot + .slot { padding-top: 10px; }
+  .slot-label { flex: none; width: 78px; }
+  .slot-filled, .slot-add { flex: 1; min-width: 0; }
   .slot-recipe-name, .slot-time { display: inline; margin-top: 0; }
   .slot-time { margin-left: 8px; white-space: nowrap; }
 
-  .filter-groups { gap: 14px 20px; }
+  .filter-groups { gap: 16px 22px; }
+  .topbar-inner { gap: 14px; }
 }
 
 @media (max-width: 620px) {
-  .page { padding: 22px 16px 64px; }
+  .page { padding: 26px 16px 80px; }
   .topbar-inner { padding: 12px 16px; gap: 12px; flex-wrap: wrap; }
+  .nav-wrap { order: 3; width: 100%; margin-left: 0; }
+  .theme-btn { margin-left: auto; }
   .nav { width: 100%; }
   .nav-btn { flex: 1; padding: 8px 6px; min-height: var(--tap); }
-  h1 { font-size: 1.5rem; }
-  .day-strip { gap: 4px; }
-  .day-strip .day-chip { padding: 7px 0; }
-  .day-strip .day-chip-date { font-size: .625rem; }
+  h1 { font-size: 2.125rem; }
+  .day-strip { gap: 6px; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 60vh; }
-  .filters { padding: 14px; }
+  .filters { padding: 16px; }
   .filter-bar { flex-wrap: wrap; }
   .filter-toggle { width: 100%; }
   .day-picker .day-chip { flex: 0 0 calc(33.333% - 6px); }
   .week-nav { width: 100%; }
-  .week-nav .btn { flex: 1; min-height: var(--tap); }
+  .week-nav .btn { flex: 1; }
   .sheet {
     width: 100vw; max-width: 100vw; max-height: 92vh;
     margin: 0; position: fixed; bottom: 0; left: 0;
     border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 0;
   }
-  .sheet-body { padding: 20px 18px 28px; }
+  .sheet-body { padding: 22px 18px 32px; }
+  .sheet-title { font-size: 1.625rem; }
+}
+
+/* ---------- motion preference ---------- */
+/* Everything above is decoration. Anyone who has asked for less of it gets none. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
