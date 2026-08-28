@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `49b3c16`, the bold-consumer redesign squash-merged from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4). Pages build `built`, live at the link above. The branch `design/bold-consumer` is deliberately **not** deleted |
-| **Open work** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5), direction B — app shell / control surface. Drafted against the pre-redesign `main` and now far behind it: it has none of the nine rounds of feedback direction A absorbed, none of the six bug fixes, and no accordion, docked nav or rotating header. Rebase or close; direction A shipping is effectively the decision against it |
+| **Open work** | None. Both design PRs are settled: [#4](https://github.com/thelivinsine/meal-planner/pull/4) merged, [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. What is left is verification, not building — see *Next jobs* |
 | **Screenshots** | **None.** The two pre-redesign shots were deleted rather than left captioned as stale. Nothing in the repo shows the current app |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
