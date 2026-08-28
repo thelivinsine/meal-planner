@@ -14,18 +14,27 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `409d7d2` — the UI round, squash-merged from `feat/ui-polish` (PR [#2](https://github.com/thelivinsine/meal-planner/pull/2), now closed and the branch deleted). Deployed and live at the link above |
-| **Open work** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) on `mobile-week` — compacts the week's meal rows below 1000px, CSS only. Needs a browser look at ~700px and ~390px before merging |
+| **`main`** | Commit `236ce5b` — the narrow week, squash-merged from `mobile-week` (PR [#3](https://github.com/thelivinsine/meal-planner/pull/3), branch deleted). Pages build `built`, live at the link above |
+| **Open work** | None on a branch. Three known defects shipped with PR #3 — see *Next jobs* |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Take the screenshots.** There are none in the repo — the v1 set was two rounds stale and
+1. **Fix what shipped knowingly broken in PR #3.** Reviewed and merged anyway, so it's live:
+   - *Focus is lost on every day-switch.* `week-day` re-renders the strip, destroying the chip
+     that was just pressed, so keyboard focus falls to `<body>`. One line after `renderWeek()`
+     re-focusing `[data-i="<focusDay>"]` fixes it.
+   - *The day card has no accessible name under 1000px.* `.day-head { display: none }` hides the
+     `<h2>` along with it. Hide it visually with `.sr-only` instead and the heading survives.
+   - *Day chips fall under the 44px touch floor.* Seven across `100vw - 32px` gives 43px at a
+     360px viewport, narrower below. `CLAUDE.md` allows one exception to the rule and this isn't
+     it. Needs a call on how the strip behaves on a small phone before it can be fixed.
+2. **Take the screenshots.** There are none in the repo — the v1 set was two rounds stale and
    you deleted it. Nothing breaks without them, but they're the first thing a reader sees, so
    the README has an empty spot until they exist. See *Screenshots* for the four worth taking.
-2. **Look at it on a real phone.** No layout in the UI round was ever seen — the Chrome
-   extension wasn't connected, so alignment, density and the centred sheet were reasoned from
-   the CSS. See *Testing* for what that does and doesn't cover.
+3. **Look at it on a real phone.** No layout in the UI round or the narrow week was ever
+   seen — the Chrome extension wasn't connected, so alignment, density, the day strip and the
+   centred sheet were all reasoned from the CSS. See *Testing* for what that does and doesn't cover.
 
 **Two open questions, both yours to call:**
 
