@@ -703,11 +703,9 @@ function renderWeek() {
   // which survives the innerHTML swap below, so CSS transitions the widths from the old
   // value to the new one. An inline grid-template-columns would beat the narrow media
   // query; a custom property does not.
-  el.weekGrid.style.setProperty('--week-cols', state.expandAll
-    ? 'repeat(7, minmax(0, 1fr))'
-    : days.map(function (_, i) {
-        return i === state.focusDay ? 'minmax(0, 1fr)' : 'var(--rail-w)';
-      }).join(' '));
+  el.weekGrid.style.setProperty('--week-cols', days.map(function (_, i) {
+    return state.expandAll || i !== state.focusDay ? 'minmax(0, 1fr)' : 'minmax(0, 8fr)';
+  }).join(' '));
 
   el.weekGrid.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);

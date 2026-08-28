@@ -27,9 +27,7 @@
   --radius-sm: 9px;
   --radius-pill: 999px;
   --tap: 44px;
-  --rail-w: 76px;            /* a collapsed day column in the wide accordion */
 
-  --shadow-sm: 0 1px 2px rgba(28, 20, 16, .05);
   --shadow: 0 1px 2px rgba(28, 20, 16, .05), 0 10px 26px -16px rgba(28, 20, 16, .30);
   --shadow-lg: 0 26px 60px -22px rgba(28, 20, 16, .38);
 
@@ -58,7 +56,6 @@
   --accent-ink: #f2ac93;
   --on-accent: #1a1209;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
   --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 26px -16px rgba(0, 0, 0, .85);
   --shadow-lg: 0 26px 60px -22px rgba(0, 0, 0, .9);
 }
@@ -153,23 +150,14 @@ button, input, select { font: inherit; color: inherit; }
   display: flex; justify-content: center;
   pointer-events: none;          /* the empty sides must not swallow clicks */
 }
-.nav-wrap > .nav { pointer-events: auto; position: relative; }
+.nav-wrap > .nav { pointer-events: auto; }
 
-/* The blur is a halo on the island, not a band across the page: a few pixels of
-   frosted bleed just outside the pill's own edge. */
-.nav::before {
-  content: "";
-  position: absolute; inset: -7px;
-  z-index: -1; pointer-events: none;
-  border-radius: var(--radius-pill);
-  backdrop-filter: blur(7px);
-  -webkit-mask-image: radial-gradient(closest-side, black 62%, transparent);
-  mask-image: radial-gradient(closest-side, black 62%, transparent);
-}
 .nav {
   display: flex; gap: 2px; list-style: none; padding: 4px;
-  /* Same ink the today card is filled with, so the two loud surfaces match. */
-  background: var(--ink);
+  /* Same ink the today card is filled with, so the two loud surfaces match - a touch
+     translucent, so what passes under the island frosts rather than vanishing. */
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  backdrop-filter: blur(10px) saturate(1.2);
   border: 1px solid var(--ink);
   border-radius: var(--radius-pill);
   box-shadow: 0 2px 5px rgba(28, 20, 16, .18), 0 8px 18px -8px rgba(28, 20, 16, .28);
@@ -200,7 +188,7 @@ button, input, select { font: inherit; color: inherit; }
 .theme-btn svg { display: block; width: 16px; height: 16px; }
 .theme-btn .theme-icon { display: none; }
 .theme-btn .theme-icon-sun { display: block; line-height: 0; }
-.icon-btn svg, .day-rail svg { display: block; }
+.icon-btn svg { display: block; }
 .theme-icon { display: none; }
 .theme-icon-sun { display: block; }
 [data-theme="dark"] .theme-icon-sun { display: none; }
@@ -595,15 +583,18 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
   width: min(560px, calc(100vw - 32px)); max-height: min(86vh, 760px);
   color: var(--ink);
-  /* A column with one scrolling child. The old floated close button left the dialog
-     itself scrollable as well as its body, which is where the second scrollbar
-     came from. */
-  display: flex; flex-direction: column; overflow: hidden;
+  overflow: hidden;
 }
+/* A column with one scrolling child - the old floated close button left the dialog
+   itself scrollable as well as its body, which is where the second scrollbar came from.
+   It must hang off [open]: a bare `display` here would beat the user agent's
+   `dialog:not([open]) { display: none }` and leave both dialogs on the page. */
+.sheet[open] { display: flex; flex-direction: column; }
 .sheet-sm { width: min(420px, calc(100vw - 32px)); }
 .sheet::backdrop { background: rgba(28, 20, 16, .5); backdrop-filter: blur(3px); }
 
 .sheet[open] { animation: sheet-in var(--mid) var(--ease); }
+
 .sheet[open]::backdrop { animation: fade-in var(--mid) var(--ease); }
 @keyframes sheet-in {
   from { opacity: 0; transform: translateY(16px) scale(.98); }
@@ -700,7 +691,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 
 /* ---------- toast ---------- */
 .toast {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%);
   z-index: 40; max-width: calc(100vw - 32px);
   background: var(--ink); color: var(--bg);
   padding: 10px 18px; border-radius: var(--radius-pill);
@@ -721,7 +712,8 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   }
   .slot-add { min-width: var(--tap); }
   .btn-icon { width: var(--tap); }
-  .icon-btn, .theme-btn, .bookmark { width: var(--tap); height: var(--tap); }
+  .icon-btn, .theme-btn, .bookmark,
+  .sheet-tool-actions .icon-btn, .sheet-close { width: var(--tap); height: var(--tap); }
   .slot-clear { width: var(--tap); }
   .search input { min-height: var(--tap); }
 }
@@ -763,8 +755,6 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   .day-strip .day-chip.is-today[aria-pressed="true"] .day-chip-name { color: var(--on-accent); }
   /* A day with meals on it is tinted, so the strip shows the shape of the week at a
      glance — planned, today and selected each read differently. */
-  .day-strip .day-chip.has-meals { background: var(--accent-soft); border-color: var(--accent); }
-  .day-strip .day-chip.has-meals[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 
   .week-grid {
     grid-template-columns: 1fr; grid-template-rows: none;
@@ -803,6 +793,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   .page { padding: 22px 14px 100px; }
   .topbar-inner { padding: 10px 14px; gap: 10px; }
   .nav-wrap { bottom: 14px; }
+  .toast { bottom: 76px; }
   .nav-btn { padding: 6px 13px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 58vh; }
