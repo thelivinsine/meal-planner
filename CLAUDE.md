@@ -46,7 +46,9 @@ The loop every code change goes through, in order:
 
 ## Layout
 ```
-index.html   page shell: nav, three view sections, inline slot picker, two <dialog> panels
+index.html   page shell: top bar, three view sections, inline slot picker, docked nav,
+             two <dialog> panels. The nav sits at body level, not in .topbar — a
+             backdrop-filter ancestor would become its containing block
 style.css    all styling
 app.js       recipe catalogue, state, rendering, one event handler
 README.md    documentation
@@ -70,8 +72,11 @@ Established in v1 and extended since — follow them or say why not:
   Keyed by date, not weekday, so each week is genuinely its own plan.
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in
   try/catch — quota errors and private mode are real. Validate on load and drop anything
-  unrecognised; never trust what's in storage. Only the plan and the bookmarks are saved; view,
-  week, search, filters and `focusDay` are all per-session on purpose.
+  unrecognised; never trust what's in storage. The plan, the bookmarks and the
+  theme are saved; view, week, search, filters, `focusDay` and `expandAll` are per-session on
+  purpose. Theme is the one deliberate exception: a theme the user picked and lost on reload is
+  a bug, not a fresh start. `index.html` reads it inline in `<head>` to paint before first
+  paint, so the key is written in two places — change one, change the other.
 - **One box per level:** a card gets the border; the rows inside it get a hairline and a
   label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
   This applies inside the day cards — lists of recipes use the recipe card instead.
@@ -83,9 +88,14 @@ Established in v1 and extended since — follow them or say why not:
   renders, under *More* — so adding a recipe tag can never make a chip disappear.
 - **Week alignment:** the seven day cards share the week grid's row tracks via CSS `subgrid`,
   so meal rows line up across days. Don't reintroduce anything in a day header that can wrap.
-- **Narrow week:** under 1000px the week is a strip of seven day buttons plus the one day
-  it selects (`state.focusDay`, never persisted). Same day card as the wide layout — CSS
-  hides the six that aren't focused. Don't build a second set of week markup for mobile.
+- **Wide week is an accordion:** one day open, the other six collapsed to vertical rails that
+  expand on click (`state.focusDay`). `expandAll` gives all seven equal columns. An open day's
+  header is never a button — there is nothing left for it to expand, and the rails are the
+  controls. `--week-cols` is set on the grid as a custom property, not as inline
+  `grid-template-columns`, so the narrow media query can still override it.
+- **Narrow week:** under 1000px the week is a strip of seven day buttons, wrapped 4 + 3 and
+  centred, plus the one day it selects. Same day card as the wide layout — CSS hides the six
+  that aren't focused. Don't build a second set of week markup for mobile.
 - **Breakpoints:** two, 1000px and 620px, plus a `pointer: coarse` block. Both are `max-width`,
   so they must stay in descending order — a wider query placed after a narrower one silently
   overrides it. Extend the existing block rather than opening a second one at the same width.
@@ -111,13 +121,13 @@ Every defect this project has shipped has been one of these, so it gets its own 
 - Check a computed size at 360px, not just at whatever your own window happens to be.
 
 ## Known defects
-Live on `main`, merged knowingly. Fix these before building anything on top of them:
 
-1. Switching day loses keyboard focus — `week-day` re-renders the strip out from under it.
-2. `.day-head { display: none }` under 1000px hides the `<h2>`; the day card has no name.
-3. Day chips are ~43px wide at a 360px viewport, under the 44px floor.
+None open. The three that shipped with PR #3 — lost focus on day-switch, the unnamed day card
+under 1000px, and sub-44px day chips — were all fixed in PR #4 and are live on `main`.
 
-Full write-ups in *Where things stand* in `README.md`.
+**What is unverified is a longer list than what is broken.** The entire bold-consumer redesign
+shipped without anyone opening a browser. See *Where things stand* in `README.md` for the seven
+small things found in review and knowingly left, and for what has never been looked at.
 
 ## Scope
 Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag-and-drop,
@@ -126,9 +136,10 @@ sharing/syncing. Don't add these unless asked. See *Not in v1* in `README.md`.
 ## Testing
 Open `index.html` in a browser. For anything visual that *is* the test, and it is the step that
 keeps getting skipped — the narrow week shipped without it. No test framework unless asked.
-The wide week and the day strip have now been seen (`Screenshots/`); everything else has not.
-Hard-refresh before shooting — two screenshots of an older build got committed and had to be
-deleted, and a screenshot of the wrong version is worse than none.
+**Nothing in the current design has been seen.** The shots in `Screenshots/` are of the
+pre-redesign app and are stale; retaking them is the top job. Hard-refresh before shooting —
+this project has now had two separate rounds of stale screenshots committed and deleted, and a
+screenshot of the wrong version is worse than none.
 
 For logic changes, a throwaway Node script against a stub DOM is the cheap check: stub the few
 DOM pieces `app.js` touches on load, import it, drive `state` and the delegated click handler

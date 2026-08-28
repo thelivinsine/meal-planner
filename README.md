@@ -14,44 +14,57 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `f0dfe07` and later, docs and screenshots only. The last *code* commit is still `236ce5b`, the narrow week squash-merged from `mobile-week` (PR [#3](https://github.com/thelivinsine/meal-planner/pull/3), branch deleted). Pages build `built`, live at the link above |
-| **Open work** | Two design-direction proposals, both open, neither meant to merge as-is: PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) `design/bold-consumer` and PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) `design/app-shell`. Each is a full refactor of the three files in a different direction, and each fixes all three known defects. Neither has been seen in a browser — the Chrome extension would not connect. Pick one, or take pieces of both |
+| **`main`** | Commit `49b3c16`, the bold-consumer redesign squash-merged from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4). Pages build `built`, live at the link above. The branch `design/bold-consumer` is deliberately **not** deleted |
+| **Open work** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5), direction B — app shell / control surface. It was drafted against the pre-redesign `main` and is now behind it. It needs a rebase or a close; direction A shipping is effectively the decision against it |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
+
+**The whole redesign is live and none of it has been seen in a browser.** That is the single most
+important thing to know here. Contrast is computed, touch targets are arithmetic, the accordion
+and the docked nav have only ever existed as HTML strings in a stub-DOM script. The three defects
+that shipped with PR #3 are genuinely fixed — but they were found by reading, and so were the ones
+found since, which is not the same as having looked at the thing.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Fix what shipped knowingly broken in PR #3.** Reviewed and merged anyway, so it's live:
-   - *Focus is lost on every day-switch.* `week-day` re-renders the strip, destroying the chip
-     that was just pressed, so keyboard focus falls to `<body>`. One line after `renderWeek()`
-     re-focusing `[data-i="<focusDay>"]` fixes it.
-   - *The day card has no accessible name under 1000px.* `.day-head { display: none }` hides the
-     `<h2>` along with it. Hide it visually with `.sr-only` instead and the heading survives.
-   - *Day chips fall under the 44px touch floor.* Seven across `100vw - 32px` gives 43px at a
-     360px viewport, narrower below. `CLAUDE.md` allows one exception to the rule and this isn't
-     it. Needs a call on how the strip behaves on a small phone before it can be fixed.
-2. **Look at it on a real phone.** The day strip has now been seen rendering in a desktop browser
-   at a narrow width (that's the second screenshot above) — but a desktop window is not a phone, and
-   the 360px measurements behind defect 3 are still arithmetic, not observation. Density,
-   contrast and touch targets on real hardware remain unverified. See *Testing*.
+1. **Open it in a browser.** Wide, then at 360px, then on a real phone. Everything below this
+   line is guesswork until that happens.
+2. **Retake the screenshots.** The two in this file are of the pre-redesign app and are now
+   actively misleading — the third time this project has had stale shots. Delete or replace.
+3. **Settle PR #5.** Rebase it onto the redesign or close it.
+4. **Seven small things found in review and left alone**, none of them urgent:
+   - Google Fonts is the app's first external request; blocked or offline, you get the fallback
+     stack. The one place the "static files only" constraint bends.
+   - `applyTheme()` always stamps `data-theme`, so a dark-OS user gets a light app on first
+     visit despite `<meta name="color-scheme" content="light dark">`.
+   - `<meta name="theme-color">` is light-only, so browser chrome stays cream in dark mode.
+   - The storage key `p5:mealplanner` is written twice — `STORAGE_KEY` in `app.js` and again in
+     the inline theme script in `index.html`. Change one, forget the other.
+   - Toggling Save inside the open recipe dialog rewrites `#detail-tools` and drops keyboard
+     focus. Same class as the day-strip defect, in a place nobody checked.
+   - `is-upcoming` is emitted by `renderWeek` and matched by no CSS rule.
+   - The week's date range line is gone with no replacement; on a wide screen the rails carry
+     dates, but there's no longer a single label saying which week you're looking at.
 
 **Two open questions, both yours to call:**
 
-- **The stub-DOM check scripts are thrown away each session.** The UI round was verified by 39
-  assertions in two throwaway Node scripts kept outside the repo, per the existing convention.
-  That means a fresh session rewrites them from scratch, and a regression between rounds has
-  nothing to catch it. Committing a single `check.mjs` would fix that; it also puts a test file
-  in a repo whose constraints say no test framework. Not done either way.
+- **The stub-DOM check scripts are still thrown away each session.** This round added 21 more
+  assertions to the pile and then deleted them, so a regression between rounds still has nothing
+  to catch it. Committing a single `check.mjs` would fix that; it also puts a test file in a repo
+  whose constraints say no test framework. Not done either way.
 - **`subgrid` has no fallback.** The week's alignment depends on CSS `subgrid` (Chrome 117+,
-  Safari 16+, Firefox 71+). On anything older the rows size per card, which is exactly the
-  misalignment this round set out to fix — it degrades to the old bug rather than to something
-  broken. Worth a fallback only if an old browser actually matters to you.
+  Safari 16+, Firefox 71+). On anything older the rows size per card, which degrades to the old
+  misalignment rather than to something broken. Worth a fallback only if an old browser matters.
 
 ---
 
 ## Screenshots
 
-Two, both of the Week view on an empty plan, taken 28 August 2026. The v1 set was deleted two
-rounds earlier for being stale; this is the replacement.
+> **Both of these are stale.** They show the app as it was before the bold-consumer redesign
+> merged as `49b3c16` — no accordion, no docked nav switch, the old palette and type. They are
+> left here only so the change has a before; do not read them as the current app. Retaking them
+> is job 2 above.
+
+Two, both of the Week view on an empty plan, taken 28 August 2026, of the *pre-redesign* build.
 
 **The week, wide.** Seven day cards, past days settled grey, Friday carrying today's accent
 border and dot, the three meal rows running straight across all seven.
@@ -272,8 +285,8 @@ repo), loading `app.js` against a stub DOM. Between them they asserted:
   types, unknown recipe ids, invalid dates) all falling back to a clean state
 
 **The narrow week was never verified before it shipped.** No stub-DOM script was run against it
-and no browser was opened. The three defects listed at the top of this file were found by reading
-the diff, and were merged knowingly rather than fixed. Assume there are others of the same kind
+and no browser was opened. The three defects that headed this file until the redesign were found by
+reading the diff, and were merged knowingly rather than fixed. Assume there are others of the same kind
 that reading didn't catch.
 
 **What the screenshots since then do and don't settle.** They're the first time anything in this
@@ -289,8 +302,20 @@ One deliberate gap: the week rows are 38px on a mouse and return to the 44px tou
 `@media (pointer: coarse)`, so a narrow *desktop* window has rows below 44px. That's a pointer
 question, not a width one, and it is the only sanctioned exception.
 
-The day chips are *not* that exception — at a 360px viewport they compute to about 43px wide,
-which is simply under the floor. Defect 3 above.
+**Everything above describes the pre-redesign app.** The bold-consumer round replaced all three
+files and was verified the same way and no better: `node --check`, contrast computed rather than
+eyeballed, and 89 stub-DOM assertions across the round (68 claimed by the PR, 21 added at review) — the seven-column and accordion renders,
+rail sides and count, focus restoration on both layouts, expand-all and its relabelling, plan
+writes and clears, bookmarks, tag filters, theme persistence and restore, the dialog's two tool
+states, and the fill-slot route out of the inline picker.
+
+None of it was opened in a browser. The accordion's column animation, the docked nav switch, the
+frosted top bar, dark mode, the 44px floors under `@media (pointer: coarse)`, the wrapped 4 + 3
+day strip and every contrast pair are unobserved. Those three defects were fixed by reading, the
+same way they were found by reading.
+
+The day chips are no longer the exception they were — the strip now wraps 4 + 3 and centres,
+giving roughly 77px chips at 360px. That figure is arithmetic too.
 
 ---
 
@@ -311,9 +336,12 @@ which is simply under the floor. Defect 3 above.
 | **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in this file were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
 | **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. Pages build `built`, live site serving it. The stale v1 screenshots were deleted; no fresh set yet |
 | **Narrow week** | Branch `mobile-week`. Started as a CSS-only compaction of the meal rows below 1000px, then grew on the same branch into the day strip: seven day buttons plus the one day they select, the same card as the wide layout with six hidden. `focusDay` added to state, not persisted |
-| **Reviewed twice** | The first review covered the compaction and produced one fixup — a duplicate `@media (max-width: 1000px)` block folded back into the existing one, which had been sitting after the 620px block and overriding it. The branch then grew two more commits, so the PR was re-read from scratch. That pass found the three defects now listed at the top |
+| **Reviewed twice** | The first review covered the compaction and produced one fixup — a duplicate `@media (max-width: 1000px)` block folded back into the existing one, which had been sitting after the 620px block and overriding it. The branch then grew two more commits, so the PR was re-read from scratch. That pass found three defects, which shipped open and were fixed a round later in PR #4 |
 | **Merged anyway** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) squash-merged to `main` as `236ce5b` with the three defects open, at your call. Pages build `built` |
 | **Seen at last** | You took screenshots of the Week view and committed them to `main` as `f0dfe07` — documentation, so no branch. The wide week and the day strip both look right. Two of the four turned out to be of an older version and were deleted rather than left to mislead, the same call as the v1 set |
+| **Two directions** | Two redesign proposals opened side by side off the same `main`: PR #4, bold consumer product, and PR #5, app shell / control surface. Nine rounds of feedback into #4 before it was reviewed |
+| **Reviewed** | PR #4 read against its own description. Three real defects: the recipe dialog had no way to fill the slot it was opened from, `display: none` on the day `<h2>` had come back one selector along after being listed as fixed, and the open day's header was an `aria-expanded="true"` button that could not collapse anything. All three fixed on the branch, with 21 stub-DOM assertions. Two camera-named screenshots that nothing referenced were dropped from the diff |
+| **Direction A shipped** | PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) squash-merged to `main` as `49b3c16`, at your call, unseen in a browser. Pages build `built`. The branch was kept, not deleted, at your request. PR #5 left open and now behind `main` |
 
 ---
 
