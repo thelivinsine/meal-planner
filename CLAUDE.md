@@ -14,6 +14,9 @@ live commit, any open PR, and what's queued next.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 
 ## Hard constraints
+- **Never commit code to `main` directly.** Any change to `index.html`, `style.css` or `app.js`
+  goes on its own branch and comes back through a PR. Documentation only — `CLAUDE.md`,
+  `README.md` — may be committed straight to `main`.
 - Vanilla HTML, CSS, JavaScript only. No frameworks, no libraries, no build step.
 - All data persists in the browser (`localStorage`). No server, no database, no API calls.
 - Hosted on GitHub Pages: everything must work from static files opened over plain HTTP.
