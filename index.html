@@ -3,107 +3,189 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f9">
   <title>Mise — weekly meal planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="style.css">
+  <!-- Paint the stored theme before first paint, so a dark-mode user never sees a
+       white flash. Inline on purpose: app.js loads at the end of the body. -->
+  <script>
+    try {
+      var saved = JSON.parse(localStorage.getItem('p5:mealplanner') || '{}');
+      if (saved && (saved.theme === 'dark' || saved.theme === 'light')) {
+        document.documentElement.dataset.theme = saved.theme;
+      }
+    } catch (err) { /* private mode, or nothing stored yet */ }
+  </script>
 </head>
-<body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <p class="brand">Mise</p>
-      <nav aria-label="Main views">
-        <ul class="nav" id="nav">
-          <li><button type="button" class="nav-btn" data-action="nav" data-view="week">Week</button></li>
-          <li><button type="button" class="nav-btn" data-action="nav" data-view="recipes">Recipes</button></li>
-          <li><button type="button" class="nav-btn" data-action="nav" data-view="saved">Saved</button></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+<body class="shell">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <main class="page">
+  <!-- The app shell's one persistent surface. Below 1000px CSS turns it into a bottom
+       tab bar — same markup, same buttons, no second nav to keep in step. -->
+  <aside class="sidebar">
+    <p class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4v6a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V4M7 13v7"></path>
+          <path d="M17 4c-1.6 1.5-2.4 3.4-2.4 5.6 0 1.7.8 2.9 2.4 3.4V20"></path>
+        </svg>
+      </span>
+      <span class="brand-word">Mise</span>
+    </p>
+
+    <nav class="nav-wrap" aria-label="Main views">
+      <ul class="nav" id="nav">
+        <li>
+          <button type="button" class="nav-btn" data-action="nav" data-view="week">
+            <svg class="nav-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect>
+              <path d="M3 9.5h18M8 2.8v3.4M16 2.8v3.4"></path>
+            </svg>
+            <span>Week</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="nav-btn" data-action="nav" data-view="recipes">
+            <svg class="nav-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v18H5.5A1.5 1.5 0 0 1 4 19.5z"></path>
+              <path d="M8 3v18M11.5 8.5h4M11.5 12h4"></path>
+            </svg>
+            <span>Recipes</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="nav-btn" data-action="nav" data-view="saved">
+            <svg class="nav-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4-6.5 4v-16a1 1 0 0 1 1-1z"></path>
+            </svg>
+            <span>Saved</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button type="button" class="theme-btn" id="theme-toggle" data-action="theme"
+              aria-pressed="false" aria-label="Switch to dark theme">
+        <span class="theme-icon theme-icon-sun" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4.2"></circle>
+            <path d="M12 2.6v2.4M12 19v2.4M2.6 12h2.4M19 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"></path>
+          </svg>
+        </span>
+        <span class="theme-icon theme-icon-moon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 14.2A8.4 8.4 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"></path>
+          </svg>
+        </span>
+        <span class="theme-label">Theme</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
     <!-- WEEK -->
     <section id="view-week" class="view" aria-labelledby="week-heading">
-      <div class="view-head">
-        <div>
-          <h1 id="week-heading">Your week</h1>
+      <div class="viewbar">
+        <div class="viewbar-text">
+          <h1 id="week-heading">Week</h1>
           <p class="view-sub" id="week-range"></p>
         </div>
-        <div class="week-nav">
-          <button type="button" class="btn btn-quiet" data-action="week-shift" data-delta="-1" aria-label="Previous week">&larr;</button>
-          <button type="button" class="btn btn-quiet" data-action="week-today">This week</button>
-          <button type="button" class="btn btn-quiet" data-action="week-shift" data-delta="1" aria-label="Next week">&rarr;</button>
+        <div class="week-nav" role="group" aria-label="Change week">
+          <button type="button" class="seg-btn" data-action="week-shift" data-delta="-1" aria-label="Previous week">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+          </button>
+          <button type="button" class="seg-btn seg-btn-wide" data-action="week-today">Today</button>
+          <button type="button" class="seg-btn" data-action="week-shift" data-delta="1" aria-label="Next week">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+          </button>
         </div>
       </div>
-      <!-- Narrow screens only: picks which single day the grid below shows. -->
-      <div class="day-strip" id="day-strip" role="group" aria-label="Choose a day"></div>
-      <div class="week-grid" id="week-grid" tabindex="-1"></div>
 
-      <!-- Fills the space below the week: opened by a slot's "+ Add", so the day
-           and meal are already known and never asked for again. -->
-      <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" hidden>
-        <div class="slot-picker-head">
-          <div>
-            <h2 class="slot-picker-title" id="slot-picker-title"></h2>
-            <p class="view-sub">Tap a recipe to fill that slot.</p>
+      <div class="view-body">
+        <!-- Narrow screens only: picks which single day column the table below shows. -->
+        <div class="day-strip" id="day-strip" role="group" aria-label="Choose a day"></div>
+        <div class="week-grid" id="week-grid" tabindex="-1"></div>
+
+        <!-- Fills the space below the week: opened by a slot's "+ Add", so the day
+             and meal are already known and never asked for again. -->
+        <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" hidden>
+          <div class="slot-picker-head">
+            <div>
+              <h2 class="slot-picker-title" id="slot-picker-title"></h2>
+              <p class="view-sub">Pick a recipe to fill that slot.</p>
+            </div>
+            <button type="button" class="icon-btn" data-action="slot-picker-close" aria-label="Cancel">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
           </div>
-          <button type="button" class="icon-btn" data-action="slot-picker-close" aria-label="Cancel">&times;</button>
+          <div class="search">
+            <label class="sr-only" for="slot-search">Search recipes</label>
+            <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
+          </div>
+          <div class="pick-grid" id="slot-picker-grid"></div>
+          <p class="empty" id="slot-picker-empty" hidden>No recipes match that search.</p>
         </div>
-        <div class="search">
-          <label class="sr-only" for="slot-search">Search recipes</label>
-          <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
-        </div>
-        <div class="pick-grid" id="slot-picker-grid"></div>
-        <p class="empty" id="slot-picker-empty" hidden>No recipes match that search.</p>
       </div>
     </section>
 
     <!-- RECIPES -->
     <section id="view-recipes" class="view" aria-labelledby="recipes-heading" hidden>
-      <div class="view-head">
-        <div>
+      <div class="viewbar">
+        <div class="viewbar-text">
           <h1 id="recipes-heading">Recipes</h1>
           <p class="view-sub" id="recipes-count"></p>
         </div>
+        <div class="search">
+          <label class="sr-only" for="search">Search recipes</label>
+          <input type="search" id="search" placeholder="Search by name or ingredient…" autocomplete="off">
+        </div>
       </div>
 
-      <div class="filters">
-        <div class="filter-bar">
-          <div class="search">
-            <label class="sr-only" for="search">Search recipes</label>
-            <input type="search" id="search" placeholder="Search by name or ingredient…" autocomplete="off">
+      <div class="view-body">
+        <div class="filters">
+          <div class="filter-bar">
+            <button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle"
+                    id="filter-toggle" aria-expanded="true" aria-controls="tag-filters">Filters</button>
+            <div class="filter-active" id="filter-active" hidden>
+              <p class="filter-count" id="filter-count"></p>
+              <button type="button" class="btn btn-quiet btn-sm" data-action="clear-tags">Clear all</button>
+            </div>
           </div>
-          <button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle"
-                  id="filter-toggle" aria-expanded="true" aria-controls="tag-filters">Filters</button>
+          <!-- Chips grouped by what they mean, so 16 tags read as four short lists. -->
+          <div class="filter-groups" id="tag-filters"></div>
         </div>
-        <!-- Chips grouped by what they mean, so 16 tags read as four short lists. -->
-        <div class="filter-groups" id="tag-filters"></div>
-        <div class="filter-active" id="filter-active" hidden>
-          <p class="filter-count" id="filter-count"></p>
-          <button type="button" class="btn btn-quiet btn-sm" data-action="clear-tags">Clear all</button>
-        </div>
-      </div>
 
-      <div class="card-grid" id="recipe-grid"></div>
-      <p class="empty" id="recipes-empty" hidden>No recipes match that search.</p>
+        <div class="card-grid" id="recipe-grid"></div>
+        <p class="empty" id="recipes-empty" hidden>No recipes match that search.</p>
+      </div>
     </section>
 
     <!-- SAVED -->
     <section id="view-saved" class="view" aria-labelledby="saved-heading" hidden>
-      <div class="view-head">
-        <div>
+      <div class="viewbar">
+        <div class="viewbar-text">
           <h1 id="saved-heading">Saved</h1>
           <p class="view-sub" id="saved-count"></p>
         </div>
       </div>
-      <div class="card-grid" id="saved-grid"></div>
-      <p class="empty" id="saved-empty" hidden>Nothing saved yet. Tap the bookmark on any recipe to keep it here.</p>
+      <div class="view-body">
+        <div class="card-grid" id="saved-grid"></div>
+        <p class="empty" id="saved-empty" hidden>Nothing saved yet. Use the bookmark on any recipe to keep it here.</p>
+      </div>
     </section>
   </main>
 
   <!-- Recipe detail -->
   <dialog id="detail" class="sheet" aria-labelledby="detail-name">
     <form method="dialog" class="sheet-close-form">
-      <button class="icon-btn sheet-close" aria-label="Close">&times;</button>
+      <button class="icon-btn sheet-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
     </form>
     <div class="sheet-body" id="detail-body"></div>
   </dialog>
@@ -111,9 +193,11 @@
   <!-- Add to week -->
   <dialog id="picker" class="sheet sheet-sm" aria-labelledby="picker-title">
     <form method="dialog" class="sheet-close-form">
-      <button class="icon-btn sheet-close" aria-label="Close">&times;</button>
+      <button class="icon-btn sheet-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
     </form>
-    <div class="sheet-body sheet-body-center">
+    <div class="sheet-body">
       <h2 id="picker-title" class="sheet-eyebrow">Add to week</h2>
       <p class="picker-recipe" id="picker-recipe"></p>
 

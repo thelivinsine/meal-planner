@@ -488,6 +488,9 @@ const state = {
   focusDay: defaultFocusDay(isoOf(mondayOf(new Date()))),
   plan: {},
   bookmarks: [],
+  // Persisted alongside the plan. View, week, search and filters stay per-session on
+  // purpose, but a theme the user picked and then lost on reload is just a bug.
+  theme: 'light',
   search: '',
   tags: [],
   filtersOpen: true
@@ -530,13 +533,15 @@ function loadState() {
   if (Array.isArray(saved.bookmarks)) {
     state.bookmarks = saved.bookmarks.filter(function (id) { return RECIPE_BY_ID.has(id); });
   }
+  if (saved.theme === 'dark' || saved.theme === 'light') state.theme = saved.theme;
 }
 
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       plan: state.plan,
-      bookmarks: state.bookmarks
+      bookmarks: state.bookmarks,
+      theme: state.theme
     }));
   } catch (err) {
     console.warn('Could not save — changes will be lost on refresh.', err);
@@ -582,8 +587,20 @@ const el = {
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
   slotSearch: document.getElementById('slot-search'),
+  themeToggle: document.getElementById('theme-toggle'),
   toast: document.getElementById('toast')
 };
+
+// ---------------------------------------------------------------- theme
+
+// The inline script in <head> has already painted the stored theme, so this only has
+// to keep the toggle's own labelling honest after a change.
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme;
+  const dark = state.theme === 'dark';
+  el.themeToggle.setAttribute('aria-pressed', String(dark));
+  el.themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+}
 
 // ---------------------------------------------------------------- helpers
 
@@ -610,6 +627,21 @@ function slotLabel(iso, meal) {
 function tagsHtml(tags) {
   return tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 }
+
+// Inline SVG rather than the &#9733; / &times; glyphs the first build used: these take
+// currentColor, scale with the button, and do not depend on a font shipping the
+// character. One 24px grid, one stroke weight, one visual family with the nav icons.
+const BOOKMARK_PATH = 'M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4-6.5 4v-16a1 1 0 0 1 1-1z';
+const ICON = {
+  markOn: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">' +
+    '<path d="' + BOOKMARK_PATH + '"></path></svg>',
+  markOff: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="' + BOOKMARK_PATH + '"></path></svg>',
+  close: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
+  plus: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>'
+};
 
 // ---------------------------------------------------------------- rendering
 
@@ -639,8 +671,8 @@ function renderWeek() {
 
   const days = weekDates(state.weekStart);
 
-  // The strip is the week overview the seven cards give on a wide screen: which day is
-  // showing, and which of the others already have something planned.
+  // The strip is the week overview the table gives on a wide screen: which day column
+  // is showing, and which of the others already have something planned.
   el.dayStrip.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const planned = MEALS.some(function (meal) { return state.plan[slotKey(iso, meal)]; });
@@ -656,35 +688,54 @@ function renderWeek() {
       '</button>';
   }).join('');
 
-  el.weekGrid.innerHTML = days.map(function (date, i) {
-    const iso = isoOf(date);
-    const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
-    const slots = MEALS.map(function (meal) {
-      const id = state.plan[slotKey(iso, meal)];
-      const recipe = id ? RECIPE_BY_ID.get(id) : null;
-      const body = recipe
-        ? '<div class="slot-filled">' +
-            '<button type="button" class="slot-recipe" data-action="open-recipe" data-id="' + recipe.id + '" ' +
-              'title="View ' + escapeHtml(recipe.name) + '">' +
-              '<span class="slot-recipe-name">' + escapeHtml(recipe.name) + '</span>' +
-              '<span class="slot-time">' + recipe.minutes + ' min</span>' +
-            '</button>' +
-            '<button type="button" class="icon-btn slot-clear" data-action="clear-slot" data-iso="' + iso + '" data-meal="' + meal + '" ' +
-              'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">&times;</button>' +
-          '</div>'
-        : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '" ' +
-            'aria-label="Add ' + meal.toLowerCase() + ' on ' + DAY_NAMES[i] + '">+ Add</button>';
-      return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
-    }).join('');
+  // A real <table>, not a grid of divs. The week is genuinely a day x meal matrix, so
+  // the element that models one gives every cell its day and meal for free through
+  // scope="col" and scope="row" - no per-card <h2> to lose, which is what defect 2 was.
+  // Narrow screens hide the columns that are not focused; the header cells stay in the
+  // DOM, so the association survives.
+  const head = '<thead><tr>' +
+      '<td class="wk-corner"><span class="sr-only">Meal</span></td>' +
+      days.map(function (date, i) {
+        const iso = isoOf(date);
+        const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
+        return '<th scope="col" class="wk-day ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' +
+            '<span class="wk-day-name">' + DAY_NAMES[i].slice(0, 3) +
+              (iso === todayIso
+                ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>'
+                : '') + '</span>' +
+            '<span class="wk-day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+          '</th>';
+      }).join('') +
+    '</tr></thead>';
 
-    return '<article class="day ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' +
-        '<div class="day-head">' +
-          '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
-            (iso === todayIso ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>' : '') + '</h2>' +
-          '<p class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</p>' +
-        '</div>' + slots +
-      '</article>';
-  }).join('');
+  const body = '<tbody>' + MEALS.map(function (meal) {
+    return '<tr>' +
+        '<th scope="row" class="wk-meal">' + meal + '</th>' +
+        days.map(function (date, i) {
+          const iso = isoOf(date);
+          const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
+          const id = state.plan[slotKey(iso, meal)];
+          const recipe = id ? RECIPE_BY_ID.get(id) : null;
+          const body = recipe
+            ? '<div class="slot-filled">' +
+                '<button type="button" class="slot-recipe" data-action="open-recipe" data-id="' + recipe.id + '" ' +
+                  'title="View ' + escapeHtml(recipe.name) + '">' +
+                  '<span class="slot-recipe-name">' + escapeHtml(recipe.name) + '</span>' +
+                  '<span class="slot-time">' + recipe.minutes + ' min</span>' +
+                '</button>' +
+                '<button type="button" class="icon-btn slot-clear" data-action="clear-slot" data-iso="' + iso + '" data-meal="' + meal + '" ' +
+                  'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">' + ICON.close + '</button>' +
+              '</div>'
+            : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '" ' +
+                'aria-label="Add ' + meal.toLowerCase() + ' on ' + DAY_NAMES[i] + '">' + ICON.plus +
+                '<span class="slot-add-word">Add</span></button>';
+          return '<td class="wk-cell ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' + body + '</td>';
+        }).join('') +
+      '</tr>';
+  }).join('') + '</tbody>';
+
+  el.weekGrid.innerHTML = '<table class="wk-table"><caption class="sr-only">Meals planned for ' +
+    escapeHtml(weekRangeLabel(state.weekStart)) + '</caption>' + head + body + '</table>';
 }
 
 // One card for every list of recipes in the app. Pass a slot ({ iso, meal }) and its
@@ -709,7 +760,7 @@ function cardHtml(recipe, slot) {
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? '&#9733;' : '&#9734;') + '</button>' +
+          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.markOn : ICON.markOff) + '</button>' +
       '</div>' +
     '</article>';
 }
@@ -813,7 +864,7 @@ function openDetail(id, slot) {
     '<div class="detail-meta">' + tagsHtml(recipe.tags) + '<span class="tag">' + recipe.minutes + ' min</span></div>' +
     '<div class="sheet-actions" style="margin-top:0">' + addBtn +
       '<button type="button" class="btn btn-quiet" data-action="bookmark" data-id="' + recipe.id + '" aria-pressed="' + saved + '">' +
-        (saved ? '&#9733; Saved' : '&#9734; Save') + '</button>' +
+        (saved ? ICON.markOn + ' Saved' : ICON.markOff + ' Save') + '</button>' +
     '</div>' +
     '<div class="detail-block"><p class="detail-h">Ingredients</p><ul>' +
       recipe.ingredients.map(function (i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
@@ -968,6 +1019,18 @@ document.addEventListener('click', function (event) {
     state.focusDay = Number(target.dataset.i);
     closeSlotPicker();
     renderWeek();
+    // renderWeek() rebuilt the strip, destroying the chip that was just pressed and
+    // dropping focus to <body>. Put it back on the equivalent chip in the new strip -
+    // same move closeSlotPicker() already makes for the slot picker.
+    const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
+    if (again) again.focus();
+    return;
+  }
+
+  if (action === 'theme') {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveState();
     return;
   }
 
@@ -1095,6 +1158,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 // ---------------------------------------------------------------- start
 
 loadState();
+applyTheme();
 renderTagFilters();
 renderFilterState();
 setView('week');
