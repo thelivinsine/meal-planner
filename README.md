@@ -16,22 +16,21 @@ Everything is saved in your own browser — no account, no server, nothing leave
 |---|---|
 | **`main`** | Commit `49b3c16`, the bold-consumer redesign squash-merged from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4). Pages build `built`, live at the link above. The branch `design/bold-consumer` is deliberately **not** deleted |
 | **Open work** | None. Both design PRs are settled: [#4](https://github.com/thelivinsine/meal-planner/pull/4) merged, [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. What is left is verification, not building — see *Next jobs* |
-| **Screenshots** | **None.** The two pre-redesign shots were deleted rather than left captioned as stale. Nothing in the repo shows the current app |
+| **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app, though you have seen it in a browser |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
-**The whole redesign is live and none of it has been seen in a browser.** That is the single most
-important thing to know here. Contrast is computed, touch targets are arithmetic, the accordion
-and the docked nav have only ever existed as HTML strings in a stub-DOM script. The three defects
-that shipped with PR #3 are genuinely fixed — but they were found by reading, and so were the ones
-found since, which is not the same as having looked at the thing.
+**The redesign is live and has been looked at** — wide, dragged narrow, and in both themes, as
+the work was done. What has *not* happened is a real phone: every control is compact on a mouse
+by design and only returns to the 44px floor under `@media (pointer: coarse)`, a block a desktop
+browser never enters. So the touch-target story is untested by construction, not by neglect.
+Keyboard-only and screen reader passes are the other gap.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Open it in a browser.** Wide, then at 360px, then on a real phone. Everything below this
-   line is guesswork until that happens.
-2. **Take screenshots.** There are none — the stale pair was deleted rather than left in place
-   misrepresenting the app, the third round of stale shots this project has had. Worth capturing:
-   the wide accordion, expand-all, the narrow week, the recipe dialog, and both themes.
+1. **Open the live site on a phone.** The one check nothing else substitutes for.
+2. **Take screenshots.** There are none. The stale pair was deleted rather than left
+   misrepresenting the app — the right call, and it leaves the repo with no picture of itself.
+   Worth capturing: the wide accordion, expand-all, the narrow week, the recipe dialog, both themes.
 3. **Seven small things found in review and left alone**, none of them urgent:
    - Google Fonts is the app's first external request; blocked or offline, you get the fallback
      stack. The one place the "static files only" constraint bends.
@@ -43,7 +42,7 @@ found since, which is not the same as having looked at the thing.
    - The storage key `p5:mealplanner` is written twice — `STORAGE_KEY` in `app.js` and again in
      the inline theme script in `index.html`. Change one, forget the other.
    - Toggling Save inside the open recipe dialog rewrites `#detail-tools` and drops keyboard
-     focus. Same class as the day-strip defect, in a place nobody checked.
+     focus. Same class as the day-strip defect, and not something a look at the page reveals.
    - `is-upcoming` is emitted by `renderWeek` and matched by no CSS rule.
    - The week's date range line is gone with no replacement; on a wide screen the rails carry
      dates, but there's no longer a single label saying which week you're looking at.
@@ -62,10 +61,11 @@ found since, which is not the same as having looked at the thing.
 
 ## Screenshots
 
-None. There were two, of the Week view before the bold-consumer redesign, and they were deleted
-rather than left in the file misrepresenting the app — the third round of stale shots this
-project has had. `Screenshots/` is empty until someone opens the current build and takes a fresh
-set; the old ones are recoverable from git history if a before-and-after is ever wanted.
+None. There were two, of the Week view before the bold-consumer redesign, and you had them
+deleted once they went stale rather than leave them misrepresenting the app. That is the standing
+policy here — a screenshot of the wrong version is worse than no screenshot — and it has now been
+applied three times. `Screenshots/` stays empty until a fresh set is taken; the old ones are
+recoverable from git history if a before-and-after is ever wanted.
 
 Worth capturing when it happens: the wide week with one day open and six rails, the same week
 under **Expand all**, the narrow week at 360px, the inline slot picker with **Add to Thu
@@ -140,9 +140,8 @@ storage box, which muddies testing.)
   buttons and the one day it selects. The strip is the overview the seven cards give you on a
   wide window: which day you're on, which is today, and which days already have something
   planned (those are tinted). The buttons wrap four and three, centred. Tap a day to show it. It
-  opens on today when today is in the week
-  on screen, Monday otherwise, and it resets that way whenever you move to another week — which
-  day you were looking at isn't worth remembering between sessions. The day card itself is the
+  opens on today when today is in the week on screen, Monday otherwise, and resets that way
+  whenever you move to another week — which day you were looking at isn't worth remembering. The day card itself is the
   same card as the wide layout, with its meal labels beside the meals instead of above them
 
 **Adding a meal — two ways in**
@@ -151,9 +150,9 @@ storage box, which muddies testing.)
 your week. The day and meal are already known from the slot you tapped, so it never asks again:
 the recipes appear as the same cards you get on the Recipes page — name, time, tags, and a
 bookmark — except the button reads **Add to Thu breakfast** and fills the slot you tapped. Not
-sure about one? Tap the card to read the full recipe — the sheet offers Save but not **Add to
-week**, because the day and the meal are already settled and this app never asks twice; close it
-and use the card's button. There's a search box in the panel, and Escape, the ×, or moving to
+sure about one? Tap the card to read the full recipe — the sheet's calendar icon adds it straight
+to the slot you came from, because the day and the meal are already settled and this app never
+asks twice. Reading first costs you nothing. There's a search box in the panel, and Escape, the ×, or moving to
 another week all close it. This route is for empty slots only — a filled slot is changed by
 clearing it and adding again, or through the dialog below.
 
@@ -247,6 +246,8 @@ the saved blob can't grow forever.
 | The week heading rotates | One line, chosen from eight at load, instead of an eyebrow plus a title plus a date range. It says what the screen is for rather than what it is called |
 | Theme is saved, other view state is not | Which week or day you were on means nothing next session. A theme you chose does |
 | Dialog actions are icons beside the close | Two full-width buttons above the ingredients pushed the recipe down the panel. As icons they sit in the chrome, where actions belong |
+| An open day's header is not a button | It would claim `aria-expanded` and then collapse nothing, since the day it targets is the one already open. The six rails are the controls; the open day's header is plain text |
+| The recipe sheet fills the slot it came from | Dropping "Add to week" there was right — the day and meal are known — but dropping the add entirely left reading a recipe as a dead end. The icon fills the slot directly |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
 | A narrow week shows one day, not seven squeezed | Seven columns below ~1000px gives each day about 130px, which is narrower than a recipe name. A day strip plus one full-width card keeps the card readable and the week glanceable |
 | The same day card on both layouts | A second set of week markup for mobile is two things to keep in step, and they drift. CSS hides the six days that aren't focused instead |
@@ -302,8 +303,8 @@ did not change, but none of them have been re-run since:
 
 ### The redesign round
 
-The bold-consumer round replaced all three files and was checked no better than the rounds
-before it: `node --check`, contrast computed rather than eyeballed, and 89 stub-DOM assertions —
+The bold-consumer round replaced all three files. Alongside your own passes in the browser after
+each iteration: `node --check`, contrast computed rather than eyeballed, and 89 stub-DOM assertions —
 68 during the build, 21 more added at review. Between them they covered the seven-column and
 accordion renders, rail sides and count, that every column track is the same type so the width
 animation can run at all, focus restoration on both the wide and narrow layouts, the expand-all
@@ -311,27 +312,41 @@ toggle and its relabelling, plan writes and clears, bookmarks, tag filters, them
 restore, the recipe dialog's two tool states, and the fill-slot route out of the inline picker.
 Thrown away with the rest.
 
-### What has never been seen
+### What has been seen, and what hasn't
 
-**Nobody has opened the current app in a browser. Not once, across nine build rounds and two
-reviews.** There are no screenshots either. Everything below is reasoning about source code:
+**You check the app in a browser as you iterate** — wide desktop, the window dragged narrow to
+get the day strip, and both themes. That covers most of what a stub-DOM script cannot: how it
+looks, whether the accordion animates, the docked nav, the frosted top bar, dark mode, and
+whether the narrow layout holds together. Earlier versions of this file claimed nobody had ever
+looked at the app. That was wrong, and it is the thing to correct if it creeps back in.
 
-- How any of it looks, in either theme.
-- The accordion's column animation, the docked nav switch, the frosted top bar.
-- Every contrast pair — computed, and several sit within 0.1 of the 4.5 floor.
-- Every touch target, including the 44px floors that only apply under `@media (pointer: coarse)`.
-- The day strip wrapping 4 + 3 at 360px, and the roughly 77px chips that arithmetic gives.
-- The whole app on a real phone rather than a narrow desktop window.
+Still genuinely unverified, in rough order of how likely it is to bite:
 
-Two rounds of reading found nine real bugs between them, and six of those were the kind only a
-browser shows — both dialogs rendering in the page at all times, the column animation never
-running, a frosted halo that was the wrong shape, and the three fixed at review. Assume there are
-others of the same kind that reading did not catch.
+- **A real phone.** A dragged-narrow desktop window is not one. Every control is deliberately
+  compact on a mouse and only returns to the 44px floor under `@media (pointer: coarse)`, so the
+  entire touch-target story is untested by construction — a desktop browser never enters that
+  block. Density and real thumb reach are unknown too.
+- **Keyboard-only and screen reader.** Focus order, focus restoration after a redraw, and the
+  accessible names on day cards and rails have been asserted in a stub DOM and reasoned about,
+  never driven. Every defect this project has shipped was in this category.
+- **Contrast as a measurement.** The figures were computed and the palettes have been looked at,
+  but several pairs sit within 0.1 of the 4.5 floor, which is closer than an eye can call.
+- **Old browsers.** `subgrid` and `color-mix` are both load-bearing. See the open question below.
 
-One deliberate gap, unchanged: the week's meal rows are 38px on a mouse and return to 44px under
-`@media (pointer: coarse)`, so a narrow *desktop* window has rows below the floor. That is a
-pointer question, not a width one, and it is the only sanctioned exception. The day chips used to
-be an accidental second one; the wrapped strip fixed that.
+Two rounds of reading found nine bugs between them, six of which a browser would have shown —
+both dialogs rendering in the page at all times, the column animation never running, a frosted
+halo that was the wrong shape, and the three fixed at review. Reading and looking each catch what
+the other misses; this project now does both.
+
+**The 44px floor now works differently, and the old note about it was stale.** It used to be one
+exception — 38px week rows on a mouse. The redesign made compactness the general rule: on a fine
+pointer the nav buttons are 28px, icon buttons and chips 30px, a filled meal row 34px. The
+`@media (pointer: coarse)` block lifts all of them back to 44px on a finger. So a narrow *desktop*
+window shows controls below the floor on purpose, and that is a pointer question, not a width one.
+
+The catch is that this only holds for controls actually listed in that block, and a later rule
+that outranks it on specificity silently breaks the floor — which has already happened once, to
+the dialog's icon buttons. Worth re-checking against the block whenever a control is added.
 
 ---
 
@@ -357,8 +372,9 @@ be an accidental second one; the wrapped strip fixed that.
 | **Seen at last** | You took screenshots of the Week view and committed them to `main` as `f0dfe07` — documentation, so no branch. The wide week and the day strip both look right. Two of the four turned out to be of an older version and were deleted rather than left to mislead, the same call as the v1 set |
 | **Two directions** | Two redesign proposals opened side by side off the same `main`: PR #4, bold consumer product, and PR #5, app shell / control surface. Nine rounds of feedback into #4 before it was reviewed |
 | **Reviewed** | PR #4 read against its own description. Three real defects: the recipe dialog had no way to fill the slot it was opened from, `display: none` on the day `<h2>` had come back one selector along after being listed as fixed, and the open day's header was an `aria-expanded="true"` button that could not collapse anything. All three fixed on the branch, with 21 stub-DOM assertions. Two camera-named screenshots that nothing referenced were dropped from the diff |
-| **Direction A shipped** | PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) squash-merged to `main` as `49b3c16`, at your call, unseen in a browser. Pages build `built`. The branch was kept, not deleted, at your request |
+| **Direction A shipped** | PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) squash-merged to `main` as `49b3c16`. Pages build `built`. The branch was kept, not deleted, at your request |
 | **Direction B closed** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. It conflicted with `main` the moment A merged — both proposals rewrote the same three files — and rebasing would have meant rewriting it. The table-shaped week is the part worth bringing back |
+| **Docs corrected** | Several rounds of notes had hardened into "nobody has ever opened this app in a browser", which was simply false — you check it in a browser as you iterate, wide and narrow and in both themes. Corrected in both files. The real gap is narrower and more specific: a real phone, and a keyboard-only pass |
 
 ---
 

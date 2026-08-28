@@ -34,7 +34,8 @@ live commit, any open PR, known defects, and what's queued next.
 The loop every code change goes through, in order:
 
 1. Branch off `main`. Name it for the change, not the round (`mobile-week`, `feat/ui-polish`).
-2. Build it, then check it — see *Testing* below. A visual change means opening a browser.
+2. Build it, then check it — see *Testing* below. A visual change means opening a browser, or
+   handing it to me to look at; don't merge a layout claim neither of us has seen.
 3. Open a PR whose description says what changed and what was **not** verified. Be honest in
    that second half; it's the part that gets read before merging.
 4. Review the PR against its own description before merging. Re-read the diff if commits were
@@ -52,7 +53,7 @@ index.html   page shell: top bar, three view sections, inline slot picker, docke
 style.css    all styling
 app.js       recipe catalogue, state, rendering, one event handler
 README.md    documentation
-Screenshots/ deleted — no shot of the current build exists. Recreate it with descriptive
+Screenshots/ deleted — stale shots get removed, not captioned. Recreate it with descriptive
              filenames, not camera defaults
 ```
 Add files only when one gets unwieldy.
@@ -141,20 +142,25 @@ Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag
 sharing/syncing. Don't add these unless asked. See *Not in v1* in `README.md`.
 
 ## Testing
-No open defects — PR #4 fixed all three that shipped with PR #3. **What is unverified is a much
-longer list than what is broken**, and it is the whole app: nobody has opened the current design
-in a browser, and there are no screenshots. Taking a fresh set is the top job.
+No open defects — PR #4 fixed all three that shipped with PR #3. No test framework unless asked.
 
-Open `index.html` in a browser. For anything visual that *is* the test — and it is the step that
-keeps getting skipped, round after round. Hard-refresh before shooting; this project has had
-three rounds of stale screenshots committed and removed, and a shot of the wrong version is worse
-than none. No test framework unless asked.
+**I check the app in a browser as we iterate** — wide, the window dragged narrow for the day
+strip, and both themes. Don't write that the app has never been looked at; earlier versions of
+these notes said exactly that and it was false. Do still say plainly which specific things a
+change has *not* been checked against, which is the honest half of a PR description.
+
+Three gaps a desktop browser cannot close, so name them rather than assuming they're covered:
+- **A real phone.** Controls are compact on a mouse and only return to 44px under
+  `@media (pointer: coarse)`, which a desktop never enters. Touch targets are untested by
+  construction.
+- **Keyboard-only and screen reader.** Focus order and accessible names. Every defect this
+  project has shipped lived here.
+- **Contrast as a number.** Several pairs sit within 0.1 of the 4.5 floor — compute it.
 
 For logic, a throwaway Node script against a stub DOM is the cheap check: stub the few DOM pieces
 `app.js` touches on load, drive `state` and the delegated click handler, assert on the HTML
 strings that come back. Kept outside the repo — see the open question about committing a
 `check.mjs` in `README.md`.
 
-That script cannot tell you how anything looks. Width-dependent behaviour, contrast, touch target
-sizes and focus order need a real browser at a real width — six of the nine bugs found in the two
-review passes were exactly that kind. See *Testing* in `README.md` for the full ledger.
+**Screenshots:** there are none, deliberately. Stale ones get deleted rather than captioned,
+because a shot of the wrong version is worse than none. Hard-refresh before taking a fresh set.
