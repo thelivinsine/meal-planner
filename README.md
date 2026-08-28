@@ -14,8 +14,8 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `f0dfe07` — four screenshots added. The last *code* commit is still `236ce5b`, the narrow week squash-merged from `mobile-week` (PR [#3](https://github.com/thelivinsine/meal-planner/pull/3), branch deleted). Pages build `built`, live at the link above |
-| **Open work** | None on a branch. Three known defects shipped with PR #3, plus one unexplained thing in the new screenshots — see *Next jobs* |
+| **`main`** | Commit `f0dfe07` and later, docs and screenshots only. The last *code* commit is still `236ce5b`, the narrow week squash-merged from `mobile-week` (PR [#3](https://github.com/thelivinsine/meal-planner/pull/3), branch deleted). Pages build `built`, live at the link above |
+| **Open work** | None on a branch. Three known defects shipped with PR #3, see *Next jobs* |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
@@ -29,15 +29,8 @@ Everything is saved in your own browser — no account, no server, nothing leave
    - *Day chips fall under the 44px touch floor.* Seven across `100vw - 32px` gives 43px at a
      360px viewport, narrower below. `CLAUDE.md` allows one exception to the rule and this isn't
      it. Needs a call on how the strip behaves on a small phone before it can be fixed.
-2. **Explain the two-column screenshots.** Two of the four new shots show the week as a
-   *two-column grid of day cards* at a middling width, with the day headers still showing and no
-   day strip. The CSS on `main` cannot produce that: below 1000px `.week-grid` goes to one
-   column, `.day:not(.is-focus)` hides six days, `.day-head` is hidden and the strip appears.
-   Most likely a stale cached `style.css` in the browser that took them — hard-refresh and
-   re-shoot before believing anything else. If it reproduces on a hard refresh, it's a real
-   layout defect and goes to the top of this list.
-3. **Look at it on a real phone.** The day strip has now been seen rendering in a desktop browser
-   at a narrow width (that's the fourth screenshot) — but a desktop window is not a phone, and
+2. **Look at it on a real phone.** The day strip has now been seen rendering in a desktop browser
+   at a narrow width (that's the second screenshot above) — but a desktop window is not a phone, and
    the 360px measurements behind defect 3 are still arithmetic, not observation. Density,
    contrast and touch targets on real hardware remain unverified. See *Testing*.
 
@@ -57,7 +50,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 ## Screenshots
 
-Four, all of the Week view on an empty plan, taken 28 August 2026. The v1 set was deleted two
+Two, both of the Week view on an empty plan, taken 28 August 2026. The v1 set was deleted two
 rounds earlier for being stale; this is the replacement.
 
 **The week, wide.** Seven day cards, past days settled grey, Friday carrying today's accent
@@ -69,13 +62,6 @@ border and dot, the three meal rows running straight across all seven.
 selected, the others outlined. This is the first time the narrow week has been seen rendered.
 
 ![The day strip and one open day](Screenshots/week-day-strip.png)
-
-**The two odd ones.** Both show a two-column grid of day cards with the day headers visible and
-no strip, which the CSS on `main` cannot produce. Kept because they're evidence of *something* —
-see job 2 at the top of this file. Don't read them as how the app looks.
-
-![Two-column week, meal labels above](Screenshots/week-two-column-a.png)
-![Two-column week, meal labels beside](Screenshots/week-two-column-b.png)
 
 Still missing, and worth taking next: the Recipes view with the filter panel open, and the inline
 slot picker under the week with **Add to Thu breakfast** on a card's button.
@@ -294,8 +280,7 @@ that reading didn't catch.
 project has actually been looked at. They confirm the wide week — alignment, the past/today split,
 the today dot not wrapping — and they confirm the day strip renders with one day open. They do
 *not* touch the three defects: focus order isn't visible in a screenshot, an accessible name isn't
-either, and nothing here was shot at 360px, so the 43px chip figure is still arithmetic. They also
-turned up the two-column layout nobody can explain — job 2 at the top.
+either, and nothing here was shot at 360px, so the 43px chip figure is still arithmetic.
 
 Everything else is still unseen: the Recipes view, the filter panel, the inline picker, the add
 sheet, and the whole app on a real phone rather than a narrow desktop window.
@@ -328,7 +313,7 @@ which is simply under the floor. Defect 3 above.
 | **Narrow week** | Branch `mobile-week`. Started as a CSS-only compaction of the meal rows below 1000px, then grew on the same branch into the day strip: seven day buttons plus the one day they select, the same card as the wide layout with six hidden. `focusDay` added to state, not persisted |
 | **Reviewed twice** | The first review covered the compaction and produced one fixup — a duplicate `@media (max-width: 1000px)` block folded back into the existing one, which had been sitting after the 620px block and overriding it. The branch then grew two more commits, so the PR was re-read from scratch. That pass found the three defects now listed at the top |
 | **Merged anyway** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) squash-merged to `main` as `236ce5b` with the three defects open, at your call. Pages build `built` |
-| **Seen at last** | You took four screenshots of the Week view and committed them to `main` as `f0dfe07` — documentation, so no branch. The wide week and the day strip both look right. Two of the four show a two-column week the CSS can't produce; unexplained, and now job 2 |
+| **Seen at last** | You took screenshots of the Week view and committed them to `main` as `f0dfe07` — documentation, so no branch. The wide week and the day strip both look right. Two of the four turned out to be of an older version and were deleted rather than left to mislead, the same call as the v1 set |
 
 ---
 

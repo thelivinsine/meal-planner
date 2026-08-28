@@ -127,8 +127,8 @@ sharing/syncing. Don't add these unless asked. See *Not in v1* in `README.md`.
 Open `index.html` in a browser. For anything visual that *is* the test, and it is the step that
 keeps getting skipped — the narrow week shipped without it. No test framework unless asked.
 The wide week and the day strip have now been seen (`Screenshots/`); everything else has not.
-Hard-refresh before trusting what a browser shows — a cached `style.css` is the leading suspect
-for the two-column shots that no rule in `style.css` can explain.
+Hard-refresh before shooting — two screenshots of an older build got committed and had to be
+deleted, and a screenshot of the wrong version is worse than none.
 
 For logic changes, a throwaway Node script against a stub DOM is the cheap check: stub the few
 DOM pieces `app.js` touches on load, import it, drive `state` and the delegated click handler
