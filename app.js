@@ -423,6 +423,20 @@ const TAG_GROUPS = [
   { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
   { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
 ];
+// One of these greets you on the week view. Picked once per load, not per render, so
+// it stays put while you are using the app and changes when you come back to it.
+const WEEK_GREETINGS = [
+  'Let’s plan your week',
+  'What’s cooking this week?',
+  'Seven days, twenty-one meals',
+  'Fill the week, one meal at a time',
+  'Right then — what are we eating?',
+  'Your week, sorted',
+  'Time to fill the table',
+  'A week’s worth of dinners awaits'
+];
+const WEEK_GREETING = WEEK_GREETINGS[Math.floor(Math.random() * WEEK_GREETINGS.length)];
+
 const KEEP_WEEKS = 4; // plan entries older than this are dropped on load
 
 // ---------------------------------------------------------------- dates
@@ -457,20 +471,6 @@ function weekDates(mondayIso) {
 }
 
 const fmtDayMonth = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-const fmtRangeMonth = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' });
-
-function weekRangeLabel(mondayIso) {
-  const days = weekDates(mondayIso);
-  const first = days[0];
-  const last = days[6];
-  const sameYear = first.getFullYear() === last.getFullYear();
-  const tail = fmtRangeMonth.format(last) + (sameYear ? ' ' + last.getFullYear() : '');
-  const head = sameYear && first.getMonth() === last.getMonth()
-    ? String(first.getDate())
-    : fmtRangeMonth.format(first) + (sameYear ? '' : ' ' + first.getFullYear());
-  return head + ' – ' + tail;
-}
-
 function slotKey(iso, meal) { return iso + '|' + meal; }
 
 // Narrow screens show one day at a time -- this is which one. Today when the week on
@@ -486,8 +486,15 @@ const state = {
   view: 'week',
   weekStart: isoOf(mondayOf(new Date())),
   focusDay: defaultFocusDay(isoOf(mondayOf(new Date()))),
+  // Wide layout only: false means one day is expanded and the other six are collapsed
+  // to vertical rails; true means all seven share the width, as they used to. Session
+  // only, like focusDay - which day you were looking at is not worth persisting.
+  expandAll: false,
   plan: {},
   bookmarks: [],
+  // Persisted alongside the plan. View, week, search and filters stay per-session on
+  // purpose, but a theme the user picked and then lost on reload is just a bug.
+  theme: 'light',
   search: '',
   tags: [],
   filtersOpen: true
@@ -530,13 +537,15 @@ function loadState() {
   if (Array.isArray(saved.bookmarks)) {
     state.bookmarks = saved.bookmarks.filter(function (id) { return RECIPE_BY_ID.has(id); });
   }
+  if (saved.theme === 'dark' || saved.theme === 'light') state.theme = saved.theme;
 }
 
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       plan: state.plan,
-      bookmarks: state.bookmarks
+      bookmarks: state.bookmarks,
+      theme: state.theme
     }));
   } catch (err) {
     console.warn('Could not save — changes will be lost on refresh.', err);
@@ -557,7 +566,7 @@ const el = {
   },
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
-  weekRange: document.getElementById('week-range'),
+  weekHeading: document.getElementById('week-heading'),
   search: document.getElementById('search'),
   tagFilters: document.getElementById('tag-filters'),
   filterToggle: document.getElementById('filter-toggle'),
@@ -570,6 +579,7 @@ const el = {
   savedEmpty: document.getElementById('saved-empty'),
   savedCount: document.getElementById('saved-count'),
   detail: document.getElementById('detail'),
+  detailTools: document.getElementById('detail-tools'),
   detailBody: document.getElementById('detail-body'),
   picker: document.getElementById('picker'),
   pickerRecipe: document.getElementById('picker-recipe'),
@@ -582,8 +592,22 @@ const el = {
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
   slotSearch: document.getElementById('slot-search'),
+  themeToggle: document.getElementById('theme-toggle'),
+  expandAllBtn: document.getElementById('expand-all'),
+  expandAllLabel: document.getElementById('expand-all-label'),
   toast: document.getElementById('toast')
 };
+
+// ---------------------------------------------------------------- theme
+
+// The inline script in <head> has already painted the stored theme, so this only has
+// to keep the toggle's own labelling honest after a change.
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme;
+  const dark = state.theme === 'dark';
+  el.themeToggle.setAttribute('aria-pressed', String(dark));
+  el.themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+}
 
 // ---------------------------------------------------------------- helpers
 
@@ -611,6 +635,24 @@ function tagsHtml(tags) {
   return tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 }
 
+// Inline SVG rather than the &#9733; / &times; glyphs the first build used: these take
+// currentColor, scale with the button, and do not depend on a font shipping the
+// character. Same 24px grid, same stroke weight, one visual family.
+const STAR_PATH = 'M12 3.5l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17.3l-5.38 2.85 1.03-6L3.3 9.9l6-.9z';
+const ICON = {
+  starOn: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">' +
+    '<path d="' + STAR_PATH + '"></path></svg>',
+  starOff: '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="' + STAR_PATH + '"></path></svg>',
+  close: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
+  calendarPlus: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V11H4z"></path>' +
+    '<path d="M4 11v8.5a2 2 0 0 0 2 2h5M8 2.6v3.6M16 2.6v3.6"></path>' +
+    '<path d="M17.5 14v6M14.5 17h6"></path></svg>'
+};
+
 // ---------------------------------------------------------------- rendering
 
 function setView(view) {
@@ -635,12 +677,10 @@ function render() {
 
 function renderWeek() {
   const todayIso = isoOf(new Date());
-  el.weekRange.textContent = weekRangeLabel(state.weekStart);
-
   const days = weekDates(state.weekStart);
 
-  // The strip is the week overview the seven cards give on a wide screen: which day is
-  // showing, and which of the others already have something planned.
+  // The strip is the week overview the seven columns give on a wide screen: which day
+  // is showing, and which of the others already have something planned.
   el.dayStrip.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const planned = MEALS.some(function (meal) { return state.plan[slotKey(iso, meal)]; });
@@ -656,9 +696,39 @@ function renderWeek() {
       '</button>';
   }).join('');
 
+  el.expandAllBtn.setAttribute('aria-pressed', String(state.expandAll));
+  el.expandAllLabel.textContent = state.expandAll ? 'Focus a day' : 'Expand all';
+
+  // The column template is the animation. It is set as a custom property on the grid -
+  // which survives the innerHTML swap below, so CSS transitions the widths from the old
+  // value to the new one. An inline grid-template-columns would beat the narrow media
+  // query; a custom property does not.
+  el.weekGrid.style.setProperty('--week-cols', days.map(function (_, i) {
+    return state.expandAll || i !== state.focusDay ? 'minmax(0, 1fr)' : 'minmax(0, 8fr)';
+  }).join(' '));
+
   el.weekGrid.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
+    const isFocus = i === state.focusDay;
+    const isOpen = state.expandAll || isFocus;
+    const dot = iso === todayIso
+      ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>'
+      : '';
+
+    // Collapsed: the whole rail is the control that expands it, and it carries the full
+    // day name and the same date format, turned on its side.
+    if (!isOpen) {
+      const side = i < state.focusDay ? ' is-before' : ' is-after';
+      return '<article class="day is-collapsed' + side + ' ' + when + '">' +
+          '<h2 class="day-name"><button type="button" class="day-rail" data-action="week-day" data-i="' + i + '" ' +
+            'aria-expanded="false" aria-label="Expand ' + DAY_NAMES[i] + '">' +
+            '<span class="rail-name">' + DAY_NAMES[i] + dot + '</span>' +
+            '<span class="rail-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+          '</button></h2>' +
+        '</article>';
+    }
+
     const slots = MEALS.map(function (meal) {
       const id = state.plan[slotKey(iso, meal)];
       const recipe = id ? RECIPE_BY_ID.get(id) : null;
@@ -670,19 +740,28 @@ function renderWeek() {
               '<span class="slot-time">' + recipe.minutes + ' min</span>' +
             '</button>' +
             '<button type="button" class="icon-btn slot-clear" data-action="clear-slot" data-iso="' + iso + '" data-meal="' + meal + '" ' +
-              'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">&times;</button>' +
+              'aria-label="Clear ' + meal + ' on ' + DAY_NAMES[i] + '" title="Clear">' + ICON.close + '</button>' +
           '</div>'
         : '<button type="button" class="slot-add" data-action="slot-add" data-iso="' + iso + '" data-meal="' + meal + '" ' +
             'aria-label="Add ' + meal.toLowerCase() + ' on ' + DAY_NAMES[i] + '">+ Add</button>';
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
-    return '<article class="day ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' +
-        '<div class="day-head">' +
-          '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
-            (iso === todayIso ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>' : '') + '</h2>' +
-          '<p class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</p>' +
-        '</div>' + slots +
+    // An open day's header is never a control: in expand-all there is nothing left to
+    // expand, and in the accordion the day it would expand is the one already open. The
+    // six rails are what you click. So it is a span in both cases, not a button that
+    // claims aria-expanded and then does nothing when pressed.
+    const head = '<span class="day-head">' +
+        '<span class="day-short">' + (state.expandAll ? DAY_NAMES[i].slice(0, 3) : DAY_NAMES[i]) + dot + '</span>' +
+        '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+      '</span>';
+
+    // tabindex so focus has somewhere to land after a rail expands this day - the
+    // control that was clicked no longer exists once the rail becomes a full card.
+    const label = DAY_NAMES[i] + ' ' + fmtDayMonth.format(date) + (iso === todayIso ? ', today' : '');
+    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '" tabindex="-1" ' +
+        'aria-label="' + escapeHtml(label) + '">' +
+        '<h2 class="day-name">' + head + '</h2>' + slots +
       '</article>';
   }).join('');
 }
@@ -709,7 +788,7 @@ function cardHtml(recipe, slot) {
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? '&#9733;' : '&#9734;') + '</button>' +
+          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>' +
       '</div>' +
     '</article>';
 }
@@ -802,19 +881,26 @@ function openDetail(id, slot) {
   const saved = isBookmarked(id);
   detailSlot = slot || null;
 
-  const addBtn = detailSlot
-    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" ' +
-        'data-id="' + recipe.id + '" data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '">' +
-        'Add to ' + escapeHtml(slotLabel(detailSlot.iso, detailSlot.meal)) + '</button>'
-    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
+  // Both actions sit beside the close button as icons. When a slot is already in play
+  // the add button fills it directly rather than opening the day-and-meal dialog: the
+  // day and the meal are known, and asking again is the one thing this app never does.
+  const where = detailSlot ? slotLabel(detailSlot.iso, detailSlot.meal) : '';
+  el.detailTools.innerHTML =
+    (detailSlot
+      ? '<button type="button" class="icon-btn" data-action="fill-slot" data-id="' + recipe.id + '" ' +
+          'data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '" ' +
+          'aria-label="Add ' + escapeHtml(recipe.name) + ' to ' + escapeHtml(where) + '" ' +
+          'title="Add to ' + escapeHtml(where) + '">' + ICON.calendarPlus + '</button>'
+      : '<button type="button" class="icon-btn" data-action="add-to-week" data-id="' + recipe.id + '" ' +
+          'aria-label="Add ' + escapeHtml(recipe.name) + ' to the week" title="Add to week">' +
+          ICON.calendarPlus + '</button>') +
+    '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
+      'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
+      'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>';
 
   el.detailBody.innerHTML =
     '<h2 class="sheet-title" id="detail-name">' + escapeHtml(recipe.name) + '</h2>' +
     '<div class="detail-meta">' + tagsHtml(recipe.tags) + '<span class="tag">' + recipe.minutes + ' min</span></div>' +
-    '<div class="sheet-actions" style="margin-top:0">' + addBtn +
-      '<button type="button" class="btn btn-quiet" data-action="bookmark" data-id="' + recipe.id + '" aria-pressed="' + saved + '">' +
-        (saved ? '&#9733; Saved' : '&#9734; Save') + '</button>' +
-    '</div>' +
     '<div class="detail-block"><p class="detail-h">Ingredients</p><ul>' +
       recipe.ingredients.map(function (i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
     '</ul></div>' +
@@ -968,6 +1054,31 @@ document.addEventListener('click', function (event) {
     state.focusDay = Number(target.dataset.i);
     closeSlotPicker();
     renderWeek();
+    // renderWeek() rebuilt the week, destroying the control that was just pressed and
+    // dropping focus to <body> — same move closeSlotPicker() already makes. Where it
+    // goes back depends on where the click came from: the narrow strip still has an
+    // equivalent chip, but a wide rail has become the open day card, so focus lands on
+    // the card itself. Focusing the strip chip on a wide screen would hand focus to a
+    // display:none element, which drops it to <body> again.
+    const again = el.dayStrip.contains(target)
+      ? el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]')
+      : el.weekGrid.querySelector('.day.is-focus');
+    if (again) again.focus();
+    return;
+  }
+
+  if (action === 'expand-all') {
+    state.expandAll = !state.expandAll;
+    closeSlotPicker();
+    renderWeek();
+    el.expandAllBtn.focus();
+    return;
+  }
+
+  if (action === 'theme') {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveState();
     return;
   }
 
@@ -1095,6 +1206,8 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 // ---------------------------------------------------------------- start
 
 loadState();
+applyTheme();
+el.weekHeading.textContent = WEEK_GREETING;
 renderTagFilters();
 renderFilterState();
 setView('week');
