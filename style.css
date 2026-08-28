@@ -71,6 +71,21 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* Every scrolling surface in the app, not just the recipe tray: a transparent track so
+   it takes whatever it sits on, and a thumb from the line tokens. Firefox reads the two
+   standard properties, everything else the webkit pseudo-elements. */
+html { scrollbar-color: var(--line-strong) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -510,16 +525,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   margin-right: -13px;
   display: grid; gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
 }
-.pick-grid::-webkit-scrollbar { width: 9px; }
-.pick-grid::-webkit-scrollbar-track { background: transparent; }
-.pick-grid::-webkit-scrollbar-thumb {
-  background: var(--line-strong); border-radius: var(--radius-pill);
-  border: 2px solid transparent; background-clip: content-box;
-}
-.pick-grid::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
 
 /* ---------- recipe cards ---------- */
 .card-grid {
@@ -589,6 +595,10 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
   width: min(560px, calc(100vw - 32px)); max-height: min(86vh, 760px);
   color: var(--ink);
+  /* A column with one scrolling child. The old floated close button left the dialog
+     itself scrollable as well as its body, which is where the second scrollbar
+     came from. */
+  display: flex; flex-direction: column; overflow: hidden;
 }
 .sheet-sm { width: min(420px, calc(100vw - 32px)); }
 .sheet::backdrop { background: rgba(28, 20, 16, .5); backdrop-filter: blur(3px); }
@@ -601,17 +611,31 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
-.sheet-close-form { position: sticky; top: 0; float: right; z-index: 2; }
-.sheet-close { margin: 10px 10px 0 0; background: var(--surface); }
+/* The dialog's fixed tool row: recipe actions, then close. */
+.sheet-tools {
+  flex: none;
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+  padding: 10px 12px 0;
+}
+.sheet-tools form { display: contents; }
+.sheet-tool-actions { display: flex; align-items: center; gap: 4px; margin-right: 4px; }
+.sheet-tool-actions .icon-btn, .sheet-close { width: 34px; height: 34px; }
+.sheet-tool-actions .bookmark { border: 1px solid transparent; }
+.sheet-tool-actions .bookmark[aria-pressed="true"] {
+  color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft);
+}
 
-.sheet-body { padding: 22px 24px 24px; overflow-y: auto; max-height: inherit; }
-.sheet-title { font-size: 1.5rem; padding-right: 40px; }
+.sheet-body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 6px 24px 24px;
+}
+.sheet-title { font-size: 1.5rem; }
 /* "Add to week" is context, not the headline — the recipe is. So the title shrinks to
    an eyebrow and the name takes the weight it used to have. */
 .sheet-eyebrow {
   font-family: var(--font-body);
   font-size: .625rem; text-transform: uppercase; letter-spacing: .14em;
-  font-weight: 700; color: var(--accent-ink); padding-right: 40px;
+  font-weight: 700; color: var(--accent-ink);
 }
 .picker-recipe {
   font-family: var(--font-display);
@@ -723,6 +747,16 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
     padding: 5px 2px; min-height: 44px; gap: 0;
     background: var(--surface); border-color: var(--line-strong);
   }
+  /* .day-strip .day-chip matches the base pressed rule on specificity and comes later,
+     so the selected chip has to be restated here or it loses its accent fill. */
+  .day-strip .day-chip.is-past { background: var(--surface-past); }
+  .day-strip .day-chip.has-meals { background: var(--accent-soft); border-color: var(--accent); }
+  .day-strip .day-chip[aria-pressed="true"] {
+    background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+  }
+  .day-strip .day-chip[aria-pressed="true"] .day-chip-name,
+  .day-strip .day-chip[aria-pressed="true"] .day-chip-date { color: var(--on-accent); }
+  .day-strip .day-chip[aria-pressed="true"] .day-dot { background: var(--on-accent); }
   .day-strip .day-chip-name { font-size: .75rem; }
   .day-strip .day-chip-date { font-size: .5625rem; }
   .day-strip .day-chip.is-today .day-chip-name { color: var(--accent-ink); }
@@ -757,7 +791,8 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   .slot { flex-direction: row; align-items: center; gap: 12px; }
   .slot + .slot { padding-top: 8px; }
   .slot-label { flex: none; width: 72px; }
-  .slot-filled, .slot-add { flex: 1; min-width: 0; }
+  .slot-filled { flex: 1; min-width: 0; }
+  .slot-add { flex: 0 0 auto; }
   .slot-recipe-name, .slot-time { display: inline; margin-top: 0; }
   .slot-time { margin-left: 8px; white-space: nowrap; }
 

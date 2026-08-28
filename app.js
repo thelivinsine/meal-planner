@@ -579,6 +579,7 @@ const el = {
   savedEmpty: document.getElementById('saved-empty'),
   savedCount: document.getElementById('saved-count'),
   detail: document.getElementById('detail'),
+  detailTools: document.getElementById('detail-tools'),
   detailBody: document.getElementById('detail-body'),
   picker: document.getElementById('picker'),
   pickerRecipe: document.getElementById('picker-recipe'),
@@ -644,7 +645,12 @@ const ICON = {
   starOff: '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" ' +
     'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="' + STAR_PATH + '"></path></svg>',
   close: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
-    'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>'
+    'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
+  calendarPlus: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V11H4z"></path>' +
+    '<path d="M4 11v8.5a2 2 0 0 0 2 2h5M8 2.6v3.6M16 2.6v3.6"></path>' +
+    '<path d="M17.5 14v6M14.5 17h6"></path></svg>'
 };
 
 // ---------------------------------------------------------------- rendering
@@ -878,19 +884,22 @@ function openDetail(id, slot) {
   const saved = isBookmarked(id);
   detailSlot = slot || null;
 
-  const addBtn = detailSlot
-    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" ' +
-        'data-id="' + recipe.id + '" data-iso="' + detailSlot.iso + '" data-meal="' + detailSlot.meal + '">' +
-        'Add to ' + escapeHtml(slotLabel(detailSlot.iso, detailSlot.meal)) + '</button>'
-    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
+  // Both actions sit beside the close button as icons. "Add to week" opens the
+  // day-and-meal dialog, so it is dropped when a slot is already in play: the day and
+  // the meal are known, and asking again is the one thing this app never does.
+  el.detailTools.innerHTML =
+    (detailSlot
+      ? ''
+      : '<button type="button" class="icon-btn" data-action="add-to-week" data-id="' + recipe.id + '" ' +
+          'aria-label="Add ' + escapeHtml(recipe.name) + ' to the week" title="Add to week">' +
+          ICON.calendarPlus + '</button>') +
+    '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
+      'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
+      'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>';
 
   el.detailBody.innerHTML =
     '<h2 class="sheet-title" id="detail-name">' + escapeHtml(recipe.name) + '</h2>' +
     '<div class="detail-meta">' + tagsHtml(recipe.tags) + '<span class="tag">' + recipe.minutes + ' min</span></div>' +
-    '<div class="sheet-actions" style="margin-top:0">' + addBtn +
-      '<button type="button" class="btn btn-quiet" data-action="bookmark" data-id="' + recipe.id + '" aria-pressed="' + saved + '">' +
-        (saved ? ICON.starOn + ' Saved' : ICON.starOff + ' Save') + '</button>' +
-    '</div>' +
     '<div class="detail-block"><p class="detail-h">Ingredients</p><ul>' +
       recipe.ingredients.map(function (i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
     '</ul></div>' +

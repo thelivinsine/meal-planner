@@ -139,21 +139,28 @@
 
   <!-- Recipe detail -->
   <dialog id="detail" class="sheet" aria-labelledby="detail-name">
-    <form method="dialog" class="sheet-close-form">
-      <button class="icon-btn sheet-close" aria-label="Close">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-      </button>
-    </form>
+    <div class="sheet-tools">
+      <!-- Save, and Add to week when there is no slot already in play. Written by
+           openDetail(), which knows whether it was opened from a slot. -->
+      <div class="sheet-tool-actions" id="detail-tools"></div>
+      <form method="dialog">
+        <button class="icon-btn sheet-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </form>
+    </div>
     <div class="sheet-body" id="detail-body"></div>
   </dialog>
 
   <!-- Add to week -->
   <dialog id="picker" class="sheet sheet-sm" aria-labelledby="picker-title">
-    <form method="dialog" class="sheet-close-form">
-      <button class="icon-btn sheet-close" aria-label="Close">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-      </button>
-    </form>
+    <div class="sheet-tools">
+      <form method="dialog">
+        <button class="icon-btn sheet-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </form>
+    </div>
     <div class="sheet-body sheet-body-center">
       <h2 id="picker-title" class="sheet-eyebrow">Add to week</h2>
       <p class="picker-recipe" id="picker-recipe"></p>
