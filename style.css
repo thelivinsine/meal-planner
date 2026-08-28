@@ -11,19 +11,16 @@
   --bg: #ffffff;
   --surface: #fdf0e8;        /* day cards, recipe cards, panels */
   --surface-sunk: #f8e0d1;   /* trays and tags — a step deeper than a tile */
-  --surface-today: #fbdcc8;  /* today, a gentle step up, not an ink slab */
   --ink: #1c1410;
   --ink-soft: #5c4a3d;
   --ink-faint: #735c4e;
   --line: #f2dfd2;
   --line-strong: #e3c4ad;
 
-  --accent: #f2600f;         /* fills, borders and dots only */
-  --accent-soft: #fbd5bd;
-  --accent-ink: #a63c07;     /* every accent-coloured piece of TEXT */
-  --accent-hover: #ff6b14;   /* primary button hover fill: brighter, not darker - the
-                                label is dark ink, so darkening would cost contrast */
-  --on-accent: #1c1410;      /* ink on orange — what keeps the orange vibrant */
+  --accent: #bd4b2f;
+  --accent-soft: #f9e8e1;
+  --accent-ink: #9a422a;
+  --on-accent: #ffffff;
 
   --radius: 13px;
   --radius-sm: 9px;
@@ -48,18 +45,16 @@
   --bg: #14100d;
   --surface: #231b16;
   --surface-sunk: #1b1512;
-  --surface-today: #33241a;  /* lifted, not glaring — the mirror of the light rule */
   --ink: #f8f0e9;
   --ink-soft: #c6b3a3;
   --ink-faint: #9d8776;
   --line: #33281f;
   --line-strong: #4a392c;
 
-  --accent: #ff8438;
-  --accent-soft: #3a2318;
-  --accent-ink: #ffb083;
-  --accent-hover: #ff9c5c;
-  --on-accent: #1c1410;
+  --accent: #ed7b59;
+  --accent-soft: #302115;
+  --accent-ink: #f2ac93;
+  --on-accent: #1a1209;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
   --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 26px -16px rgba(0, 0, 0, .85);
@@ -200,7 +195,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .btn-primary {
   background: var(--accent); border-color: var(--accent); color: var(--on-accent);
 }
-.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--on-accent); }
 
 .btn-quiet { background: var(--surface); border-color: var(--line-strong); color: var(--ink-soft); }
 .btn-quiet:hover { color: var(--ink); }
@@ -248,9 +243,17 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .day.is-open:hover { box-shadow: var(--shadow); }
 
-/* Today is a warmer tile and an accent edge — not a slab of ink. The old treatment
-   was a hole punched in the page. */
-.day.is-today { background: var(--surface-today); border-color: var(--accent); }
+/* Today is not a hairline difference: the whole card flips to ink. */
+.day.is-today {
+  background: var(--ink); border-color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.day.is-today .day-short, .day.is-today .day-date { color: var(--bg); }
+.day.is-today .slot-label { color: color-mix(in srgb, var(--bg) 62%, transparent); }
+.day.is-today .day-head { border-bottom-color: color-mix(in srgb, var(--bg) 26%, transparent); }
+.day.is-today .slot + .slot { border-top-color: color-mix(in srgb, var(--bg) 18%, transparent); }
+.day.is-today .slot-add { color: color-mix(in srgb, var(--bg) 66%, transparent); }
+.day.is-today .slot-add:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); color: var(--bg); }
 
 /* Past days stay legible but visibly settled: flatter, quieter, no accent. */
 .day.is-past { background: var(--surface-sunk); border-color: var(--line); }
@@ -284,7 +287,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 /* margin-left would push the dot sideways out of the vertical run. */
 .day-rail .day-dot { margin: 6px 0 0; }
-.day.is-collapsed.is-today { border-color: var(--accent); background: var(--surface-today); }
+.day.is-collapsed.is-today { border-color: var(--accent); background: var(--accent-soft); }
 .day.is-collapsed.is-today .rail-name,
 .day.is-collapsed.is-today .rail-date { color: var(--accent-ink); }
 .day.is-collapsed.is-past { opacity: .7; }
@@ -317,8 +320,6 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
   color: var(--ink-faint); font-size: .6875rem; font-weight: 600;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.day.is-today .day-short, .day.is-today .day-date { color: var(--accent-ink); }
-.day.is-today .day-head { border-bottom-color: var(--line-strong); }
 .day.is-past .day-short, .day.is-past .day-date { color: var(--ink-faint); }
 
 /* Today's marker is a dot beside the day name. A pill pushed the date onto a
@@ -354,7 +355,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 .slot-recipe-name { display: block; color: var(--accent-ink); font-weight: 600; }
 .slot-time {
   display: block; font-size: .625rem; font-weight: 500;
-  color: var(--ink-faint); margin-top: 1px;
+  color: color-mix(in srgb, var(--accent-ink) 72%, transparent); margin-top: 1px;
 }
 
 .slot-clear { flex: none; width: 26px; height: auto; }
@@ -584,7 +585,7 @@ button.day-head:hover .day-short { color: var(--accent-ink); }
 .detail-block + .detail-block { margin-top: 22px; }
 .detail-block ul, .detail-block ol { padding-left: 20px; }
 .detail-block li { margin-bottom: 6px; color: var(--ink-soft); }
-.detail-block li::marker { color: var(--accent); font-weight: 700; }
+.detail-block li::marker { color: var(--accent-ink); font-weight: 700; }
 
 .field-label {
   font-size: .5625rem; text-transform: uppercase; letter-spacing: .12em;
