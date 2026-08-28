@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `409d7d2` — the UI round, squash-merged from `feat/ui-polish` (PR [#2](https://github.com/thelivinsine/meal-planner/pull/2), now closed and the branch deleted). Deployed and live at the link above |
-| **Open work** | None. Next jobs below are all unstarted |
+| **Open work** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) on `mobile-week` — compacts the week's meal rows below 1000px, CSS only. Needs a browser look at ~700px and ~390px before merging |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
 **Next jobs, in the order they'd earn their place:**
