@@ -423,6 +423,17 @@ h1 { font-size: 1.75rem; }
 @media (max-width: 1000px) {
   .week-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .filter-groups { gap: 14px 20px; }
+  /* Two days wide, each one wide but short on space: the meal label and its meal sit on
+     one line instead of stacking, which roughly halves a day card's height. Same box per
+     level -- still a hairline between rows, no new boxes. */
+  .slot { flex-direction: row; align-items: center; gap: 10px; }
+  .slot + .slot { padding-top: 6px; }
+  .slot-label { flex: none; width: 68px; }
+  .slot-filled, .slot-add { flex: 1; min-width: 0; margin-left: 0; }
+  .slot-recipe { margin-left: 0; }
+  /* Name and time run together on the one line rather than stacking again. */
+  .slot-recipe-name, .slot-time { display: inline; margin-top: 0; }
+  .slot-time { margin-left: 8px; white-space: nowrap; }
 }
 
 @media (max-width: 620px) {
@@ -448,18 +459,4 @@ h1 { font-size: 1.75rem; }
     border-radius: var(--radius) var(--radius) 0 0;
   }
   .sheet-body { padding: 20px 18px 28px; }
-}
-
-/* Below the seven-column week, each day is wide but short on space: the meal label and
-   its meal sit on one line instead of stacking, which roughly halves a day card's
-   height. Same box per level -- still a hairline between rows, no new boxes. */
-@media (max-width: 1000px) {
-  .slot { flex-direction: row; align-items: center; gap: 10px; }
-  .slot + .slot { padding-top: 6px; }
-  .slot-label { flex: none; width: 68px; }
-  .slot-filled, .slot-add { flex: 1; min-width: 0; margin-left: 0; }
-  .slot-recipe { margin-left: 0; }
-  /* Name and time run together on the one line rather than stacking again. */
-  .slot-recipe-name, .slot-time { display: inline; margin-top: 0; }
-  .slot-time { margin-left: 8px; white-space: nowrap; }
 }
