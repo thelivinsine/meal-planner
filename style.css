@@ -24,6 +24,7 @@
   --radius-sm: 9px;
   --radius-pill: 999px;
   --tap: 44px;
+  --rail-w: 58px;      /* a collapsed day column in the wide accordion */
 
   --shadow-sm: 0 1px 2px rgba(25, 19, 9, .06), 0 2px 6px -2px rgba(25, 19, 9, .10);
   --shadow: 0 2px 4px rgba(25, 19, 9, .05), 0 14px 30px -18px rgba(25, 19, 9, .32);
@@ -97,7 +98,7 @@ button, input, select { font: inherit; color: inherit; }
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* The eyebrow above every view heading — small, loud, accent. */
 .eyebrow {
@@ -111,7 +112,7 @@ button, input, select { font: inherit; color: inherit; }
   position: sticky; top: 0; z-index: 20;
   background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(12px) saturate(1.4);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 
 .topbar-inner {
@@ -138,7 +139,7 @@ button, input, select { font: inherit; color: inherit; }
 .nav {
   display: flex; gap: 2px; list-style: none; padding: 4px;
   background: var(--surface-sunk);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--line);
   border-radius: 12px;
 }
 
@@ -159,7 +160,7 @@ button, input, select { font: inherit; color: inherit; }
   width: 42px; height: 42px;
   display: grid; place-items: center;
   background: var(--surface); color: var(--ink);
-  border: 2px solid var(--ink); border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
   transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
 .theme-btn:hover { background: var(--accent-soft); }
@@ -197,7 +198,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
   padding: 10px 20px; min-height: var(--tap);
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font-weight: 600; white-space: nowrap;
-  border: 2px solid var(--ink); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
   transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
               box-shadow var(--fast) var(--ease), color var(--fast) var(--ease);
 }
@@ -217,7 +218,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 .btn-sm { min-height: 38px; padding: 6px 14px; font-size: .875rem; }
 
 .icon-btn {
-  cursor: pointer; border: 2px solid transparent; background: none;
+  cursor: pointer; border: 1px solid transparent; background: none;
   color: var(--ink-faint); border-radius: var(--radius-sm);
   width: 40px; height: 40px; display: grid; place-items: center;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
@@ -230,32 +231,79 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 .week-nav { display: flex; gap: 8px; }
 
 /* Every day spans the same four rows — header, then three meals — and borrows the
-   grid's own tracks with subgrid, so the meal rows run straight across all seven days
-   however tall one recipe name gets.
-   ponytail: no fallback for browsers without subgrid; there the rows size per card. */
+   grid's own tracks with subgrid, so that in expand-all the meal rows run straight
+   across all seven days however tall one recipe name gets.
+   ponytail: no fallback for browsers without subgrid; there the rows size per card.
+
+   --week-cols is written by renderWeek: six rail tracks and one flexible column in the
+   accordion, seven equal columns in expand-all. The grid element itself survives the
+   innerHTML swap, so the transition below animates the widths between the two. */
 .week-grid {
   display: grid; gap: 12px;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: var(--week-cols, repeat(7, minmax(0, 1fr)));
   grid-template-rows: auto repeat(3, auto);
+  transition: grid-template-columns .34s var(--ease);
 }
 
 .day {
   grid-row: span 4;
   display: grid; grid-template-rows: subgrid;
   background: var(--surface);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 14px;
-  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  min-width: 0;
+  transition: background var(--mid) var(--ease), border-color var(--mid) var(--ease),
+              box-shadow var(--fast) var(--ease);
 }
-.day:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.day.is-open:hover { box-shadow: var(--shadow); }
+
+/* ---- collapsed day: a rail you click to expand ---- */
+.day.is-collapsed {
+  padding: 12px 4px;
+  background: var(--surface-sunk);
+  overflow: hidden;
+}
+.day.is-collapsed:hover { background: var(--accent-soft); border-color: var(--accent); }
+.day.is-collapsed > .day-name { grid-row: 1 / -1; display: flex; min-height: 0; }
+
+/* The full day name and the same date the chips use, turned on its side. */
+.day-rail {
+  flex: 1; width: 100%; cursor: pointer;
+  display: flex; align-items: center; justify-content: flex-start; gap: 14px;
+  writing-mode: vertical-rl;
+  background: none; border: 0; padding: 4px 0;
+  font: inherit; color: inherit;
+  border-radius: var(--radius-sm);
+  white-space: nowrap; overflow: hidden;
+}
+.rail-name { font-size: .9375rem; font-weight: 800; letter-spacing: -0.01em; }
+.rail-date {
+  font-family: var(--font-body); font-weight: 600; font-size: .75rem;
+  color: var(--ink-faint); font-variant-numeric: tabular-nums;
+}
+/* margin-left would push the dot sideways out of the vertical run. */
+.day-rail .day-dot { margin: 7px 0 0; }
+.day.is-collapsed.is-today {
+  border-color: var(--accent); background: var(--accent-soft);
+}
+.day.is-collapsed.is-today .rail-name { color: var(--accent-ink); }
+.day.is-collapsed.is-today .rail-date { color: var(--accent-ink); }
+.day.is-collapsed.is-past { opacity: .7; }
+
+/* The meals fade in behind the widening column rather than snapping into place. */
+.day.is-open > .slot { animation: slot-in .28s var(--ease) both; }
+@keyframes slot-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* Today is not a hairline difference: the whole card flips to ink. */
 .day.is-today {
   background: var(--ink); border-color: var(--ink);
   box-shadow: var(--shadow);
 }
-.day.is-today .day-name, .day.is-today .day-date { color: var(--bg); }
+.day.is-today .day-short, .day.is-today .day-date { color: var(--bg); }
 .day.is-today .slot-label { color: color-mix(in srgb, var(--bg) 62%, transparent); }
 .day.is-today .day-head { border-bottom-color: color-mix(in srgb, var(--bg) 26%, transparent); }
 .day.is-today .slot + .slot { border-top-color: color-mix(in srgb, var(--bg) 18%, transparent); }
@@ -264,21 +312,30 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 
 /* Past days stay legible but visibly settled: no white surface, no accent. */
 .day.is-past { background: var(--surface-sunk); border-color: var(--line-strong); }
-.day.is-past:hover { transform: none; box-shadow: none; }
+.day.is-past:hover { box-shadow: none; }
 .day.is-past .slot-recipe { background: var(--line); color: var(--ink-soft); }
 .day.is-past .slot-recipe:hover { background: var(--line-strong); }
 .day.is-past .slot-add { opacity: .7; }
 
+.day-name { margin: 0; min-width: 0; }
 .day-head {
+  width: 100%;
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 6px; flex-wrap: nowrap;
-  padding-bottom: 10px; border-bottom: 2px solid var(--line);
+  gap: 8px; flex-wrap: nowrap; min-width: 0;
+  padding: 0 0 10px; border: 0; border-bottom: 1px solid var(--line);
+  background: none; color: inherit; font: inherit; text-align: left;
 }
-.day-name {
+button.day-head { cursor: pointer; }
+button.day-head:hover .day-short { color: var(--accent); }
+.day-short {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 1.0625rem; letter-spacing: -0.02em; white-space: nowrap;
+  font-size: 1.0625rem; letter-spacing: -0.02em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: color var(--fast) var(--ease);
 }
 .day-date {
+  flex: none;
+  font-family: var(--font-body);
   color: var(--ink-faint); font-size: .75rem; font-weight: 600;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
@@ -324,7 +381,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 
 .slot-add {
   width: 100%; cursor: pointer; min-height: 38px;
-  background: none; border: 2px dashed var(--line-strong);
+  background: none; border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   color: var(--ink-faint); font-size: .8125rem; font-weight: 600; text-align: left;
@@ -336,7 +393,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 /* ---------- filters ---------- */
 .filters {
   margin-bottom: 32px; padding: 20px;
-  background: var(--surface); border: 2px solid var(--ink);
+  background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius);
   display: flex; flex-direction: column; gap: 18px;
   box-shadow: var(--shadow-sm);
@@ -349,7 +406,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
   width: 100%; max-width: 520px;
   padding: 12px 18px; min-height: var(--tap);
   background: var(--surface-sunk); color: var(--ink);
-  border: 2px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
 }
@@ -382,7 +439,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 
 .filter-active {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding-top: 16px; border-top: 2px solid var(--line);
+  padding-top: 16px; border-top: 1px solid var(--line);
 }
 .filter-count { font-size: .875rem; color: var(--ink-soft); font-weight: 500; }
 
@@ -391,7 +448,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
   cursor: pointer; border-radius: var(--radius-sm);
   padding: 7px 15px; min-height: 38px;
   font-size: .8125rem; font-weight: 600;
-  background: var(--surface); border: 2px solid var(--line-strong); color: var(--ink-soft);
+  background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-soft);
   transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
               border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
@@ -409,7 +466,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
    white panel their edges disappeared. Sunk here means the cards read as cards. */
 .slot-picker {
   margin-top: 28px; padding: 22px;
-  background: var(--surface-sunk); border: 2px solid var(--ink);
+  background: var(--surface-sunk); border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   animation: tray-in var(--mid) var(--ease) both;
 }
@@ -443,7 +500,7 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 }
 
 .card {
-  background: var(--surface); border: 2px solid var(--ink);
+  background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius);
   display: flex; flex-direction: column;
   overflow: hidden;
@@ -478,13 +535,13 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 
 .card-actions {
   display: flex; align-items: center; gap: 8px;
-  padding: 14px 16px 16px; border-top: 2px solid var(--line);
+  padding: 14px 16px 16px; border-top: 1px solid var(--line);
 }
 .card-actions .btn { flex: 1; }
 
 .bookmark {
   flex: none; width: 44px; height: 44px; font-size: 1.125rem;
-  border: 2px solid var(--line-strong); border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
   color: var(--ink-faint);
 }
 .bookmark[aria-pressed="true"] {
@@ -494,13 +551,13 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
 .empty {
   color: var(--ink-soft); text-align: center; font-weight: 500;
   padding: 64px 24px; background: var(--surface-sunk);
-  border: 2px dashed var(--line-strong);
+  border: 1px dashed var(--line-strong);
   border-radius: var(--radius);
 }
 
 /* ---------- dialogs ---------- */
 .sheet {
-  border: 2px solid var(--ink); padding: 0; background: var(--surface);
+  border: 1px solid var(--line-strong); padding: 0; background: var(--surface);
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
   width: min(600px, calc(100vw - 32px)); max-height: min(86vh, 780px);
   color: var(--ink);
@@ -643,12 +700,13 @@ h1 { font-size: clamp(2.25rem, 5vw, 3.25rem); }
   .day:not(.is-focus) { display: none; }
   .day:hover { transform: none; }
 
-  /* DEFECT 2, fixed: the selected chip above already names the day, so the heading is
-     hidden — visually. `display: none` took the day card's accessible name with it. */
-  .day-head {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-  }
+  /* DEFECT 2, fixed: the day card keeps a visible heading. The first build hid it with
+     display:none and took the card's accessible name with it; hiding it with .sr-only
+     instead would leave a focusable control nobody can see, now that the header is a
+     button. Mildly redundant with the chip above, and worth it for both reasons. */
+
+  /* Expand-all has nothing to do here — only one day is on screen either way. */
+  .week-nav [data-action="expand-all"] { display: none; }
 
   /* Room across, not down: the meal label sits beside its meal instead of above it. */
   .slot { flex-direction: row; align-items: center; gap: 12px; }

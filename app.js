@@ -486,6 +486,10 @@ const state = {
   view: 'week',
   weekStart: isoOf(mondayOf(new Date())),
   focusDay: defaultFocusDay(isoOf(mondayOf(new Date()))),
+  // Wide layout only: false means one day is expanded and the other six are collapsed
+  // to vertical rails; true means all seven share the width, as they used to. Session
+  // only, like focusDay - which day you were looking at is not worth persisting.
+  expandAll: false,
   plan: {},
   bookmarks: [],
   // Persisted alongside the plan. View, week, search and filters stay per-session on
@@ -588,6 +592,8 @@ const el = {
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
   slotSearch: document.getElementById('slot-search'),
   themeToggle: document.getElementById('theme-toggle'),
+  expandAllBtn: document.getElementById('expand-all'),
+  expandAllLabel: document.getElementById('expand-all-label'),
   toast: document.getElementById('toast')
 };
 
@@ -669,8 +675,8 @@ function renderWeek() {
 
   const days = weekDates(state.weekStart);
 
-  // The strip is the week overview the seven cards give on a wide screen: which day is
-  // showing, and which of the others already have something planned.
+  // The strip is the week overview the seven columns give on a wide screen: which day
+  // is showing, and which of the others already have something planned.
   el.dayStrip.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const planned = MEALS.some(function (meal) { return state.plan[slotKey(iso, meal)]; });
@@ -686,9 +692,40 @@ function renderWeek() {
       '</button>';
   }).join('');
 
+  el.expandAllBtn.setAttribute('aria-pressed', String(state.expandAll));
+  el.expandAllLabel.textContent = state.expandAll ? 'Focus a day' : 'Expand all';
+
+  // The column template is the animation. It is set as a custom property on the grid -
+  // which survives the innerHTML swap below, so CSS transitions the widths from the old
+  // value to the new one. An inline grid-template-columns would beat the narrow media
+  // query; a custom property does not.
+  el.weekGrid.style.setProperty('--week-cols', state.expandAll
+    ? 'repeat(7, minmax(0, 1fr))'
+    : days.map(function (_, i) {
+        return i === state.focusDay ? 'minmax(0, 1fr)' : 'var(--rail-w)';
+      }).join(' '));
+
   el.weekGrid.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
+    const isFocus = i === state.focusDay;
+    const isOpen = state.expandAll || isFocus;
+    const dot = iso === todayIso
+      ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>'
+      : '';
+
+    // Collapsed: the whole rail is the control that expands it, and it carries the full
+    // day name and the same date format, turned on its side.
+    if (!isOpen) {
+      return '<article class="day is-collapsed ' + when + '">' +
+          '<h2 class="day-name"><button type="button" class="day-rail" data-action="week-day" data-i="' + i + '" ' +
+            'aria-expanded="false" aria-label="Expand ' + DAY_NAMES[i] + '">' +
+            '<span class="rail-name">' + DAY_NAMES[i] + dot + '</span>' +
+            '<span class="rail-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+          '</button></h2>' +
+        '</article>';
+    }
+
     const slots = MEALS.map(function (meal) {
       const id = state.plan[slotKey(iso, meal)];
       const recipe = id ? RECIPE_BY_ID.get(id) : null;
@@ -707,12 +744,20 @@ function renderWeek() {
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
-    return '<article class="day ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' +
-        '<div class="day-head">' +
-          '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
-            (iso === todayIso ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>' : '') + '</h2>' +
-          '<p class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</p>' +
-        '</div>' + slots +
+    // Expand-all makes the header inert - there is nothing left to expand - so it stops
+    // being a button rather than becoming one that does nothing.
+    const head = state.expandAll
+      ? '<span class="day-head">' +
+          '<span class="day-short">' + DAY_NAMES[i].slice(0, 3) + dot + '</span>' +
+          '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+        '</span>'
+      : '<button type="button" class="day-head" data-action="week-day" data-i="' + i + '" aria-expanded="true">' +
+          '<span class="day-short">' + DAY_NAMES[i] + dot + '</span>' +
+          '<span class="day-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+        '</button>';
+
+    return '<article class="day is-open ' + when + (isFocus ? ' is-focus' : '') + '">' +
+        '<h2 class="day-name">' + head + '</h2>' + slots +
       '</article>';
   }).join('');
 }
@@ -1001,8 +1046,20 @@ document.addEventListener('click', function (event) {
     // renderWeek() rebuilt the strip, destroying the chip that was just pressed and
     // dropping focus to <body>. Put it back on the equivalent chip in the new strip —
     // same move closeSlotPicker() already makes for the slot picker.
-    const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
+    // Put focus back in whichever control the click came from: the narrow strip, or
+    // the day's own header in the wide accordion. Focusing the strip chip on a wide
+    // screen would hand focus to a display:none element, which drops it to <body>.
+    const scope = el.dayStrip.contains(target) ? el.dayStrip : el.weekGrid;
+    const again = scope.querySelector('[data-i="' + state.focusDay + '"]');
     if (again) again.focus();
+    return;
+  }
+
+  if (action === 'expand-all') {
+    state.expandAll = !state.expandAll;
+    closeSlotPicker();
+    renderWeek();
+    el.expandAllBtn.focus();
     return;
   }
 
