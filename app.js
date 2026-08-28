@@ -645,12 +645,14 @@ function renderWeek() {
     const iso = isoOf(date);
     const planned = MEALS.some(function (meal) { return state.plan[slotKey(iso, meal)]; });
     return '<button type="button" class="chip day-chip' + (iso === todayIso ? ' is-today' : '') +
+        (planned ? ' has-meals' : '') +
         '" data-action="week-day" data-i="' + i + '" aria-pressed="' + (i === state.focusDay) + '">' +
-        '<span class="day-chip-name">' + DAY_NAMES[i].slice(0, 3) + '</span>' +
-        '<span class="day-chip-date">' + date.getDate() + '</span>' +
-        (planned
-          ? '<span class="day-chip-dot" aria-hidden="true"></span><span class="sr-only"> (planned)</span>'
-          : '') +
+        '<span class="day-chip-name">' + DAY_NAMES[i].slice(0, 3) +
+          (iso === todayIso
+            ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>'
+            : '') + '</span>' +
+        '<span class="day-chip-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+        (planned ? '<span class="sr-only"> (has meals)</span>' : '') +
       '</button>';
   }).join('');
 

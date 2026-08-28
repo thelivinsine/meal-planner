@@ -387,9 +387,8 @@ h1 { font-size: 1.75rem; }
 .day-chip-date { font-size: .6875rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .day-chip[aria-pressed="true"] .day-chip-date { color: rgba(255, 255, 255, .82); }
 .day-chip.is-past { border-style: dashed; }
-/* Marks a day that already has meals on it, in the week's day strip. */
-.day-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-top: 3px; }
-.day-chip[aria-pressed="true"] .day-chip-dot { background: #fff; }
+/* Today's dot is accent on white, so on a selected (accent) chip it has to flip. */
+.day-chip[aria-pressed="true"] .day-dot { background: #fff; }
 .day-chip.is-past .day-chip-name { color: var(--ink-faint); font-weight: 540; }
 .day-chip.is-past[aria-pressed="true"] .day-chip-name { color: #fff; }
 
@@ -434,8 +433,13 @@ h1 { font-size: 1.75rem; }
     max-width: 560px; margin: 0 auto 16px;
   }
   .day-strip .day-chip { padding: 7px 2px; min-height: 56px; }
+  .day-strip .day-chip-date { white-space: nowrap; }
   .day-strip .day-chip.is-today .day-chip-name { color: var(--accent); }
   .day-strip .day-chip.is-today[aria-pressed="true"] .day-chip-name { color: #fff; }
+  /* A day with meals on it is tinted, so the strip shows the shape of the week at a
+     glance -- planned, today and selected each read differently. */
+  .day-strip .day-chip.has-meals { background: var(--accent-soft); border-color: var(--accent-soft); }
+  .day-strip .day-chip.has-meals[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 
   .week-grid {
     grid-template-columns: 1fr; grid-template-rows: none;
@@ -444,6 +448,8 @@ h1 { font-size: 1.75rem; }
   /* One day on screen: nothing beside it to share row tracks with. */
   .day { grid-row: auto; display: flex; flex-direction: column; gap: 8px; }
   .day:not(.is-focus) { display: none; }
+  /* The selected chip right above already names the day and its date. */
+  .day-head { display: none; }
 
   /* Room across, not down: the meal label sits beside its meal instead of above it. */
   .slot { flex-direction: row; align-items: center; gap: 12px; }
@@ -465,6 +471,7 @@ h1 { font-size: 1.75rem; }
   h1 { font-size: 1.5rem; }
   .day-strip { gap: 4px; }
   .day-strip .day-chip { padding: 7px 0; }
+  .day-strip .day-chip-date { font-size: .625rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 60vh; }
   .filters { padding: 14px; }
