@@ -34,6 +34,8 @@
           <button type="button" class="btn btn-quiet" data-action="week-shift" data-delta="1" aria-label="Next week">&rarr;</button>
         </div>
       </div>
+      <!-- Narrow screens only: picks which single day the grid below shows. -->
+      <div class="day-strip" id="day-strip" role="group" aria-label="Choose a day"></div>
       <div class="week-grid" id="week-grid" tabindex="-1"></div>
 
       <!-- Fills the space below the week: opened by a slot's "+ Add", so the day

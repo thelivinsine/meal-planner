@@ -473,11 +473,19 @@ function weekRangeLabel(mondayIso) {
 
 function slotKey(iso, meal) { return iso + '|' + meal; }
 
+// Narrow screens show one day at a time -- this is which one. Today when the week on
+// screen contains it, Monday otherwise. Not persisted: it means nothing next session.
+function defaultFocusDay(mondayIso) {
+  const i = Math.round((dateOf(isoOf(new Date())) - dateOf(mondayIso)) / 86400000);
+  return i >= 0 && i <= 6 ? i : 0;
+}
+
 // ---------------------------------------------------------------- state
 
 const state = {
   view: 'week',
   weekStart: isoOf(mondayOf(new Date())),
+  focusDay: defaultFocusDay(isoOf(mondayOf(new Date()))),
   plan: {},
   bookmarks: [],
   search: '',
@@ -547,6 +555,7 @@ const el = {
     recipes: document.getElementById('view-recipes'),
     saved: document.getElementById('view-saved')
   },
+  dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
   weekRange: document.getElementById('week-range'),
   search: document.getElementById('search'),
@@ -628,7 +637,26 @@ function renderWeek() {
   const todayIso = isoOf(new Date());
   el.weekRange.textContent = weekRangeLabel(state.weekStart);
 
-  el.weekGrid.innerHTML = weekDates(state.weekStart).map(function (date, i) {
+  const days = weekDates(state.weekStart);
+
+  // The strip is the week overview the seven cards give on a wide screen: which day is
+  // showing, and which of the others already have something planned.
+  el.dayStrip.innerHTML = days.map(function (date, i) {
+    const iso = isoOf(date);
+    const planned = MEALS.some(function (meal) { return state.plan[slotKey(iso, meal)]; });
+    return '<button type="button" class="chip day-chip' + (iso === todayIso ? ' is-today' : '') +
+        (planned ? ' has-meals' : '') +
+        '" data-action="week-day" data-i="' + i + '" aria-pressed="' + (i === state.focusDay) + '">' +
+        '<span class="day-chip-name">' + DAY_NAMES[i].slice(0, 3) +
+          (iso === todayIso
+            ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>'
+            : '') + '</span>' +
+        '<span class="day-chip-date">' + escapeHtml(fmtDayMonth.format(date)) + '</span>' +
+        (planned ? '<span class="sr-only"> (has meals)</span>' : '') +
+      '</button>';
+  }).join('');
+
+  el.weekGrid.innerHTML = days.map(function (date, i) {
     const iso = isoOf(date);
     const when = iso === todayIso ? 'is-today' : (iso < todayIso ? 'is-past' : 'is-upcoming');
     const slots = MEALS.map(function (meal) {
@@ -649,7 +677,7 @@ function renderWeek() {
       return '<div class="slot"><p class="slot-label">' + meal + '</p>' + body + '</div>';
     }).join('');
 
-    return '<article class="day ' + when + '">' +
+    return '<article class="day ' + when + (i === state.focusDay ? ' is-focus' : '') + '">' +
         '<div class="day-head">' +
           '<h2 class="day-name">' + DAY_NAMES[i].slice(0, 3) +
             (iso === todayIso ? '<span class="day-dot" aria-hidden="true"></span><span class="sr-only"> (today)</span>' : '') + '</h2>' +
@@ -922,6 +950,7 @@ document.addEventListener('click', function (event) {
 
   if (action === 'week-shift') {
     state.weekStart = isoOf(addDays(dateOf(state.weekStart), 7 * Number(target.dataset.delta)));
+    state.focusDay = defaultFocusDay(state.weekStart);
     closeSlotPicker();
     renderWeek();
     return;
@@ -929,6 +958,14 @@ document.addEventListener('click', function (event) {
 
   if (action === 'week-today') {
     state.weekStart = isoOf(mondayOf(new Date()));
+    state.focusDay = defaultFocusDay(state.weekStart);
+    closeSlotPicker();
+    renderWeek();
+    return;
+  }
+
+  if (action === 'week-day') {
+    state.focusDay = Number(target.dataset.i);
     closeSlotPicker();
     renderWeek();
     return;
