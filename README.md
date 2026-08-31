@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `49b3c16`, the bold-consumer redesign from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4), plus `f58bf0f` adding `Mockups/`. Pages build `built`, live at the link above. `main` is one full redesign behind the branch below |
-| **Open work** | Branch **`sidebar-day-view`**, PR [#6](https://github.com/thelivinsine/meal-planner/pull/6): the Concept A rebuild — left sidebar, one day at a time, and a summary column. One round of your screenshots found six flaws, all fixed in `01239e8`. **The fixes themselves have not been looked at**, so a second round of screenshots is what the PR is waiting on |
+| **Open work** | Branch **`sidebar-day-view`**, PR [#6](https://github.com/thelivinsine/meal-planner/pull/6): the Concept A rebuild — left sidebar, one day at a time, and a summary column. Two rounds of your screenshots: the first found six flaws, all fixed in `01239e8`; the second confirms the wide layout in light mode. **Narrow and dark are still unseen**, and that is what the PR is waiting on |
 | **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app |
 | **Mockups** | `Mockups/` holds the supplied concepts. The branch implements Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
@@ -28,29 +28,35 @@ glance* (meals planned, cooking time, dietary balance) and *Tips for today*, bot
 the day on screen. Under 1000px that column is dropped rather than stacked, because everything in
 it can be read off the meals themselves.
 
-**One round of screenshots has happened, and it found real breakage.** You opened the branch,
-took a wide and a narrow shot, and they showed the wide layout rendering at a third of its width
-with the content adrift in dead space, everything one flat cream, meal cards tall enough that
-three empty ones filled a phone screen, the day row wrapping to two rows on a screen with room
-for one, and the docked nav pill sitting on the "Add a dinner" button. Six were fixed in
-`01239e8`; the root cause of the first was `.page` becoming a grid item, where `margin: 0 auto`
-stops it stretching and it silently shrink-to-fits.
+**Two rounds of screenshots, and they are the reason the branch is worth anything.**
 
-**What is checked, and what still isn't.** Checked: `node --check`, 19 stub-DOM assertions,
-contrast *and* surface-to-surface separation computed from the tokens in the stylesheet for both
-themes, and static wiring — every id resolves, no class without a rule, no base rule written
-below the first media query. **Not** checked: what the fixes look like. The screenshots predate
-all of them, and the browser tooling still won't connect here, so nothing in the current state
-has been rendered by anyone. That is the next job, and it is the one that keeps finding things
-reading does not.
+*Round one found six flaws.* The wide layout was rendering at a third of its width with the
+content adrift in dead space; everything was one flat cream; meal cards were tall enough that
+three empty ones filled a phone screen; the day row wrapped to two rows on a screen with room for
+one; and the docked nav pill sat on the "Add a dinner" button. The root cause of the first was
+`.page` becoming a grid item, where `margin: 0 auto` stops it stretching and it shrink-to-fits.
+All six fixed in `01239e8`.
+
+*Round two confirms the fixes, wide and in light mode.* The main column now runs about 2.8× the
+summary column and fills the width; the warm page against near-white cards reads with real
+hierarchy; and the derived panels are right on a full day — 3/3 planned, 37 min, *Protein-heavy*,
+with the tip that fires when all three slots are high-protein.
+
+**What is checked, and what still isn't.** Checked: the wide light layout in a browser,
+`node --check`, 19 stub-DOM assertions, contrast *and* surface-to-surface separation computed from
+the tokens in the stylesheet for both themes, and static wiring — every id resolves, no class
+without a rule, no base rule written below the first media query. **Not** checked: the narrow
+layout and dark mode. Both changed in `01239e8` — the day row's wrap threshold moved and the dark
+palette gained two new values — so neither is covered by the shot that exists.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Screenshot the branch again.** Wide, dragged narrow, both themes. The first round found six
-   things; the fixes for them are unseen. Nothing else substitutes, and it blocks the PR.
+1. **Look at the branch narrow, and in dark mode.** The two things `01239e8` changed that the
+   wide light screenshot cannot show. It blocks the PR.
 2. **Open the live site on a phone.** Still the one gap a desktop cannot close.
-3. **Take screenshots.** There are none. Worth capturing once the branch lands: the sidebar and
-   summary column, the week bar, a filled day, an empty day, the narrow layout, both themes.
+3. **Commit a screenshot set once the branch lands.** There are none in the repo. The wide light
+   shot from round two is accurate and worth keeping under a descriptive name; still wanted are
+   the narrow layout, an empty day, and both of those in dark mode.
 4. **Three small things still open**, none urgent:
    - Google Fonts is the app's first external request; blocked or offline, you get the fallback
      stack. The one place the "static files only" constraint bends.
@@ -158,15 +164,16 @@ storage box, which muddies testing.)
 - Each slot can be filled, replaced, or cleared. Past days stay editable, so you can log what
   you actually ate — they just read quieter
 - **The same layout at every width.** There is no mobile version of the week: the seven-column
-  accordion it replaced needed one, and keeping two in step is how they drift. Under 620px the
-  day row wraps four and three so every button clears 44px on a thumb
+  accordion it replaced needed one, and keeping two in step is how they drift. Only below 400px
+  does the day row wrap four and three, so every button clears 44px on a thumb
 - It opens on today when today is in the week on screen, Monday otherwise, and resets that way
   whenever you move to another week — which day you were looking at isn't worth remembering
 
 **The summary column** (wide screens only, down the right)
 - *At a glance*: how many of the day's three meals are planned, with a bar; the total cooking
-  time; and a one-word read on the balance, from the macro tag every recipe carries — nothing
-  planned, one meal in, light on protein, protein-heavy, or a good balance
+  time, which reads `0 min` rather than a dash on an empty day, because the dash looked like a
+  rendering fault; and a one-word read on the balance, from the macro tag every recipe carries —
+  nothing planned, one meal in, light on protein, protein-heavy, or a good balance
 - *Tips for today*: one line, picked to fit the day in front of you rather than at random —
   it says something different about an empty day, a half-full one, a day of nothing but meat,
   and a day that adds up to two hours at the stove
@@ -208,7 +215,7 @@ Three files, as the project constraints require:
 | File | Contains |
 |---|---|
 | `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker, the view switch and two `<dialog>` panels. The switch sits at body level, not inside the top bar — a `backdrop-filter` ancestor becomes the containing block for anything `position: fixed` inside it, and that same element is what becomes the sidebar on a wide screen. Also an inline `<script>` in `<head>` that paints the stored theme before first paint |
-| `style.css` | All styling. CSS custom properties for the palette, two `max-width` breakpoints (1000px, 620px), one `min-width: 1001px` block for the sidebar layout, and a coarse-pointer block |
+| `style.css` | All styling. CSS custom properties for the palette, then three `max-width` breakpoints (1000px, 620px, 400px), one `min-width: 1001px` block for the sidebar layout, and a coarse-pointer block. Every media query sits at the end of the file, after the rules it overrides — a query adds no specificity, so a base rule below one beats it |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 **The data model** is the part worth understanding. Two things exist:
@@ -374,12 +381,12 @@ layout rendering at a third of its width. A screenshot did.
 both themes. Earlier versions of this file claimed nobody had ever looked at the app; that was
 wrong, and it is the thing to correct if it creeps back in.
 
-**The `sidebar-day-view` branch is the exception, and it matters.** The browser tooling would not
-connect while it was built, so the only rendering anyone has seen is your two screenshots — which
-found six flaws, including a wide layout at a third of its width that two careful readings of the
-CSS had missed. Those are fixed, and **the fixes are themselves unseen**. Everything this file
-says about how the branch looks is reasoning from the CSS. A second round of screenshots is the
-first job on it.
+**On the `sidebar-day-view` branch the looking has been yours, not mine.** The browser tooling
+would not connect while it was built, so every rendering anyone has seen is a screenshot you took.
+Round one found six flaws, including a wide layout at a third of its width that two careful
+readings of the CSS had missed. Round two confirms the fixes wide and in light mode. **Narrow and
+dark remain unseen** — both changed in the fix commit — so what this file says about them is
+reasoning from the CSS, not observation.
 
 Still genuinely unverified beyond that, in rough order of how likely it is to bite:
 
@@ -440,6 +447,8 @@ the dialog's icon buttons. Worth re-checking against the block whenever a contro
 | **Mockups supplied** | You added three desktop concepts and three mobile ones, committed to `main` as `f58bf0f` under `Mockups/` — reference material, so no branch |
 | **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline, as you asked. The seven-column accordion and everything holding it up came out — one day at a time is now the layout at every width. Three of the seven small things from the last review were fixed on the way past. **Not looked at in a browser by either of us**: the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
 | **Screenshots found six flaws** | You opened it and shot it wide and narrow. The wide layout was rendering at a third of its width — `.page` had become a grid item, where `margin: 0 auto` stops it stretching and it shrink-to-fits to its own max-content. The `min-width: 1001px` block was also partly dead, sitting above the base rules it meant to override. Beyond those: the palette read as one cream wash, empty meal cards were 140px tall, the day row wrapped from 620px instead of 400px, and the nav pill landed on a tap target. All six fixed in `01239e8`, with the palette re-measured for surface separation as well as text contrast, and a new static check that fails if a base rule is ever written below the first media query. **The lesson worth keeping: reading the CSS twice found none of this. One screenshot found all of it.** |
+| **Fixes confirmed wide** | A third screenshot shows the wide light layout right: main column about 2.8× the summary column and filling the width, warm page against near-white cards reading with hierarchy, and the derived panels correct on a full day — 3/3 planned, 37 min, *Protein-heavy*, with the all-protein tip firing. Narrow and dark are still unseen, and both changed in the fix commit |
+| **Docs split from the feature** | At your request the documentation went straight to `main` — allowed, and the only thing that is — leaving PR #6 as a code-only diff. `main` therefore documents work still sitting on a branch, which is exactly what *Where things stand* is for. `CLAUDE.md` was also swept and cut from 197 lines to 173 against its own 150-line budget; what remains is conventions with their reasoning, each of which has cost a bug |
 
 ---
 
