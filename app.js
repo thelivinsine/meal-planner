@@ -423,6 +423,22 @@ const TAG_GROUPS = [
   { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
   { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
 ];
+// One of these is the Week heading. Picked once per load rather than per render, so it
+// stays put while you are using the app and is a different line when you come back —
+// which is the whole point of it: a fixed "Your week" is a label, this is a greeting.
+// One line, no subtitle under it; the week bar below says which week it means.
+const WEEK_GREETINGS = [
+  'Let’s plan your week',
+  'What’s cooking this week?',
+  'Seven days, twenty-one meals',
+  'Fill the week, one meal at a time',
+  'Right then — what are we eating?',
+  'Your week, sorted',
+  'Time to fill the table',
+  'A week’s worth of dinners awaits'
+];
+const WEEK_GREETING = WEEK_GREETINGS[Math.floor(Math.random() * WEEK_GREETINGS.length)];
+
 const KEEP_WEEKS = 4; // plan entries older than this are dropped on load
 
 // ---------------------------------------------------------------- dates
@@ -546,6 +562,7 @@ const el = {
     recipes: document.getElementById('view-recipes'),
     saved: document.getElementById('view-saved')
   },
+  weekHeading: document.getElementById('week-heading'),
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
   weekRange: document.getElementById('week-range'),
@@ -629,12 +646,18 @@ function tagsHtml(tags) {
 // Inline SVG rather than the &#9733; / &times; glyphs the first build used: these take
 // currentColor, scale with the button, and do not depend on a font shipping the
 // character. Same 24px grid, same stroke weight, one visual family.
-const STAR_PATH = 'M12 3.5l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17.3l-5.38 2.85 1.03-6L3.3 9.9l6-.9z';
+// The save control is a bookmark, and it is the *same path* as the Saved icon in the
+// sidebar — one shape for one idea, so the button that saves a recipe and the view that
+// holds it are visibly the same thing. It was a star, which said "rate this" rather than
+// "keep this", and left the sidebar as the only bookmark in the app. Change one, change
+// the other: the sidebar copy lives inline in `index.html`.
+const BOOKMARK_PATH = 'M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4-6.5 4v-16a1 1 0 0 1 1-1z';
 const ICON = {
-  starOn: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">' +
-    '<path d="' + STAR_PATH + '"></path></svg>',
-  starOff: '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" ' +
-    'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="' + STAR_PATH + '"></path></svg>',
+  saveOn: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">' +
+    '<path d="' + BOOKMARK_PATH + '"></path></svg>',
+  saveOff: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="' + BOOKMARK_PATH + '"></path></svg>',
   close: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
     'stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
   calendarPlus: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
@@ -787,7 +810,7 @@ function renderWeek() {
           '</button>' +
           '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
             'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-            'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>' +
+            'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.saveOn : ICON.saveOff) + '</button>' +
         '</div>'
       : '<button type="button" class="meal-add" data-action="slot-add" data-iso="' + focusIso + '" ' +
           'data-meal="' + meal + '">' +
@@ -842,7 +865,7 @@ function cardHtml(recipe, slot) {
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
           'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>' +
+          'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.saveOn : ICON.saveOff) + '</button>' +
       '</div>' +
     '</article>';
 }
@@ -952,7 +975,7 @@ function openDetail(id, slot) {
           ICON.calendarPlus + '</button>') +
     '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
       'aria-pressed="' + saved + '" aria-label="' + (saved ? 'Remove ' : 'Save ') + escapeHtml(recipe.name) + '" ' +
-      'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.starOn : ICON.starOff) + '</button>';
+      'title="' + (saved ? 'Remove from Saved' : 'Save') + '">' + (saved ? ICON.saveOn : ICON.saveOff) + '</button>';
 
   el.detailBody.innerHTML =
     '<h2 class="sheet-title" id="detail-name">' + escapeHtml(recipe.name) + '</h2>' +
@@ -1265,6 +1288,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 
 loadState();
 applyTheme();
+el.weekHeading.textContent = WEEK_GREETING;
 renderTagFilters();
 renderFilterState();
 setView('week');

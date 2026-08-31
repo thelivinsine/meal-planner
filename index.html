@@ -9,7 +9,7 @@
        wrong for anyone whose theme disagrees with their system. applyTheme() rewrites
        this from the live --bg on every switch; the value here is the light --bg, which
        is what an unstyled first paint shows. -->
-  <meta name="theme-color" content="#f2ece5">
+  <meta name="theme-color" content="#f6f3ee">
   <title>Mise — weekly meal planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,12 +57,17 @@
   <main class="page">
     <!-- WEEK -->
     <section id="view-week" class="view view-week" aria-labelledby="week-heading">
-      <div class="week-main">
-        <div class="view-head">
-          <h1 id="week-heading">Your week</h1>
-          <p class="view-sub">Plan one meal at a time.</p>
-        </div>
+      <!-- Outside .week-main so the grid can put it in its own row: the summary column
+           then starts level with the week bar rather than level with the heading.
+           One line and no subtitle - app.js swaps the text for a different greeting on
+           every load, and the week bar under it already says which week this is. The
+           markup keeps a greeting rather than "Your week" so the same thing shows if the
+           script never runs. -->
+      <div class="view-head">
+        <h1 id="week-heading">Let&rsquo;s plan your week</h1>
+      </div>
 
+      <div class="week-main">
         <!-- Week and day navigation in one tile: the range with an arrow either side,
              and under it the seven days. Same strip at every width. -->
         <div class="weekbar">
