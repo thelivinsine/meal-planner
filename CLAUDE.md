@@ -71,6 +71,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
   tags, pills, chips, inputs use `--surface-sunk`. In dark mode the page shade is the darkest thing
   on screen, so a pill filled with it reads as a hole punched through the tile.
+- **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
+  the shade the control already has is a no-op, and no contrast script can see one.
 - **One shape for one idea.** Saving a recipe is a **bookmark**, the same path as the sidebar's
   *Saved* icon (`BOOKMARK_PATH` in `app.js`, and inline in `index.html` — change one, change the
   other). Not a star: a star says rate, not keep.

@@ -123,19 +123,26 @@ Still done by hand, not in the script:
 `README.md` links the per-round record of what each of these actually found; the running history is
 in [log.md](log.md).
 
-### Two gaps none of that closes
+### The gaps
 
-- **A real phone.** A dragged-narrow desktop window is not one. Controls are compact on a fine
-  pointer and only return to the 44px floor under `@media (pointer: coarse)`, which a desktop
-  browser never enters — so the entire touch-target story is untested by construction. Real thumb
-  reach and density are unknown too.
 - **Keyboard-only and a screen reader.** Focus order, focus restoration after a redraw, and the
-  accessible names on the day row and meal cards are asserted in a stub DOM and reasoned about,
-  never driven. **Every accessibility defect this project has shipped was in this category.**
+  accessible names on the day row and meal cards are reasoned about and never driven — the script
+  reads source text, so none of it is exercised. **Every accessibility defect this project has
+  shipped was in this category**, and with the phone gap closed this is the largest one left.
+- **A real phone — closed once, and it reopens.** A dragged-narrow desktop window is not one:
+  controls are compact on a fine pointer and only return to the 44px floor under
+  `@media (pointer: coarse)`, which a desktop browser never enters. You opened the live site on a
+  phone after PR #8 and it was fine. That was one phone, unnamed, at one moment — so any change to a
+  control's size puts this back on the list rather than inheriting the result.
+- **What a value-reading script cannot see.** `check.mjs` compares colours, names and paths. It
+  cannot see a rule that *changes nothing*: `.theme-btn:hover` was briefly set to the fill the
+  button already had, and every token stayed legal and every pair still measured fine while the
+  hover did nothing at all. **A check that reads values is blind to a no-op.** That one took a
+  mouse.
 
 **All 66 checks pass.** The one that did not — `--surface-sunk` beside `--bg` at **1.08**, known
-since PR #7 — was fixed rather than excused: `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill
-of its own and so lands on the page — now uses `--surface`, clearing the floor at 1.11 light and
+since PR #7 — was fixed rather than excused: `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of
+its own and so lands on the page — now uses `--surface`, clearing the floor at 1.11 light and
 1.23 dark. `.theme-btn:hover` was changed with it and changed back: it looked like the same bug but
 sits on the *button's own* `--surface` fill, so `--surface-sunk` was right there all along (1.20 and
 1.14), and setting it to `--surface` made the rule a no-op. **A fill has to differ from what the
