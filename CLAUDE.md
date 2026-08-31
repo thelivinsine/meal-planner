@@ -62,8 +62,11 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   set of nav markup either way** — two lists drift, two `<nav>`s are two landmarks.
 - **The summary column is derived, so it may be dropped.** Anything that can only be read there
   doesn't belong there.
-- **One box per level:** the card gets the border; inside is a filled tile or a hairline and a
-  label, never a second outline.
+- **One box per level:** the card gets the border, and nothing inside it gets a second one — no
+  filled tile around the recipe, no bordered icon button. A meal card holds a label, a name and
+  a meta line, and the *name* is what shows it is clickable: `--accent-ink`, underlined on hover.
+- **The week bar is navigation, so it stays compact.** The meal cards are the content and get the
+  room. If a change makes the bar taller, it needs a reason better than fitting.
 - **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
   near-white for cards, `--surface-sunk` deeper for trays and tiles, `--surface-past` back
   *towards* the page — towards it, never past it.
@@ -78,7 +81,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **A past day is quieter by colour, never by opacity.** Opacity blends text back towards its tile
   and undoes the tokens.
 - **Subject gets the weight:** the recipe takes the large type in the add dialog, "Add to week" a
-  small eyebrow over it. Views get no eyebrow — a heading and one subtitle, hard left.
+  small eyebrow over it. Views get no eyebrow — a heading and at most one subtitle, centred over
+  the content it introduces. On the week view that means the *content column*, not the two-column
+  span, so all three grid items are placed by hand.
+- **The Week heading is one line and it changes.** `WEEK_GREETINGS` in `app.js`, picked once per
+  load, no subtitle under it. Never replace it with a fixed label — a greeting is the point, and
+  the week bar below already says which week this is.
 - **Filter chips** are grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
   renders under *More*, so adding a recipe tag can never make a chip disappear.
 - **Rendering:** change state, redraw the whole view — no diffing. Views are HTML strings, so run

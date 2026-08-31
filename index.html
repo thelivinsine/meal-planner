@@ -57,11 +57,14 @@
   <main class="page">
     <!-- WEEK -->
     <section id="view-week" class="view view-week" aria-labelledby="week-heading">
-      <!-- Outside .week-main so it can span both columns: the summary column then
-           starts level with the week bar rather than level with the heading. -->
+      <!-- Outside .week-main so the grid can put it in its own row: the summary column
+           then starts level with the week bar rather than level with the heading.
+           One line and no subtitle - app.js swaps the text for a different greeting on
+           every load, and the week bar under it already says which week this is. The
+           markup keeps a greeting rather than "Your week" so the same thing shows if the
+           script never runs. -->
       <div class="view-head">
-        <h1 id="week-heading">Your week</h1>
-        <p class="view-sub">Plan one meal at a time.</p>
+        <h1 id="week-heading">Let&rsquo;s plan your week</h1>
       </div>
 
       <div class="week-main">

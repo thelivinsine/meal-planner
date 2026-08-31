@@ -251,11 +251,13 @@ button, input, select { font: inherit; color: inherit; }
   to   { opacity: 1; transform: none; }
 }
 
-/* Heading, then its subtitle under it, both hard left. The sidebar sets the left edge
-   of the app on a wide screen and everything lines up with it. */
+/* Centred over the content it introduces, not over the window: on the week view the
+   head is placed in the content column only (see the wide block at the end of the file),
+   so it centres on the week bar and the meal cards rather than drifting right of them.
+   The other two views are a single column, so centring is centring. */
 .view-head {
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 4px; margin-bottom: 20px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; margin-bottom: 20px; text-align: center;
 }
 h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .view-sub { color: var(--ink-faint); font-size: .875rem; font-weight: 500; }
@@ -296,8 +298,8 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* The day column, and the summary column beside it. Everything in the aside is derived
    from the day showing on the left, so under 1000px it is dropped rather than stacked
    below — there is nothing in it you cannot read off the meals themselves. */
-/* The heading is a direct child rather than part of .week-main, so on a wide screen it
-   spans both columns and the summary column starts level with the week bar instead of
+/* The heading is a direct child rather than part of .week-main, so the grid can give it
+   a row of its own and the summary column starts level with the week bar instead of
    level with the heading. The 20px gap replaces its own margin. */
 .view-week { display: grid; gap: 20px; align-items: start; }
 .view-week > .view-head { margin-bottom: 0; }
@@ -305,17 +307,20 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .week-side { display: none; }
 
 /* ---- week bar: the range, and the seven days it covers ---- */
+/* Compact on purpose. This panel is navigation, not content: it was taking almost as
+   much height as the three meal cards it steers, which put the emphasis in the wrong
+   place. Every size in here came down a notch and the meal cards took the room. */
 .weekbar {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 10px 12px 12px;
+  padding: 7px 10px 9px;
 }
 .weekbar-top { display: flex; align-items: center; gap: 8px; }
-.weekbar-arrow { flex: none; width: 32px; height: 32px; color: var(--ink-soft); }
+.weekbar-arrow { flex: none; width: 28px; height: 28px; color: var(--ink-soft); }
 .weekbar-range {
   flex: 1; min-width: 0;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+  font-family: var(--font-display); font-weight: 800; font-size: .9375rem;
   letter-spacing: -0.02em;
 }
 .weekbar-dates { font-variant-numeric: tabular-nums; }
@@ -327,12 +332,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    add-to-week dialog's day picker, but not its look: no border here, and the date sits
    in a circle that fills with the accent when the day is selected. */
 .day-strip {
-  margin-top: 10px;
+  margin-top: 6px;
   display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;
 }
 .day-strip .day-chip {
   cursor: pointer; background: none; border: 0;
-  padding: 6px 2px 5px; gap: 3px; min-height: 58px;
+  padding: 4px 2px 3px; gap: 2px; min-height: 48px;
   border-radius: var(--radius-sm); color: var(--ink-soft);
   transition: background var(--fast) var(--ease);
 }
@@ -340,8 +345,8 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .day-strip .day-chip-name { font-size: .6875rem; font-weight: 700; }
 .day-strip .day-chip-date {
   display: grid; place-items: center;
-  width: 30px; height: 30px; border-radius: 50%;
-  font-family: var(--font-display); font-size: .9375rem; font-weight: 800;
+  width: 26px; height: 26px; border-radius: 50%;
+  font-family: var(--font-display); font-size: .875rem; font-weight: 800;
   color: var(--ink); font-variant-numeric: tabular-nums;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
 }
@@ -361,17 +366,17 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .day-strip .day-dot { width: 5px; height: 5px; margin: 0; }
 .day-strip .day-chip[aria-pressed="true"] .day-dot { background: var(--accent); }
 
-.day-title { margin: 22px 0 12px; font-size: 1.0625rem; }
+.day-title { margin: 16px 0 10px; font-size: 1.0625rem; }
 
 /* ---- the day itself: one card per meal ---- */
 /* No day card around them. The heading above already names the day, and a card holding
    cards is the nesting this layout exists to avoid. */
-.meals { display: flex; flex-direction: column; gap: 12px; }
+.meals { display: flex; flex-direction: column; gap: 14px; }
 
 .meal {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 9px 12px 11px;
-  display: flex; flex-direction: column; gap: 7px;
+  border-radius: var(--radius); padding: 16px 18px 18px;
+  display: flex; flex-direction: column; gap: 10px;
   transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
   animation: slot-in .28s var(--ease) both;
 }
@@ -379,37 +384,33 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* A day that has been and gone stays legible but visibly settled: its card falls back
    towards the page. The tile inside then has to go a step deeper, or its edge vanishes. */
 .meals.is-past .meal { background: var(--surface-past); }
-/* Both fills sit close together on a receded card, in dark mode especially, so the
-   tile borrows the same trick the card uses: a hairline carries the edge. */
-.meals.is-past .meal-open { background: var(--surface-sunk); border: 1px solid var(--line); }
-
 .meal-head { display: flex; align-items: center; gap: 10px; }
 .meal-icon { flex: none; display: grid; place-items: center; color: var(--accent); }
 .meal-name {
   flex: 1; min-width: 0;
-  font-family: var(--font-display); font-size: .9375rem; font-weight: 800;
+  font-family: var(--font-display); font-size: 1rem; font-weight: 800;
   letter-spacing: -0.02em;
 }
 .meal-clear { flex: none; }
 
-/* A planned meal is a solid block, not a line of text — the page white inside the warm
-   card, the same pairing the tags and time pills use. */
-.meal-row { display: flex; align-items: center; gap: 8px; }
+/* No tile around the recipe. It used to sit in a filled box inside the card, which is
+   the box-in-a-box the one-box-per-level rule exists to stop — and the mockup does not
+   have it: the recipe is simply the card's own content. So the button keeps the click and
+   loses the fill, the padding and the radius, and what marks it as clickable is the
+   recipe name itself: accent ink, underlined on hover. */
+.meal-row { display: flex; align-items: center; gap: 10px; }
 .meal-open {
   flex: 1; min-width: 0; cursor: pointer; text-align: left;
-  background: var(--bg); border: 0; border-radius: var(--radius-sm);
-  padding: 10px 12px; min-height: 46px;
+  background: none; border: 0; padding: 0;
   display: flex; flex-direction: column; gap: 2px;
-  transition: background var(--fast) var(--ease);
 }
-.meal-open:hover { background: var(--accent-soft); }
 .meal-recipe {
-  font-size: .9375rem; font-weight: 600; color: var(--ink);
-  transition: color var(--fast) var(--ease);
+  font-family: var(--font-display); font-size: 1.125rem; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--accent-ink);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
 }
-.meal-open:hover .meal-recipe { color: var(--accent-ink); }
+.meal-open:hover .meal-recipe { text-decoration: underline; }
 .meal-meta { font-size: .75rem; font-weight: 500; color: var(--ink-faint); }
-.meal-row .bookmark { flex: none; }
 
 /* An empty meal is an invitation, so it is the width of the card and dashed. 44px, not
    the 52 it was: three empty cards were filling a whole phone screen, and the coarse
@@ -636,14 +637,11 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .card-actions .btn { flex: 1; }
 
-.bookmark {
-  flex: none; width: 32px; height: 32px;
-  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
-  color: var(--ink-faint);
-}
-.bookmark[aria-pressed="true"] {
-  color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft);
-}
+/* Nothing but an .icon-btn, same as the clear x beside it: no border and no fill, so a
+   card is not ringed by two boxed controls. Saved is carried by the filled star glyph
+   and the accent ink, which is what aria-pressed says too. */
+.bookmark { flex: none; }
+.bookmark[aria-pressed="true"] { color: var(--accent-ink); }
 
 .empty {
   color: var(--ink-soft); text-align: center; font-weight: 500;
@@ -686,10 +684,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .sheet-tools form { display: contents; }
 .sheet-tool-actions { display: flex; align-items: center; gap: 4px; margin-right: 4px; }
 .sheet-tool-actions .icon-btn, .sheet-close { width: 34px; height: 34px; }
-.sheet-tool-actions .bookmark { border: 1px solid transparent; }
-.sheet-tool-actions .bookmark[aria-pressed="true"] {
-  color: var(--accent-ink); border-color: var(--accent); background: var(--accent-soft);
-}
 
 .sheet-body {
   flex: 1; min-height: 0; overflow-y: auto;
@@ -855,8 +849,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .toast { bottom: 28px; }
 
   .view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
-  .view-week > .view-head { grid-column: 1 / -1; }
-  .week-side { display: flex; flex-direction: column; gap: 16px; }
+  /* The head takes the content column only, so it centres on the week bar and the meal
+     cards. All three items are placed by hand: leave the two lower ones to auto-flow and
+     the aside slides up beside the head instead of starting level with the week bar. */
+  .view-week > .view-head { grid-column: 1; grid-row: 1; }
+  .week-main { grid-column: 1; grid-row: 2; }
+  .week-side { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; gap: 16px; }
 }
 
 @media (max-width: 1000px) {
@@ -872,13 +870,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; max-height: 58vh; }
   .filters { padding: 14px; }
+  .meal { padding: 13px 14px 15px; }
   .filter-bar { flex-wrap: wrap; }
   .filter-toggle { width: 100%; }
   .day-picker .day-chip { flex: 0 0 calc(33.333% - 4px); }
-
-  .weekbar { padding: 8px 10px 10px; }
-  .weekbar-range { font-size: .9375rem; }
-  .day-title { margin: 18px 0 10px; }
 
   .sheet {
     width: 100vw; max-width: 100vw; max-height: 92vh;
@@ -898,7 +893,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 @media (max-width: 400px) {
   .day-strip {
     display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
-    margin: 10px auto 0;
+    margin: 6px auto 0;
   }
   .day-strip .day-chip { flex: 0 0 calc(25% - 5px); }
 }

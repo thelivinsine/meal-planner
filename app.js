@@ -423,6 +423,22 @@ const TAG_GROUPS = [
   { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
   { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
 ];
+// One of these is the Week heading. Picked once per load rather than per render, so it
+// stays put while you are using the app and is a different line when you come back —
+// which is the whole point of it: a fixed "Your week" is a label, this is a greeting.
+// One line, no subtitle under it; the week bar below says which week it means.
+const WEEK_GREETINGS = [
+  'Let’s plan your week',
+  'What’s cooking this week?',
+  'Seven days, twenty-one meals',
+  'Fill the week, one meal at a time',
+  'Right then — what are we eating?',
+  'Your week, sorted',
+  'Time to fill the table',
+  'A week’s worth of dinners awaits'
+];
+const WEEK_GREETING = WEEK_GREETINGS[Math.floor(Math.random() * WEEK_GREETINGS.length)];
+
 const KEEP_WEEKS = 4; // plan entries older than this are dropped on load
 
 // ---------------------------------------------------------------- dates
@@ -546,6 +562,7 @@ const el = {
     recipes: document.getElementById('view-recipes'),
     saved: document.getElementById('view-saved')
   },
+  weekHeading: document.getElementById('week-heading'),
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
   weekRange: document.getElementById('week-range'),
@@ -1265,6 +1282,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 
 loadState();
 applyTheme();
+el.weekHeading.textContent = WEEK_GREETING;
 renderTagFilters();
 renderFilterState();
 setView('week');
