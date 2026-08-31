@@ -47,15 +47,20 @@ Five documents, each with one job:
 - Tapping a card opens a detail panel; close it with the ×, Escape, or a tap outside
 
 **Week** — your plan, one day at a time.
+- The heading is a different line every time you load the app — *Seven days, twenty-one meals*,
+  *Right then — what are we eating?* — one line, no subtitle, centred over the week. It is a
+  greeting, not a label; the week bar under it says which week this is
 - One tile at the top carries the whole week: the date range with ← / → either side, and the seven
   days under it — weekday over date, the date in a circle. **Today** appears beside the range only
   once you've paged off the current week, which is the only time it has work to do
 - **The selected day's circle fills with the accent.** Today is marked with a dot, a day with
   something planned has a tinted circle, and a day gone by is quieter. So the row is the overview:
   where you are, what day it is, and the shape of the week
-- Below it, the day's name and then **one card per meal**. A filled one shows the recipe, its time
-  and what it is (*10 min · Balanced · Vegetarian*), with a save star and a × to clear it. An empty
-  one is a dashed **+ Add a dinner** the width of the card
+- Below it, the day's name and then **one card per meal** — the biggest thing on the screen, which
+  is the point of them. A filled one shows the recipe name in accent ink, underlined when you hover
+  it because tapping it opens the recipe, then its time and what it is (*10 min · Balanced ·
+  Vegetarian*), with a save star and a × to clear it. Nothing inside the card gets a box of its own.
+  An empty card is a dashed **+ Add a dinner** the width of it
 - Each slot can be filled, replaced, or cleared. Past days stay editable, so you can log what you
   actually ate — they just read quieter
 - **The same layout at every width.** There is no mobile version of the week; only below 400px
@@ -125,6 +130,9 @@ The full set is in [docs/decisions.md](docs/decisions.md). These three cost the 
   stylesheet.** Text on its ground needs 4.5; two surfaces that touch need about 1.10 or the edge
   disappears. Checking only the first is how a palette ends up legible and shapeless — one colour
   sat at 1.03 against a card, making a control invisible, while every text pair passed.
+- **Passing the measurements is not the same as looking right.** A palette that cleared every ratio
+  still read as one beige wash next to the mockups, twice, one shade apart. The script is a floor,
+  not a verdict — which is why the mockups get looked at again after it passes.
 - **A grid item with auto inline margins doesn't stretch to its track.** `margin: 0 auto` centres a
   block but shrink-to-fits a grid item, so the week once rendered at a third of its width. Two
   careful readings of the CSS missed it and one screenshot found it — which is why a rendered look

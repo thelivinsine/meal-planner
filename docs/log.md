@@ -36,6 +36,10 @@
 | **Concept A shipped** | PR #6 squash-merged to `main` as `7e10f85`, branch deleted, Pages `built`. You looked at it locally before telling me to merge, but it wasn't shot, and the dark past-day colour had changed since the one screenshot that existed. Shipping ahead of a screenshot was your call and was recorded as such rather than left to read as verified |
 | **Confirmed on the live site** | You opened the deployed site and called it good, closing the narrow layout and dark mode. Recorded as your look, not an image — the repo still holds no picture of the current app |
 | **Docs restructured** | This split: `README.md` back to a front door for a reviewer, `CLAUDE.md` to rules an agent must follow, and `docs/` for status, architecture, decisions and this log. `README.md` had reached 529 lines doing six unrelated jobs, and `CLAUDE.md` was 20 over its own budget because reasoning had nowhere else to live |
+| **Palette round** | Branch `palette-contrast`, from three screenshots of the shipped app plus two of reference dark UIs (ChatGPT settings, Windows PowerToys). Light mode read as one beige wash despite passing every ratio, so the page went near-white and the card white, per Concept A. Dark mode's surfaces went neutral grey, taken from the references, with the app's orange left in charge of all the colour — brown that dark had read muddy. The summary column moved down to start level with the week bar, which meant taking the week heading out of `.week-main` so the grid could give it a row of its own. **Not rendered by me — the Chrome extension refused to connect all session.** You opened it locally and called it good, light and dark |
+| **Week-view round** | Same branch, from your look at it. Four things: the rotating `WEEK_GREETINGS` heading came back, one line and no subtitle, now centred over the content column; the week bar came down a notch on every dimension and the meal cards took the room; the save star lost its border; and the recipe inside a meal card lost its filled tile, with the name carrying the affordance instead. Three `CLAUDE.md` conventions described the code this replaced, so they moved with it. **Seen by nobody** — the extension still would not connect, and the compaction figures are arithmetic on paper |
+| **The fixed heading was a wrong call** | Recorded in [decisions](decisions.md#the-week-and-one-day-at-a-time): the rotating greeting had been read as a stand-in for the missing week date range, so restoring the range made it look redundant. It was never a stand-in. **A feature that overlaps another is not therefore replaced by it** |
+| **Docs swept, straight to `main`** | This entry and the rest of the sweep went to `main` directly, which markdown is allowed to do, leaving PR #7 as a code-only diff — the same split as the Concept A round. `CLAUDE.md` was deliberately left out of the sweep: its three changed conventions ship with the code on the branch, and editing the same lines on `main` would only manufacture a merge conflict |
 
 ---
 
@@ -98,3 +102,28 @@ page, and dark `--surface-past` at 1.02.
 width. A screenshot did.** Three rounds of reading have found fifteen bugs between them — six a
 browser would have shown, six only a script or a diff review could, and one that was invisible to
 two careful readings and obvious in a single shot.
+
+### The palette and week-view rounds (PR #7)
+
+The thinnest coverage of any round so far, and worth being explicit about why: **the Chrome
+extension would not connect at any point**, so nothing was rendered by me. What there was:
+
+- `node --check app.js`, and a read of every rule the change touched.
+- **Contrast, both directions, tokens read out of `style.css`** — the same throwaway written for the
+  fourth time. It earned its keep twice in one sitting: dark `--accent-soft` at **1.01** against the
+  new neutral panel, which would have made every accent fill on a card invisible, and light
+  `--on-accent` on `--accent` dropping to **4.26** when the accent was brightened towards the
+  mockup's orange. Both were invisible to the eye and both would have shipped.
+- Final figures: no text pair under 4.5 in either theme; page-to-card 1.11 light and 1.23 dark;
+  card-to-tile 1.20 and 1.14; `--line` 1.24 on the light page and 1.53 on the dark one. Two light
+  edges sit under 1.10 by necessity and are measured on the line instead, at 1.29 and 1.17.
+- The recipe name's new colour measured where it lands: `--accent-ink` at 5.95 on a card and 5.61 on
+  a past card in light, 8.68 and 8.57 in dark.
+- Static reads rather than a scripted sweep: no hardcoded hex outside the token blocks, the
+  `theme-color` fallback updated with the page colour, and the two lines in the 620px block that
+  were setting the week bar *larger* than its new base removed.
+
+**Not covered, and it is most of what matters here:** no stub-DOM assertions, no rendered look at
+either commit, and the compaction figures (~122px → ~100px for the week bar) are computed from
+padding and line heights rather than measured. You confirmed the palette commit in your own browser;
+the week-view commit is unseen.

@@ -12,11 +12,21 @@ see [decisions.md](decisions.md).*
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 `Mockups/` holds the supplied design concepts the current layout was built against. There is no
-`Screenshots/` — see [status](status.md#screenshots).
+`Screenshots/` — see [status](status.md#screenshots). The dark-mode reference images the palette was
+rebuilt against are *not* in the repo; they are gitignored screenshots in the working directory,
+which is a real gap in the record and is called out in [status](status.md#screenshots).
 
-The view switch sits at **body level**, not inside `.topbar`: a `backdrop-filter` ancestor becomes
-the containing block for anything `position: fixed` inside it. That same element is what becomes
-the sidebar over 1000px.
+Two bits of markup are placed where they are for a reason, and moving either breaks something that
+looks unrelated:
+
+- **The view switch sits at body level**, not inside `.topbar`: a `backdrop-filter` ancestor becomes
+  the containing block for anything `position: fixed` inside it. That same element is what becomes
+  the sidebar over 1000px.
+- **The week view's `.view-head` is a direct child of `.view-week`**, not part of `.week-main`, so
+  the grid can give it a row of its own and the summary column can start level with the week bar.
+  Consequence: all three items in that grid are placed by hand — heading in column 1 row 1,
+  `.week-main` in column 1 row 2, `.week-side` in column 2 row 2. Leave the lower two to auto-flow
+  and the aside slides up beside the heading, undoing the thing the arrangement exists for.
 
 ## The data model
 
@@ -95,9 +105,12 @@ in [log.md](log.md).
   accessible names on the day row and meal cards are asserted in a stub DOM and reasoned about,
   never driven. **Every accessibility defect this project has shipped was in this category.**
 
-A third thing to watch rather than a gap: contrast figures are computed, and several pairs sit
-within 0.2 of the 4.5 floor — closer than an eye can call. And `color-mix` is load-bearing for old
-browsers; `subgrid` no longer is.
+A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
+under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
+`--surface-sunk` at 4.97, dark `--ink-faint` on `--surface` at 4.89 — closer than an eye can call.
+Since the light page went near-white there is also less room between surfaces than there was, so two
+edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-contrast). And
+`color-mix` is load-bearing for old browsers; `subgrid` no longer is.
 
 ## Deployment
 
