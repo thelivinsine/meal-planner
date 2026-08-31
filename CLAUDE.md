@@ -82,6 +82,10 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **Measure contrast both directions with a script**, tokens read out of `style.css`: text needs
   4.5 on its ground, two touching surfaces about 1.10. Where a pair must sit closer a hairline
   carries the edge — and then it's the **line** you measure, against both sides.
+- **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
+  go darker than the page in *both* themes, but hover and selected go **up** in dark and **down** in
+  light. Measured hexes and state deltas: `docs/dark-mode-reference.md`, `docs/light-mode-reference.md`.
+  Read them before moving a surface token or inventing a state colour.
 - **`--accent` fills, `--accent-ink` writes.** Every accent-coloured *word* uses `--accent-ink`;
   borders, dots, chips and fills use `--accent`. Backwards breaks the floor quietly.
 - **Anything keyed to the *theme* reads the theme, not the OS.** It's a stored choice, so
@@ -155,5 +159,7 @@ write that it has never been looked at. Name what a change has *not* been seen a
 over an unlooked-at layout change rather than calling it done.
 
 **Screenshots:** none in the repo, and `*.png`/`*.jpg` are gitignored so a camera-named file can't
-be committed by accident (`Mockups/` excepted; a real set needs its own exception). Stale ones get
+be committed by accident (`!Light mode Mockups/*.png` excepted, and it must name a folder that
+actually exists — a rename once untracked all four silently; a real set needs its own exception).
+Stale ones get
 deleted, not captioned. Descriptive filenames, hard-refresh first.

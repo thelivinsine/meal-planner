@@ -30,6 +30,8 @@ Five documents, each with one job:
 | [docs/architecture.md](docs/architecture.md) | The three files, the data model, storage, rendering, and how it gets tested |
 | [docs/decisions.md](docs/decisions.md) | Why each choice was made — including the CSS traps that each cost a real bug |
 | [docs/log.md](docs/log.md) | What happened in what order, and what each round of testing covered |
+| [docs/dark-mode-reference.md](docs/dark-mode-reference.md) | How ChatGPT and PowerToys build their dark greys — the nesting ladder (deeper means lighter), measured hexes, hover deltas, edge and shadow treatment, and where Mise's dark tokens differ |
+| [docs/light-mode-reference.md](docs/light-mode-reference.md) | The companion for light — why the ladder runs out at white, why hovers point the other way, and why light mode has shadows and dark mode has none |
 | `CLAUDE.md` | Rules for the AI assistant working in this repo |
 
 ## What it does

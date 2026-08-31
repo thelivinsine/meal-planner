@@ -102,17 +102,26 @@ list is one nobody measures, which is the way this check will rot if it rots.
 
 ## Screenshots
 
-**None in the repo.** The ones you took — of the app, and of the two reference dark UIs — live in
-the working directory and are gitignored, so **the reasoning in PR #7 cites images nobody else can
-see.** That is the cost of the current policy and it is the sharpest it has been: the dark palette
-was rebuilt against two pictures that are not in the repo.
+**None of the app in the repo.** The four supplied design concepts *are* tracked, under
+`Light mode Mockups/`; shots of the running app are not, and neither are the reference UIs.
+
+**The reference gap is now mostly closed.** PR #7's reasoning cited dark-mode reference images
+nobody else could see. Those images, and a light-mode set added since, have been decoded and
+written up as [dark-mode-reference.md](dark-mode-reference.md) and
+[light-mode-reference.md](light-mode-reference.md): every hex read out of the pixels, every ratio
+computed. Someone can now check the palette reasoning without the pictures. Shots of *this app*
+remain the real gap.
 
 The standing policy is unchanged and has been applied four times: a shot of the wrong version is
 worse than none, so stale ones get deleted rather than captioned. Old ones are recoverable from git
 history if a before-and-after is ever wanted.
 
-`*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Mockups/**` excepted, because a camera-named
-file got committed twice. Side effect: a real set now needs a deliberate exception rather than a
+`*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Light mode Mockups/*.png` excepted, because a
+camera-named file got committed twice. **That exception used to name `Mockups/` and silently
+stopped protecting anything** when the folder was renamed on disk — the four concepts were deleted
+from the repo by a routine docs commit and nobody noticed for two commits. Restored from
+`f58bf0f`, and the exception now names the folder that exists. It is `*.png` rather than `**` so
+the `Other references/` shots inside it stay out. Side effect: a real set now needs a deliberate exception rather than a
 `git add`. Descriptive filenames either way — `Screenshot 2026-08-31 155034.png` says nothing about
 which version it shows, which is exactly how stale shots survive.
 

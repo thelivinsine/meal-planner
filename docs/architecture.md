@@ -11,10 +11,17 @@ see [decisions.md](decisions.md).*
 | `style.css` | All styling. Custom properties for the palette, then the rules, then **every media query at the end of the file** — three `max-width` breakpoints (1000px, 620px, 400px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
-`Mockups/` holds the supplied design concepts the current layout was built against. There is no
-`Screenshots/` — see [status](status.md#screenshots). The dark-mode reference images the palette was
-rebuilt against are *not* in the repo; they are gitignored screenshots in the working directory,
-which is a real gap in the record and is called out in [status](status.md#screenshots).
+`Light mode Mockups/` holds the four supplied design concepts the current layout was built
+against — the only images tracked here. There is no `Screenshots/` — see
+[status](status.md#screenshots).
+
+The **reference UIs** the palette was measured against are a different thing and are *not* in the
+repo: `Dark mode references/` and `Light mode Mockups/Other references/` are gitignored shots on
+disk. What they showed is no longer lost with them, though. Both were decoded pixel by pixel and
+written up as [dark-mode-reference.md](dark-mode-reference.md) and
+[light-mode-reference.md](light-mode-reference.md) — every surface hex, state delta and edge
+treatment, with the contrast ratios computed the same way `check.mjs` computes them. The pictures
+are still missing; the numbers in them are not.
 
 Two bits of markup are placed where they are for a reason, and moving either breaks something that
 looks unrelated:

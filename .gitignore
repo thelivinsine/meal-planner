@@ -143,9 +143,14 @@ vite.config.ts.timestamp-*
 .vite/
 
 # Screenshots. None live in the repo: a shot of the wrong version is worse than none,
-# so they are taken, looked at, and left on disk. Mockups/ is the supplied design work
-# and is tracked, so it is excepted.
+# so they are taken, looked at, and left on disk. The supplied design concepts are the
+# exception -- they are tracked, and the exception names their folder exactly.
+#
+# The exception is *.png, not **: it covers the four concepts sitting directly in that
+# folder and deliberately not "Other references/" inside it, which holds light-mode
+# reference shots that stay on disk. A previous rename silently untracked all four,
+# because the old exception was anchored to a folder that no longer existed.
 *.png
 *.jpg
 *.jpeg
-!Mockups/**
+!Light mode Mockups/*.png
