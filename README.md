@@ -14,48 +14,58 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `49b3c16`, the bold-consumer redesign squash-merged from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4). Pages build `built`, live at the link above. The branch `design/bold-consumer` is deliberately **not** deleted |
-| **Open work** | None. Both design PRs are settled: [#4](https://github.com/thelivinsine/meal-planner/pull/4) merged, [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. What is left is verification, not building — see *Next jobs* |
-| **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app, though you have seen it in a browser |
+| **`main`** | Commit `49b3c16`, the bold-consumer redesign from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4), plus `f58bf0f` adding `Mockups/`. Pages build `built`, live at the link above. `main` is one full redesign behind the branch below |
+| **Open work** | Branch **`sidebar-day-view`**: the Concept A rebuild — left sidebar, one day at a time, and a summary column. Built and checked by reading and by script; **neither of us has looked at it in a browser yet**, which is the next thing to do before a PR is worth merging |
+| **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app |
+| **Mockups** | `Mockups/` holds the supplied concepts. The branch implements Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
-**The redesign is live and has been looked at** — wide, dragged narrow, and in both themes, as
-the work was done. What has *not* happened is a real phone: every control is compact on a mouse
-by design and only returns to the 44px floor under `@media (pointer: coarse)`, a block a desktop
-browser never enters. So the touch-target story is untested by construction, not by neglect.
-Keyboard-only and screen reader passes are the other gap.
+**What the branch changes.** The seven-column accordion is gone, along with the vertical rails,
+**Expand all**, the animated column tracks and the `subgrid` row sharing — both mockups show one
+day at a time, so one layout now serves every width and there is no mobile-only week to keep in
+step. Over 1000px the nav becomes a left sidebar and the week gains a right-hand column: *At a
+glance* (meals planned, cooking time, dietary balance) and *Tips for today*, both computed from
+the day on screen. Under 1000px that column is dropped rather than stacked, because everything in
+it can be read off the meals themselves.
+
+**What has and hasn't been checked** is the important half. `node --check`, 19 stub-DOM
+assertions across the new renderer, contrast computed for all fourteen new colour pairs in both
+themes (every one clears 4.5), and static checks that every id resolves and no class is emitted
+without a rule. **Not** checked: what it looks like. The browser tooling was unavailable when the
+work was done, so no one has seen the sidebar, the week bar, the meal cards or the summary column
+rendered — wide, narrow, or in either theme. Treat every layout claim above as reasoning, not
+observation, until someone opens it.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Open the live site on a phone.** The one check nothing else substitutes for.
-2. **Take screenshots.** There are none. The stale pair was deleted rather than left
-   misrepresenting the app — the right call, and it leaves the repo with no picture of itself.
-   Worth capturing: the wide accordion, expand-all, the narrow week, the recipe dialog, both themes.
-3. **Seven small things found in review and left alone**, none of them urgent:
+1. **Open the branch in a browser.** Wide, dragged narrow, both themes. Nothing else substitutes,
+   and it blocks the PR.
+2. **Open the live site on a phone.** Still the one gap a desktop cannot close.
+3. **Take screenshots.** There are none. Worth capturing once the branch lands: the sidebar and
+   summary column, the week bar, a filled day, an empty day, the narrow layout, both themes.
+4. **Three small things still open**, none urgent:
    - Google Fonts is the app's first external request; blocked or offline, you get the fallback
      stack. The one place the "static files only" constraint bends.
    - `applyTheme()` always stamps `data-theme`, so a dark-OS user gets a light app on first
      visit despite `<meta name="color-scheme" content="light dark">`.
-   - `<meta name="theme-color">` is `#fdf4e9`, the cream page colour from *before* the surfaces
-     inverted. The page is `#ffffff` now, and there is no dark-mode variant, so browser chrome is
-     both the wrong colour and light-only.
    - The storage key `p5:mealplanner` is written twice — `STORAGE_KEY` in `app.js` and again in
      the inline theme script in `index.html`. Change one, forget the other.
-   - Toggling Save inside the open recipe dialog rewrites `#detail-tools` and drops keyboard
-     focus. Same class as the day-strip defect, and not something a look at the page reveals.
-   - `is-upcoming` is emitted by `renderWeek` and matched by no CSS rule.
-   - The week's date range line is gone with no replacement; on a wide screen the rails carry
-     dates, but there's no longer a single label saying which week you're looking at.
 
-**Two open questions, both yours to call:**
+Three from that list were fixed on the branch: `theme-color` now has a light and a dark value and
+matches the current page colour, the unmatched `is-upcoming` class is gone, and toggling Save no
+longer throws focus away — one lookup after the redraw covers the week, both recipe lists and the
+open dialog. The missing week date-range line is back, in the week bar.
 
-- **The stub-DOM check scripts are still thrown away each session.** This round added 21 more
-  assertions to the pile and then deleted them, so a regression between rounds still has nothing
-  to catch it. Committing a single `check.mjs` would fix that; it also puts a test file in a repo
-  whose constraints say no test framework. Not done either way.
-- **`subgrid` has no fallback.** The week's alignment depends on CSS `subgrid` (Chrome 117+,
-  Safari 16+, Firefox 71+). On anything older the rows size per card, which degrades to the old
-  misalignment rather than to something broken. Worth a fallback only if an old browser matters.
+**One open question, yours to call:**
+
+- **The stub-DOM check scripts are still thrown away each session.** This round wrote 19 more
+  assertions, a contrast script and a static wiring check, then deleted all three — so a
+  regression between rounds still has nothing to catch it. Committing a single `check.mjs` would
+  fix that; it also puts a test file in a repo whose constraints say no test framework. Not done
+  either way.
+
+The `subgrid` fallback question is closed: the accordion that depended on it is gone, so nothing
+in the app needs `subgrid` any more.
 
 ---
 
@@ -67,9 +77,10 @@ policy here — a screenshot of the wrong version is worse than no screenshot �
 applied three times. `Screenshots/` stays empty until a fresh set is taken; the old ones are
 recoverable from git history if a before-and-after is ever wanted.
 
-Worth capturing when it happens: the wide week with one day open and six rails, the same week
-under **Expand all**, the narrow week at 360px, the inline slot picker with **Add to Thu
-breakfast** on a card, the recipe dialog with its icon tools, and every one of those in dark mode.
+Worth capturing when it happens: the wide layout with its sidebar and summary column, a day with
+all three meals filled, an empty day with its three dashed invitations, the narrow layout at
+360px, the inline slot picker with **Add to Thu breakfast** on a card, the recipe dialog with its
+icon tools, and every one of those in dark mode.
 
 ---
 
@@ -85,9 +96,11 @@ The catch is that it's per-browser and per-device: your plan on your laptop is n
 as on your phone, and clearing your browsing data clears it. That's the honest trade for having
 no accounts and no server to run.
 
-**On a phone.** The seven-day grid can't fit across a phone screen, so it turns into a row of
-seven day buttons with one day open below them. The tinted buttons are the days you've already
-planned something for, so you can still see the shape of your week at a glance.
+**One day at a time.** *Week* shows the seven days as a row of buttons and then the one day you
+picked, as three meal cards. That's true on a laptop and on a phone — the same screen, not two
+designs. A tinted date is a day you've already planned something for, so the row still shows the
+shape of your week at a glance. On a wide screen there's a column down the right with the day's
+numbers in it: how many meals you've planned, roughly how long they'll take, and one suggestion.
 
 **What it deliberately does not do yet.** No shopping list, no month calendar, no adding your own
 recipes, no sharing a plan with anyone else. Those are all sensible next steps, not oversights —
@@ -125,24 +138,32 @@ storage box, which muddies testing.)
 - Tapping a card opens a detail panel; close it with the ×, the Escape key, or a tap outside
 
 **Week**
-- Monday–Sunday of a real week, with the actual dates shown
-- Move between weeks with ← / →, or jump back with **Today**
-- **One day is open at a time.** The other six collapse to narrow vertical rails carrying the full
-  day name and date, turned on their side and facing inward from both sides. Click a rail and it
-  expands while the previous day collapses, the column widths animating between the two
-- **Expand all**, beside the week arrows, returns to seven equal columns. There the three meal
-  rows line up straight across all seven days, however long a recipe name runs
-- Three states are visually distinct: **past** days are dulled almost to the page colour,
-  **today** is a card filled with ink, **upcoming** days carry the warm tile tint
-- Each slot can be filled, replaced, or cleared
-- Past days stay editable, so you can log what you actually ate
-- **On a narrow screen** seven columns stop fitting, so the week becomes a strip of seven day
-  buttons and the one day it selects. The strip is the overview the seven cards give you on a
-  wide window: which day you're on, which is today, and which days already have something
-  planned (those are tinted). The buttons wrap four and three, centred. Tap a day to show it. It
-  opens on today when today is in the week on screen, Monday otherwise, and resets that way
-  whenever you move to another week — which day you were looking at isn't worth remembering. The day card itself is the
-  same card as the wide layout, with its meal labels beside the meals instead of above them
+- One tile at the top carries the whole week: the date range with ← / → either side, and the
+  seven days under it — weekday over date, the date in a circle. **Today** appears beside the
+  range only once you've paged off the current week, which is the only time it has work to do
+- **The selected day's date circle fills with the accent.** Today is marked with a dot, a day
+  with something planned has a tinted circle, and a day gone by is quieter. So the row is the
+  overview: where you are, what day it is, and the shape of the week
+- Below it, the day's name and then **one card per meal**. A filled one shows the recipe, its
+  time, and what it is (*10 min · Balanced · Vegetarian*), with a save star and a × to clear it.
+  An empty one is a dashed **+ Add a dinner** the width of the card
+- Each slot can be filled, replaced, or cleared. Past days stay editable, so you can log what
+  you actually ate — they just read quieter
+- **The same layout at every width.** There is no mobile version of the week: the seven-column
+  accordion it replaced needed one, and keeping two in step is how they drift. Under 620px the
+  day row wraps four and three so every button clears 44px on a thumb
+- It opens on today when today is in the week on screen, Monday otherwise, and resets that way
+  whenever you move to another week — which day you were looking at isn't worth remembering
+
+**The summary column** (wide screens only, down the right)
+- *At a glance*: how many of the day's three meals are planned, with a bar; the total cooking
+  time; and a one-word read on the balance, from the macro tag every recipe carries — nothing
+  planned, one meal in, light on protein, protein-heavy, or a good balance
+- *Tips for today*: one line, picked to fit the day in front of you rather than at random —
+  it says something different about an empty day, a half-full one, a day of nothing but meat,
+  and a day that adds up to two hours at the stove
+- Both are computed from the day beside them, which is why they're dropped rather than stacked
+  on a narrow screen: there is nothing in them you can't read off the meals themselves
 
 **Adding a meal — two ways in**
 
@@ -178,17 +199,16 @@ Three files, as the project constraints require:
 
 | File | Contains |
 |---|---|
-| `index.html` | The page shell: top bar, three `<section>` views, the inline slot picker, the docked view switch and two `<dialog>` panels. The switch sits at body level, not inside the top bar — a `backdrop-filter` ancestor becomes the containing block for anything `position: fixed` inside it. Also an inline `<script>` in `<head>` that paints the stored theme before first paint |
-| `style.css` | All styling. CSS custom properties for the palette, two width breakpoints (1000px, 620px) and a coarse-pointer block |
+| `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker, the view switch and two `<dialog>` panels. The switch sits at body level, not inside the top bar — a `backdrop-filter` ancestor becomes the containing block for anything `position: fixed` inside it, and that same element is what becomes the sidebar on a wide screen. Also an inline `<script>` in `<head>` that paints the stored theme before first paint |
+| `style.css` | All styling. CSS custom properties for the palette, two `max-width` breakpoints (1000px, 620px), one `min-width: 1001px` block for the sidebar layout, and a coarse-pointer block |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 **The data model** is the part worth understanding. Two things exist:
 
 - `RECIPES` — the fixed catalogue, hardcoded. Never saved, never changes at runtime.
 - `state` — everything about *you*: which view you're on, which week you're looking at, which day
-  is open (`focusDay` — it drives the wide accordion as well as the narrow week), whether the week
-  is expanded to all seven columns (`expandAll`), your plan, your bookmarks, your theme, your
-  current search and filters, and whether the filter panel is open.
+  is showing (`focusDay`, the same at every width now), your plan, your bookmarks, your theme,
+  your current search and filters, and whether the filter panel is open.
   The plan, the bookmarks and the theme are saved — the rest is per-session by design. The theme
   is the deliberate exception: one you picked and lost on reload would be a bug, not a fresh
   start.
@@ -232,25 +252,28 @@ the saved blob can't grow forever.
 | Past days editable, not locked | Useful for logging meals already eaten; the greying communicates enough |
 | Slot's **+ Add** opens the list inline, under the week | The slot already names the day and meal; asking again in a dialog was redundant, and the space below the week was empty |
 | The dialog stays for the recipe-first route | From a card nothing is known yet, so a day and meal still have to be picked |
-| Day cards share the grid's rows (CSS `subgrid`) | Their meal rows used to drift out of line whenever one card's header or recipe name was taller |
-| Today is a dot, not a pill | The pill pushed the date onto a second line, which is what knocked that column out of alignment |
-| No boxes inside the day card | Card border, then dashed slot boxes, then a filled pill inside that — three nested outlines to say one thing. A hairline and a label carry it |
+| Today is a dot, not a pill | The pill pushed the date onto a second line, which knocked that column out of alignment back when the days were columns |
+| No boxes inside the meal card | Card border, then dashed slot boxes, then a filled pill inside that — three nested outlines to say one thing. A card border and one filled tile carry it |
+| No day card around the meals | The `<h2>` above them already names the day, so a card holding three cards is a box that says nothing. The same reasoning that removed the nested slot boxes |
 | Filter chips grouped and collapsible | Sixteen equal pills in one wrap is a tag dump, not a filter. Grouping says what each choice means; the count badge and **Clear all** show what's on |
 | Recipe name is the headline in the add sheet | "Add to week" is the same on every recipe, so it's the one thing there that doesn't need 22px of type |
 | The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
 | The picker panel is a sunk tray | Cards on a panel of the same tone have no edge at all. The tray sits one step deeper than the cards it holds, which lifts them without adding shadows |
 | The page is white, the tiles are tinted | The reverse read as washed out: a tinted page behind near-white cards gave a 1.12:1 edge. Inverting it puts the colour where the content is |
-| The wide week is an accordion | Seven equal columns give each day about 150px, narrower than most recipe names. One day at 8/14ths of the row is readable; the other six still show their names and dates on the rails |
-| Column tracks are all `minmax(0, Nfr)` | `grid-template-columns` only interpolates when every pair of track sizes is interpolable. A `1fr` against a pixel width is not, so mixing them made the accordion snap instead of animate |
-| The view switch floats at the bottom | It is the one control used from every screen, and the top bar was carrying a wordmark, three tabs and a theme toggle. Docking it leaves the header quiet |
-| The week heading rotates | One line, chosen from eight at load, instead of an eyebrow plus a title plus a date range. It says what the screen is for rather than what it is called |
+| One day at every width, no accordion | Both mockups show one day. Seven columns gave each day ~150px, narrower than most recipe names, and the accordion that fixed that needed a whole second layout for narrow screens. One day needs neither, and deleting it took the rails, `expandAll`, the animated tracks and the `subgrid` sharing with it |
+| The nav list is the sidebar | Over 1000px the docked pill unwinds into a vertical list in a left column. Building a separate sidebar would mean two nav lists to keep in step and two landmarks for one control; restyling the one that exists means neither |
+| The view switch floats at the bottom on narrow | It is the one control used from every screen, and the top bar was carrying a wordmark, three tabs and a theme toggle. Docking it leaves the header quiet. On a wide screen there is a sidebar to put it in instead |
+| The heading is fixed, not rotating | The rotating greeting was standing in for a date range that had gone missing. The week bar carries the range now, so the heading can just say what the screen is |
+| The summary column is dropped on narrow, not stacked | Every figure in it is computed from the day beside it. Stacking it under the meals would repeat what is already on screen and push the meals up out of reach |
+| Balance is one word off one tag | Every recipe carries exactly one macro tag, so counting them is the whole calculation. Anything finer would be nutrition advice this app is in no position to give |
+| Tips are conditional, not random | A random line stops being read after the second time. One that notices the day is empty, or all meat, or two hours of cooking, is worth the four `if`s |
+| No recipe photography | The mockups show a photo per meal. There is none in the catalogue, and fetching any breaks "static files, no API calls". The meta line carries the same job in text |
 | Theme is saved, other view state is not | Which week or day you were on means nothing next session. A theme you chose does |
 | Dialog actions are icons beside the close | Two full-width buttons above the ingredients pushed the recipe down the panel. As icons they sit in the chrome, where actions belong |
-| An open day's header is not a button | It would claim `aria-expanded` and then collapse nothing, since the day it targets is the one already open. The six rails are the controls; the open day's header is plain text |
+| A past day is quieter by colour, never by opacity | Dimming a control blends its text back towards the tile and undoes the palette the contrast figures were computed from. Different tokens keep the numbers |
 | The recipe sheet fills the slot it came from | Dropping "Add to week" there was right — the day and meal are known — but dropping the add entirely left reading a recipe as a dead end. The icon fills the slot directly |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
-| A narrow week shows one day, not seven squeezed | Seven columns below ~1000px gives each day about 130px, which is narrower than a recipe name. A day strip plus one full-width card keeps the card readable and the week glanceable |
-| The same day card on both layouts | A second set of week markup for mobile is two things to keep in step, and they drift. CSS hides the six days that aren't focused instead |
+| The day row wraps 4 + 3 under 620px | Seven across a 320px screen gives a 39px button, under the 44px floor — and the floor is width as well as height. Two rows keep every day tappable and still show the whole week |
 | Which day you're looking at isn't saved | It means nothing next session, and reopening on a day you happened to tap last Tuesday would be stranger than opening on today |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
@@ -312,26 +335,42 @@ toggle and its relabelling, plan writes and clears, bookmarks, tag filters, them
 restore, the recipe dialog's two tool states, and the fill-slot route out of the inline picker.
 Thrown away with the rest.
 
+### The Concept A round
+
+Branch `sidebar-day-view`. `node --check`, 19 stub-DOM assertions covering the week bar and its
+Today button appearing only off the current week, the seven-day row and its single selection,
+empty and filled meal cards, the meta line, the glance arithmetic and progress width, every shape
+`balanceOf` and `tipFor` can return, plan writes and clears, the storage round-trip, focus
+restoration after a clear and after a save toggle, week paging, day switching, and the past-day
+class. Contrast computed for all fourteen new colour pairs in both themes — the lowest is 4.67,
+so every one clears 4.5. Static checks: every id the JS looks up exists in the HTML, no class is
+emitted without a rule, the `max-width` queries are still descending, and the storage key still
+matches in both places. Thrown away with the rest.
+
 ### What has been seen, and what hasn't
 
-**You check the app in a browser as you iterate** — wide desktop, the window dragged narrow to
-get the day strip, and both themes. That covers most of what a stub-DOM script cannot: how it
-looks, whether the accordion animates, the docked nav, the frosted top bar, dark mode, and
-whether the narrow layout holds together. Earlier versions of this file claimed nobody had ever
-looked at the app. That was wrong, and it is the thing to correct if it creeps back in.
+**You check the app in a browser as you iterate** — wide desktop, the window dragged narrow, and
+both themes. Earlier versions of this file claimed nobody had ever looked at the app; that was
+wrong, and it is the thing to correct if it creeps back in.
 
-Still genuinely unverified, in rough order of how likely it is to bite:
+**The `sidebar-day-view` branch is the exception, and it matters.** The browser tooling was
+unavailable while it was built, so nothing on it has been rendered by anyone: not the sidebar,
+not the week bar, not the meal cards, not the summary column, in either theme. Everything above
+about how it looks is reasoning from the CSS. That is the first job on it.
+
+Still genuinely unverified beyond that, in rough order of how likely it is to bite:
 
 - **A real phone.** A dragged-narrow desktop window is not one. Every control is deliberately
   compact on a mouse and only returns to the 44px floor under `@media (pointer: coarse)`, so the
   entire touch-target story is untested by construction — a desktop browser never enters that
   block. Density and real thumb reach are unknown too.
 - **Keyboard-only and screen reader.** Focus order, focus restoration after a redraw, and the
-  accessible names on day cards and rails have been asserted in a stub DOM and reasoned about,
-  never driven. Every defect this project has shipped was in this category.
-- **Contrast as a measurement.** The figures were computed and the palettes have been looked at,
-  but several pairs sit within 0.1 of the 4.5 floor, which is closer than an eye can call.
-- **Old browsers.** `subgrid` and `color-mix` are both load-bearing. See the open question below.
+  accessible names on the day row and the meal cards have been asserted in a stub DOM and
+  reasoned about, never driven. Every defect this project has shipped was in this category.
+- **Contrast as a measurement.** The figures were computed, but several pairs sit within 0.2 of
+  the 4.5 floor, which is closer than an eye can call.
+- **Old browsers.** `color-mix` is load-bearing. `subgrid` no longer is — it went with the
+  accordion, which closes one of the two open questions below.
 
 Two rounds of reading found nine bugs between them, six of which a browser would have shown —
 both dialogs rendering in the page at all times, the column animation never running, a frosted
@@ -375,6 +414,8 @@ the dialog's icon buttons. Worth re-checking against the block whenever a contro
 | **Direction A shipped** | PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) squash-merged to `main` as `49b3c16`. Pages build `built`. The branch was kept, not deleted, at your request |
 | **Direction B closed** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. It conflicted with `main` the moment A merged — both proposals rewrote the same three files — and rebasing would have meant rewriting it. The table-shaped week is the part worth bringing back |
 | **Docs corrected** | Several rounds of notes had hardened into "nobody has ever opened this app in a browser", which was simply false — you check it in a browser as you iterate, wide and narrow and in both themes. Corrected in both files. The real gap is narrower and more specific: a real phone, and a keyboard-only pass |
+| **Mockups supplied** | You added three desktop concepts and three mobile ones, committed to `main` as `f58bf0f` under `Mockups/` — reference material, so no branch |
+| **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline, as you asked. The seven-column accordion and everything holding it up came out — one day at a time is now the layout at every width. Three of the seven small things from the last review were fixed on the way past. **Not looked at in a browser by either of us**: the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
 
 ---
 
