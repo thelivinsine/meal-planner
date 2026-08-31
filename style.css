@@ -413,9 +413,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .meal-recipe {
   font-family: var(--font-display); font-size: 1.125rem; font-weight: 800;
   letter-spacing: -0.02em; color: var(--accent-ink);
-  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  /* Underlined at rest, not only on hover: touch has no hover, and this is the app's
+     most-used control. Faded so the line reads as an affordance rather than a link in
+     prose; hover brings it to full strength. */
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 45%, transparent);
 }
-.meal-open:hover .meal-recipe { text-decoration: underline; }
+.meal-open:hover .meal-recipe { text-decoration-color: currentColor; }
 .meal-meta { font-size: .75rem; font-weight: 500; color: var(--ink-faint); }
 
 /* An empty meal is an invitation, so it is the width of the card and dashed. 44px, not
@@ -644,7 +648,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .card-actions .btn { flex: 1; }
 
 /* Nothing but an .icon-btn, same as the clear x beside it: no border and no fill, so a
-   card is not ringed by two boxed controls. Saved is carried by the filled star glyph
+   card is not ringed by two boxed controls. Saved is carried by the filled bookmark glyph
    and the accent ink, which is what aria-pressed says too. */
 .bookmark { flex: none; }
 .bookmark[aria-pressed="true"] { color: var(--accent-ink); }
