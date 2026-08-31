@@ -133,12 +133,17 @@ in [log.md](log.md).
   accessible names on the day row and meal cards are asserted in a stub DOM and reasoned about,
   never driven. **Every accessibility defect this project has shipped was in this category.**
 
-**One check currently fails, and it is not a script bug.** `--surface-sunk` beside `--bg` measures
-**1.08** in both themes against the ~1.10 floor. It is reachable at `.nav-btn:hover` in the sidebar
-(the nav has no fill of its own, so it sits on the page) and at `.theme-btn:hover` in the top bar.
-Both are *hover* states, so what is nearly invisible is feedback rather than information, which is
-why this has been known since PR #7 and left. It is an open call, not a defect: see
-[status.md](status.md).
+**All 66 checks pass.** The one that did not — `--surface-sunk` beside `--bg` at **1.08**, known
+since PR #7 — was fixed rather than excused: the two hover states that put a bare sunk fill on the
+page (`.nav-btn:hover` in the sidebar, `.theme-btn:hover` in the top bar) now use `--surface`, which
+clears the floor at 1.11 light and 1.23 dark. The token itself could not move: in dark mode the only
+value clearing 1.10 against both `--bg` and `--surface` is `#232323`, which is `--surface-past`, and
+two tokens holding the same shade means a tray inside a past card has no edge at all.
+
+The pair is now **absent from the script's list on purpose**, with a comment saying to put it back
+the moment a bare sunk fill lands on the page again. `--line-strong` against `--bg` was added in its
+place, since `.chip` and `.slot-picker` are the two sunk fills that can still reach the page and
+both carry that border (2.30, comfortable).
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
