@@ -14,9 +14,9 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `7e10f85`, the Concept A rebuild from PR [#6](https://github.com/thelivinsine/meal-planner/pull/6), squash-merged and live. Pages build `built` on that commit. Branch `sidebar-day-view` deleted. `main` and the live site are the same thing again |
-| **Open work** | **None on a branch.** What is outstanding is looking, not building — see *Next jobs*. `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are old, already-merged branches still lying around |
-| **Shipped unseen** | **Dark mode and the narrow layout.** Both changed after the one screenshot that exists, and both went out on your say-so rather than on a shot. If something looks wrong on the live site, start there — a past day in dark mode is the most likely thing |
+| **`main`** | Code at `7e10f85`, the Concept A rebuild from PR [#6](https://github.com/thelivinsine/meal-planner/pull/6), squash-merged. Docs on top of it. Pages `built`, live and confirmed by you on the live site. Branch `sidebar-day-view` deleted; `main` and the live site are the same thing again |
+| **Open work** | **None.** No open branch, no open PR, no known defect. What is left is the two gaps a desktop browser cannot close — a real phone, and a keyboard-only pass — plus a screenshot set. See *Next jobs* |
+| **Confirmed live** | You opened the live site after the deploy and called it good. That covers the two things that shipped without a shot: the narrow layout and dark mode, including the past-day colour that moved just before the merge. **Your eyes, not a screenshot** — so it is not reproducible from the repo, which is what *Next jobs* item 2 is for |
 | **Screenshots** | **None.** The pre-redesign shots were deleted once they went stale, and `*.png` is now gitignored so a camera-named one cannot be committed by accident. Nothing in the repo shows the current app |
 | **Mockups** | `Mockups/` holds the supplied concepts. The live app is Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
@@ -70,22 +70,27 @@ query, and no ID selectors left in the stylesheet. The contrast script now separ
 edges, which must clear 1.10, from edges a hairline carries, where the line must clear 1.15
 against both sides — the distinction the convention already drew in prose.
 
-**Not** checked, and it shipped anyway: **the narrow layout and dark mode.** The wrap threshold
-moved in `01239e8` and the dark past-day colour moved again in the round-three fixes, so neither
-is covered by the one screenshot in the record. You opened the app before merging and told me to
-go; that is your look, not a shot, and it is not in the record. Treat any visual claim above other
-than *round two* as reasoning.
+**Since confirmed:** the narrow layout and dark mode. The wrap threshold moved in `01239e8` and
+the dark past-day colour moved again in the round-three fixes, so neither was covered by the one
+screenshot in the record — you looked at the live site after the deploy and called it good. That
+closes them as defects. It does not put them in the record: there is still no shot of either, so
+a future session has this sentence and nothing to compare against.
+
+**Still not checked**, and neither is closable from a desktop: **a real phone**, and
+**keyboard-only with a screen reader**. Both are below, under *Testing*. Every accessibility
+defect this project has shipped was in the second category.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Look at the live site narrow, and in dark mode.** Shipped unseen, so this is a check on
-   production now rather than a gate on a PR. A past day in dark mode is the specific thing: its
-   meal cards should sit slightly *lighter* than the page, a card that has settled into it, not a
-   dark hole punched in it.
-2. **Open the live site on a phone.** Still the one gap a desktop cannot close.
-3. **Take a screenshot set.** There are none, and `*.png` is gitignored now — so this means either
-   excepting a `Screenshots/` directory in `.gitignore` or keeping them outside the repo. Wanted:
-   the narrow layout, an empty day, and both of those in dark mode.
+1. **Open the live site on a phone.** The one gap a desktop cannot close, and the only one left
+   that could hide a real defect: every control is compact on a mouse and only returns to the
+   44px floor under `@media (pointer: coarse)`, a block a desktop never enters.
+2. **Take a screenshot set.** There are none, so nothing in the repo shows the current app and
+   the confirmation above lives only in this sentence. `*.png` is gitignored now, so this needs
+   either a `!Screenshots/**` exception in `.gitignore` or keeping them outside the repo — your
+   call which. Wanted: the wide layout, an empty day, the narrow layout at 360px, and dark mode.
+3. **A keyboard-only pass.** Tab through the week, the picker and both dialogs. Focus restoration
+   after a redraw is asserted in five places and driven in none of them.
 4. **Three small things still open**, none urgent:
    - Google Fonts is the app's first external request; blocked or offline, you get the fallback
      stack. The one place the "static files only" constraint bends.
@@ -97,9 +102,8 @@ than *round two* as reasoning.
 Three more from that list were fixed and shipped in `7e10f85`: the unmatched `is-upcoming` class
 is gone, toggling Save no longer throws focus away — one lookup after the redraw covers the week,
 both recipe lists and the open dialog — and `theme-color` follows the page for real, on the second
-attempt (round three above). The missing week date-range line is back, in the week bar. The three
-still open are the ones listed just above: Google Fonts, the `data-theme` stamp on a first visit,
-and the storage key written twice.
+attempt (round three above). The missing week date-range line is back, in the week bar. Nothing is
+on the known-defect list now; the three above are trade-offs rather than bugs.
 
 **One open question, yours to call:**
 
@@ -117,11 +121,18 @@ in the app needs `subgrid` any more.
 
 ## Screenshots
 
-None. There were two, of the Week view before the bold-consumer redesign, and you had them
-deleted once they went stale rather than leave them misrepresenting the app. That is the standing
-policy here — a screenshot of the wrong version is worse than no screenshot — and it has now been
-applied three times. `Screenshots/` stays empty until a fresh set is taken; the old ones are
-recoverable from git history if a before-and-after is ever wanted.
+None, and the directory is gone too. There were two, of the Week view before the bold-consumer
+redesign, and you had them deleted once they went stale rather than leave them misrepresenting the
+app. That is the standing policy here — a screenshot of the wrong version is worse than no
+screenshot — and it has now been applied three times. The old ones are recoverable from git
+history if a before-and-after is ever wanted.
+
+`*.png`, `*.jpg` and `*.jpeg` are gitignored, with `!Mockups/**` excepted so the supplied design
+work stays addable. That was to stop a camera-named file being committed by accident, which had
+happened twice. The side effect: taking a screenshot set now needs a deliberate exception in
+`.gitignore` rather than a `git add`. A descriptive filename is still the rule — `Screenshot
+2026-08-31 151618.png` says nothing about which version it shows, which is how stale shots
+survive.
 
 Worth capturing when it happens: the wide layout with its sidebar and summary column, a day with
 all three meals filled, an empty day with its three dashed invitations, the narrow layout at
@@ -328,6 +339,8 @@ the saved blob can't grow forever.
 | Which day you're looking at isn't saved | It means nothing next session, and reopening on a day you happened to tap last Tuesday would be stranger than opening on today |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
+| `theme-color` is written by JS, not by a media query | The obvious markup is two tags keyed to `prefers-color-scheme`, and it is wrong here: the theme is a choice the user *stores*, so anyone whose theme disagrees with their OS gets browser chrome that fights the page. One tag, set from the live `--bg` by `applyTheme()` and again by the inline `<head>` script so there is no flash. Reading the token back off the element also means the hex is not copied into a third place |
+| Style by class, never by id | An id beats every class and every media query written to override it, so an id selector is trap one waiting to happen. `#view-week` and `#week-grid` were the only two and are now `.view-week` and `.meals`; a static check fails if another appears. Ids stay in the HTML for `getElementById` — they just carry no styling |
 
 ---
 
@@ -398,18 +411,21 @@ Static checks: every id the JS looks up exists in the HTML, all 106 emitted clas
 the `max-width` queries are still descending, no base rule is written below the first media query,
 the storage key still matches in both places, and there are no ID selectors in the stylesheet.
 
-The contrast script grew a distinction the convention had only made in prose: surface pairs that
-touch bare must clear 1.10, while pairs deliberately closer than that are checked on the hairline
-between them instead — the line against *both* sides, over 1.15. Four pairs looked like failures
-until they were sorted that way; three were legitimate hairline-carried edges, and the fourth was
-a real defect (dark `--surface-past` at 1.02 against the page).
+Contrast is computed in **both directions** after the palette inversion, with the tokens read out
+of `style.css` so the script cannot drift from what ships. As it stands: **16 text pairs per theme
+against a 4.5 floor** — lowest 4.67, dark `--ink-faint` on a card — **6 bare surface edges against
+1.10**, and **8 hairline-carried edges** where the pair is deliberately closer and the *line* is
+measured instead, against 1.15 on both sides.
 
-Contrast is computed in **both directions** after the palette inversion, and the tokens are read
-out of `style.css` so the script cannot drift from what ships: fourteen text pairs against a 4.5
-floor — lowest 4.67, dark `--ink-faint` on a card — and eleven surface-against-surface edges
-against about 1.10, which is the check the first attempt at a warm page failed. Two edges failed
-here and were fixed rather than tolerated: dark `--accent-soft` at 1.03 against a card, and the
-active sidebar pill at 1.05 against the page.
+That last split is the part worth keeping. It is a distinction the convention had only made in
+prose, and adding it to the script turned four apparent failures into three legitimate
+hairline-carried edges — a past card on the page, the sunk picker tray, an icon-button hover — and
+one real defect: dark `--surface-past` at 1.02 against the page, on the wrong side of it entirely.
+Without the split the script either passes everything at 1.02 or fails three pairs the convention
+explicitly allows. Three earlier edges were caught the same way and fixed rather than tolerated:
+dark `--accent-soft` at 1.03 against a card, which made every `+` circle invisible, the active
+sidebar pill at 1.05 against the page, and the 1.12 page-to-card edge that sank the first attempt
+at a warm page.
 
 All of it thrown away with the rest — and worth saying plainly: none of these scripts caught the
 layout rendering at a third of its width. A screenshot did.
@@ -421,14 +437,13 @@ both themes. Earlier versions of this file claimed nobody had ever looked at the
 wrong, and it is the thing to correct if it creeps back in.
 
 **Through the Concept A round the looking was yours, not mine.** The browser tooling would not
-connect while it was built, so every rendering anyone has seen is a screenshot you took. Round one
-found six flaws, including a wide layout at a third of its width that two careful readings of the
-CSS had missed. Round two confirms the fixes wide and in light mode. **Narrow and dark remain
-unseen** — the wrap threshold moved in the fix commit and the dark past-day colour moved again
-before the merge — so what this file says about them is
-reasoning from the CSS, not observation.
+connect while it was built, so every rendering anyone has seen is one you looked at. Round one's
+screenshots found six flaws, including a wide layout at a third of its width that two careful
+readings of the CSS had missed. Round two confirmed the fixes wide and in light mode. Narrow and
+dark went out unshot and you confirmed them on the live site afterwards — a look, not a shot, so
+the repo still holds no image of either.
 
-Still genuinely unverified beyond that, in rough order of how likely it is to bite:
+Still genuinely unverified, in rough order of how likely it is to bite:
 
 - **A real phone.** A dragged-narrow desktop window is not one. Every control is deliberately
   compact on a mouse and only returns to the 44px floor under `@media (pointer: coarse)`, so the
@@ -442,10 +457,14 @@ Still genuinely unverified beyond that, in rough order of how likely it is to bi
 - **Old browsers.** `color-mix` is load-bearing. `subgrid` no longer is — it went with the
   accordion, which closes one of the two open questions below.
 
-Two rounds of reading found nine bugs between them, six of which a browser would have shown —
-both dialogs rendering in the page at all times, the column animation never running, a frosted
-halo that was the wrong shape, and the three fixed at review. Reading and looking each catch what
-the other misses; this project now does both.
+Three rounds of reading have now found fifteen bugs between them, and the split is the useful
+part. Six would have shown in a browser — both dialogs rendering in the page at all times, the
+column animation never running, a frosted halo of the wrong shape. Six would **not** have, and
+were caught by a script or by reading the diff: a contrast ratio of 1.02, a class no rule matched,
+a focus target that no longer exists, a `theme-color` tag keyed to the wrong signal. And one — the
+week at a third of its width — was invisible to two careful readings and obvious in one shot.
+Reading, looking and measuring each catch what the other two miss; this project now does all
+three.
 
 **The 44px floor now works differently, and the old note about it was stale.** It used to be one
 exception — 38px week rows on a mouse. The redesign made compactness the general rule: on a fine
@@ -490,7 +509,9 @@ the dialog's icon buttons. Worth re-checking against the block whenever a contro
 | **Fixes confirmed wide** | A third screenshot shows the wide light layout right: main column about 2.8× the summary column and filling the width, warm page against near-white cards reading with hierarchy, and the derived panels correct on a full day — 3/3 planned, 37 min, *Protein-heavy*, with the all-protein tip firing. Narrow and dark are still unseen, and both changed in the fix commit |
 | **Docs split from the feature** | At your request the documentation went straight to `main` — allowed, and the only thing that is — leaving PR #6 as a code-only diff. `main` therefore documented work still sitting on a branch, which is exactly what *Where things stand* is for. `CLAUDE.md` was also swept and cut from 197 lines to 173 against its own 150-line budget; what remains is conventions with their reasoning, each of which has cost a bug |
 | **Reviewing the diff found six more** | Asked to review the PR's own diff before merging, and it turned up six things, three of them real: `theme-color` was only half-fixed — both tags hung off `prefers-color-scheme`, but the theme here is a *stored choice*, and the light value was still the pre-inversion `#ffffff`; the **Today** button dropped keyboard focus, because it is rendered only while off the current week and so deletes itself when pressed; and dark `--surface-past` was darker than the page at 1.02 against it, making a past day a hole rather than a receded card. Also: the stylesheet's only two ID selectors turned back into classes, two classes emitted with no CSS rule deleted, and `*.png` gitignored. **The lesson pairs with the screenshot one**: all six were invisible to the eye and visible to a script — a contrast number, a class with no rule, a focus target that no longer exists |
-| **Concept A shipped, dark and narrow unseen** | PR #6 squash-merged to `main` as `7e10f85`, branch deleted, Pages build `built`. You opened the app locally before telling me to merge, so the layout was looked at — but not shot, so it is not in the record, and the dark past-day colour had changed since the one screenshot that is. Shipping ahead of a screenshot was your call and is recorded as such; *Where things stand* names it under **Shipped unseen** rather than letting it read as verified |
+| **Concept A shipped** | PR #6 squash-merged to `main` as `7e10f85`, branch deleted, Pages build `built`. You opened the app locally before telling me to merge, so the layout was looked at — but not shot, and the dark past-day colour had changed since the one screenshot that exists. Shipping ahead of a screenshot was your call and was recorded as such rather than left to read as verified |
+| **Confirmed on the live site** | You opened the deployed site and called it good, which closes the narrow layout and dark mode — the two things that went out unshot. Recorded as your look, not as a screenshot: the repo still holds no image of the current app, so a future session has a sentence and nothing to compare against. That is now the second job on the list rather than a defect |
+| **Docs swept** | Every markdown file re-read against the shipped app — both of them. The catalogue figures were re-counted from `app.js` rather than trusted (50 recipes, 27 Indian, 38 high-protein, every one carrying exactly one macro tag). The contrast paragraph in *Testing* had drifted into two versions with different counts and is now one, with the bare-edge / hairline-edge split that found the real defect. `CLAUDE.md` cut back towards its 150-line budget |
 
 ---
 
