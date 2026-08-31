@@ -137,6 +137,23 @@ block lifts them back, so a later rule that outranks that block on specificity s
 floor. That has now happened twice — to the dialog's icon buttons, and to the week bar's arrows.
 So the coarse block has to name anything that sets its own width or height later in the file.
 
+**A landmark named by a rotating string is not named.** The week `<section>` took its accessible
+name from the greeting `h1` via `aria-labelledby`, and `WEEK_GREETINGS` picks a new one every load
+— so the same region announced itself differently each visit, and anything a screen-reader user
+learned about "Let's plan your week" was gone next time. The fix is a fixed `aria-label` on the
+section; the greeting stays the visible heading, which is what it was for. The general shape: a
+landmark name is an address, so it may not be built out of anything that rotates.
+
+**A colour-only affordance is no affordance on a phone.** The recipe name in a meal card lost its
+filled tile in PR #7 — correctly, one box per level — and what replaced it was `--accent-ink` plus
+an underline *on hover*. Contrast passed (5.95 on a card, 5.61 on a past one) and focus still drew
+the global ring, so no stated floor was broken, which is exactly why it survived a round. But
+hover is a pointer idea: on touch, the app's most-used control was a differently-coloured word and
+nothing else. It is underlined at rest now, the line at 45% of the ink so it reads as an
+affordance rather than as a link in running prose, and hover takes it to full strength so the
+hover feedback is kept rather than traded away. **A rule that passes every measurable floor can
+still fail the device you did not test on.**
+
 **An `aria-expanded="true"` button that cannot collapse anything is worse than a span.** An open
 day's header claimed to be a disclosure and did nothing when pressed; it became a `<span>`.
 

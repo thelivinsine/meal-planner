@@ -4,59 +4,46 @@
 
 | | |
 |---|---|
-| **Live** | Code at `88e27d0` (PR [#7](https://github.com/thelivinsine/meal-planner/pull/7), squash-merged), docs on top. Pages `built`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | [PR #8](https://github.com/thelivinsine/meal-planner/pull/8) on `week-affordance-and-landmark`: three of the four follow-ups, **none of it rendered yet**. No known defect |
-| **Confirmed** | You checked the latest changes in your browser and called the whole PR good — that closes all three commits, including the icon-and-token one that had been seen by nobody. **Your eyes, not an image**, so it is not reproducible from the repo |
-| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast` was deleted on merge |
+| **Live** | Code at `eb9ea73` (PR [#8](https://github.com/thelivinsine/meal-planner/pull/8), squash-merged), docs on top. Pages `built` at that commit. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **None.** No branch, no PR, no known defect. The four follow-ups #7 left are all closed |
+| **Confirmed** | You looked at #8 in the browser and called the underline fine, and separately that the longest recipe name wraps cleanly. **Your eyes, not an image**, so neither is reproducible from the repo — and see the caveat under *What just shipped* about what you were not asked to check |
+| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast` and `week-affordance-and-landmark` were deleted on merge |
 
 ## What just shipped
 
-Three commits, three problems, all found in screenshots you took of the running app.
+**PR #8, one commit: the three loose ends #7 left, none related to each other.**
 
-**The palette.** Light mode read as one beige wash: a heavy page (`#f2ece5`) plus heavy inner tiles
-(`#ebe3da`) left the white card as the only bright thing on screen. Every ratio passed and it still
-looked wrong beside `Mockups/Desktop - Concept A.png`. Page → `#f6f3ee`, card → `#ffffff`. Dark
-mode's surfaces went **neutral grey**, taken from two reference dark UIs you supplied, because the
-brown it had been read muddy rather than warm at that lightness. The orange is untouched in role and
-now carries all the colour. The summary column also moved down to start level with the week bar,
-which meant taking the week heading out of `.week-main` so the grid could give it a row of its own.
+**The recipe name is underlined at rest.** #7 took the filled tile off it — one box per level — and
+left `--accent-ink` plus an underline on *hover*, which on a phone is no affordance at all. The line
+is there at rest now, at 45% of the ink so it reads as an affordance rather than as a link in prose,
+going to full strength on hover so the old feedback is kept rather than traded. Nothing measurable
+was broken before: contrast passed, focus still drew the ring. That is why it survived a round, and
+it is the reason this is now a rule in `CLAUDE.md` rather than a fix.
 
-**The week view.** The rotating `WEEK_GREETINGS` heading is back, one line, no subtitle, centred
-over the content column. The week bar came down a notch on every dimension and the meal cards took
-the room — the bar is navigation, the cards are the content.
+**The week landmark has a stable name.** `aria-labelledby` pointed at the greeting `h1`, and the
+greeting rotates every load, so the region announced itself differently each visit. A fixed
+`aria-label="Week plan"` on the `<section>`; the greeting is untouched and still the visible heading.
 
-**The boxes, and one token.** The save control became a **bookmark**, the same path as the sidebar's
-*Saved* icon, replacing a star that said *rate* rather than *keep*. It lost its border, and the
-recipe inside a meal card lost its filled tile — the name carries the affordance now. And `--bg`
-stopped filling anything inside a card: tags, time pills, filter chips and the search field all
-moved to `--surface-sunk`, because with dark mode neutral a pill filled with the page shade read as
-a hole punched through the tile. Those fills were wrong all along and cost nothing while the page
-sat close in lightness to the tiles — **a token used off its own layer is latent, not harmless**,
-and what exposed it was a palette change two commits earlier.
+**And one stale comment** — `style.css` still called the save glyph a filled star, a round after it
+became a bookmark.
 
-`CLAUDE.md` gained the five conventions these changes established, and it shipped with the code
-rather than in the docs sweep, so `main` is no longer a version behind.
+`CLAUDE.md` gained both conventions and `docs/decisions.md` both stories, with the code rather than
+after it.
 
-## Four follow-ups: three in a PR, one closed
+### What you confirmed, and what nobody has
 
-Items 1–3 are all in [PR #8](https://github.com/thelivinsine/meal-planner/pull/8), open and
-unmerged. **Nothing in it has been rendered** — the browser extension would not connect the session
-that wrote it, so the underline is a visual judgement nobody has made yet.
+You called the underline fine. **You were asked to check three grounds — a card, a past day, and
+dark mode — and said only that it looks fine**, so treat the past-day case as unconfirmed: that is
+where the 45% line is weakest, sitting on `--surface-past`. It is a fade on a passing ratio, not a
+floor, so nothing is known to be wrong. Worth a glance next time you have a past day on screen.
 
-1. **`style.css` still calls the save glyph a star.** Comment above `.bookmark`, text only. *Fixed in
-   #8.*
-2. **The recipe name is a colour-only affordance until hover** — and touch has no hover. It is the
-   app's most-used control and it had no box, no fill and no underline at rest, only `--accent-ink`.
-   Contrast passes (5.95 on a card, 5.61 on a past one) and focus still gets the global ring, so no
-   stated floor was broken; it was the touch case that made an underline the better call. *#8
-   underlines it at rest in `--accent-ink` at 45%, hover to `currentColor`* — **unlooked-at, and the
-   fade is weakest on a past day.**
-3. **`aria-labelledby="week-heading"` names the week region with a random greeting**, so the
-   landmark name changed on every load. *#8 gives the `<section>` a fixed `aria-label="Week plan"`;
-   the greeting stays the visible `h1`.*
-4. ~~**The recipe name at `1.125rem` display weight may wrap** in a narrow card.~~ **Closed.** You
-   looked at the catalogue's longest name, *Masala Yoghurt Bowl with Roasted Chana* (40 characters),
-   and it wraps cleanly. Your eyes, not an image, so it is not reproducible from the repo.
+## The four follow-ups #7 left: all closed
+
+1. **The star comment.** Fixed in #8.
+2. **The colour-only affordance.** Fixed in #8 — see above, and the caveat with it.
+3. **The rotating landmark name.** Fixed in #8.
+4. **The long recipe name wrapping.** Closed by eye: *Masala Yoghurt Bowl with Roasted Chana*, the
+   catalogue's longest at 40 characters, wraps cleanly. No code change.
 
 ## Next jobs, in the order they'd earn their place
 

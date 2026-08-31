@@ -64,7 +64,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   doesn't belong there.
 - **One box per level:** the card gets the border, and nothing inside it gets a second one — no
   filled tile around the recipe, no bordered icon button. A meal card holds a label, a name and
-  a meta line, and the *name* is what shows it is clickable: `--accent-ink`, underlined on hover.
+  a meta line, and the *name* is what shows it is clickable: `--accent-ink`, **underlined at rest**
+  (the accent at 45%), the line going full strength on hover. Not hover-only — touch has no hover.
 - **The week bar is navigation, so it stays compact.** The meal cards are the content and get the
   room. If a change makes the bar taller, it needs a reason better than fitting.
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
@@ -122,6 +123,9 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
 - **A redraw destroys focus.** If the control just activated lives inside what gets re-rendered,
   put focus on what *replaced* it — five places do. **A conditionally-rendered control is the one
   that gets missed**; both focus bugs here were one.
+- **A landmark's name must not change between loads**, so never point `aria-labelledby` at
+  something that rotates — the week greeting did. A fixed `aria-label` on the section, greeting
+  untouched.
 - **Never leave a card unnamed, never hide a focusable control.** If a heading must vanish on
   screen, `.sr-only` — never `display: none` — and only on something not focusable.
 - **Touch targets at least 44px**, width as well as height, measured at 360px. Controls are compact
