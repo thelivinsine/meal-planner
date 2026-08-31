@@ -67,6 +67,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   a meta line, and the *name* is what shows it is clickable: `--accent-ink`, underlined on hover.
 - **The week bar is navigation, so it stays compact.** The meal cards are the content and get the
   room. If a change makes the bar taller, it needs a reason better than fitting.
+- **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
+  tags, pills, chips, inputs use `--surface-sunk`. In dark mode the page shade is the darkest thing
+  on screen, so a pill filled with it reads as a hole punched through the tile.
+- **One shape for one idea.** Saving a recipe is a **bookmark**, the same path as the sidebar's
+  *Saved* icon (`BOOKMARK_PATH` in `app.js`, and inline in `index.html` — change one, change the
+  other). Not a star: a star says rate, not keep.
 - **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
   near-white for cards, `--surface-sunk` deeper for trays and tiles, `--surface-past` back
   *towards* the page — towards it, never past it.

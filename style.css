@@ -18,7 +18,13 @@
      against the page on purpose — there is no room left between a near-white page and
      white — so both are drawn with a --line border, which measures 1.29 and 1.17
      against them. */
-  --bg: #f6f3ee;             /* the page */
+  /* --bg is the page and nothing else. It was also filling the tags, the time pills, the
+     filter chips and the search field — all of which sit *inside* a card — and once dark
+     mode went neutral that read as holes punched through the tile: the page shade is the
+     darkest thing on screen, so a pill filled with it looks like a gap, not a pill. Those
+     four now use --surface-sunk, which is what "trays and inner tiles" means. Nothing
+     inside a card gets the page shade. */
+  --bg: #f6f3ee;             /* the page, and only the page */
   --surface: #ffffff;        /* meal cards, recipe cards, panels — nearly white */
   --surface-sunk: #f0eae1;   /* trays and inner tiles — a step deeper than a card */
   --surface-past: #faf8f5;   /* a day that has been and gone: back towards the page */
@@ -501,7 +507,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .search input {
   width: 100%; max-width: 480px;
   padding: 8px 14px; min-height: 36px;
-  background: var(--bg); color: var(--ink);
+  background: var(--surface-sunk); color: var(--ink);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   font-size: .875rem;
@@ -545,7 +551,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   cursor: pointer; border-radius: var(--radius-sm);
   padding: 5px 11px; min-height: 30px;
   font-size: .75rem; font-weight: 600;
-  background: var(--bg); border: 1px solid var(--line-strong); color: var(--ink-soft);
+  background: var(--surface-sunk); border: 1px solid var(--line-strong); color: var(--ink-soft);
   transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
               color var(--fast) var(--ease);
 }
@@ -621,14 +627,14 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .card-time {
   flex: none; color: var(--ink-soft); font-size: .6875rem; font-weight: 700;
   font-variant-numeric: tabular-nums;
-  background: var(--bg); border-radius: var(--radius-pill);
+  background: var(--surface-sunk); border-radius: var(--radius-pill);
   padding: 3px 9px;
 }
 .card-tags { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 5px; }
 .tag {
   font-size: .5625rem; letter-spacing: .1em; text-transform: uppercase;
   font-weight: 700; color: var(--ink-soft);
-  background: var(--bg); border-radius: var(--radius-pill); padding: 4px 9px;
+  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 9px;
 }
 
 .card-actions {
