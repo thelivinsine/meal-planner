@@ -139,7 +139,10 @@ sharing/syncing, recipe photography. Don't add these unless asked;
 mockups show one per meal and fetching any would break "no API calls".
 
 ## Testing
-No test framework unless asked. Approach and the two standing gaps:
+No test framework unless asked. **`node check.mjs`** is the one saved check — contrast both
+directions, action and id wiring, and the three values written twice. Run it after touching
+`style.css` tokens, and **add the new pairs to its list** when a colour token appears: a pair
+missing from that list is a pair nobody measures. Approach and the standing gaps:
 `docs/architecture.md#how-this-gets-tested`.
 
 **Read, look and measure — each catches what the other two miss, and this project has been bitten
