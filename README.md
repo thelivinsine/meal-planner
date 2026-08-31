@@ -15,7 +15,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **`main`** | Commit `49b3c16`, the bold-consumer redesign from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4), plus `f58bf0f` adding `Mockups/`. Pages build `built`, live at the link above. `main` is one full redesign behind the branch below |
-| **Open work** | Branch **`sidebar-day-view`**: the Concept A rebuild — left sidebar, one day at a time, and a summary column. Built and checked by reading and by script; **neither of us has looked at it in a browser yet**, which is the next thing to do before a PR is worth merging |
+| **Open work** | Branch **`sidebar-day-view`**, PR [#6](https://github.com/thelivinsine/meal-planner/pull/6): the Concept A rebuild — left sidebar, one day at a time, and a summary column. One round of your screenshots found six flaws, all fixed in `01239e8`. **The fixes themselves have not been looked at**, so a second round of screenshots is what the PR is waiting on |
 | **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app |
 | **Mockups** | `Mockups/` holds the supplied concepts. The branch implements Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
@@ -28,18 +28,26 @@ glance* (meals planned, cooking time, dietary balance) and *Tips for today*, bot
 the day on screen. Under 1000px that column is dropped rather than stacked, because everything in
 it can be read off the meals themselves.
 
-**What has and hasn't been checked** is the important half. `node --check`, 19 stub-DOM
-assertions across the new renderer, contrast computed for all fourteen new colour pairs in both
-themes (every one clears 4.5), and static checks that every id resolves and no class is emitted
-without a rule. **Not** checked: what it looks like. The browser tooling was unavailable when the
-work was done, so no one has seen the sidebar, the week bar, the meal cards or the summary column
-rendered — wide, narrow, or in either theme. Treat every layout claim above as reasoning, not
-observation, until someone opens it.
+**One round of screenshots has happened, and it found real breakage.** You opened the branch,
+took a wide and a narrow shot, and they showed the wide layout rendering at a third of its width
+with the content adrift in dead space, everything one flat cream, meal cards tall enough that
+three empty ones filled a phone screen, the day row wrapping to two rows on a screen with room
+for one, and the docked nav pill sitting on the "Add a dinner" button. Six were fixed in
+`01239e8`; the root cause of the first was `.page` becoming a grid item, where `margin: 0 auto`
+stops it stretching and it silently shrink-to-fits.
+
+**What is checked, and what still isn't.** Checked: `node --check`, 19 stub-DOM assertions,
+contrast *and* surface-to-surface separation computed from the tokens in the stylesheet for both
+themes, and static wiring — every id resolves, no class without a rule, no base rule written
+below the first media query. **Not** checked: what the fixes look like. The screenshots predate
+all of them, and the browser tooling still won't connect here, so nothing in the current state
+has been rendered by anyone. That is the next job, and it is the one that keeps finding things
+reading does not.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Open the branch in a browser.** Wide, dragged narrow, both themes. Nothing else substitutes,
-   and it blocks the PR.
+1. **Screenshot the branch again.** Wide, dragged narrow, both themes. The first round found six
+   things; the fixes for them are unseen. Nothing else substitutes, and it blocks the PR.
 2. **Open the live site on a phone.** Still the one gap a desktop cannot close.
 3. **Take screenshots.** There are none. Worth capturing once the branch lands: the sidebar and
    summary column, the week bar, a filled day, an empty day, the narrow layout, both themes.
@@ -259,7 +267,9 @@ the saved blob can't grow forever.
 | Recipe name is the headline in the add sheet | "Add to week" is the same on every recipe, so it's the one thing there that doesn't need 22px of type |
 | The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
 | The picker panel is a sunk tray | Cards on a panel of the same tone have no edge at all. The tray sits one step deeper than the cards it holds, which lifts them without adding shadows |
-| The page is white, the tiles are tinted | The reverse read as washed out: a tinted page behind near-white cards gave a 1.12:1 edge. Inverting it puts the colour where the content is |
+| The page is warm, the cards are near-white | Tried the other way twice. A tinted page behind near-white cards first failed at a 1.12:1 edge, so v1 of this palette put a heavy peach on every tile — which read as one cream wash the moment the cards got large enough to see, as your screenshots showed. Back to a warm page and light cards, this time with the separations measured: 1.19 page to card, 1.11–1.19 card to tile |
+| Both directions of contrast get measured | Text against its ground needs 4.5; two surfaces that touch need about 1.10 or the edge is gone. Only checking the first is how a palette ends up legible and shapeless — dark `--accent-soft` sat at 1.03 against a card, making every + circle invisible while every text pair passed |
+| Where surfaces must sit close, a hairline carries the edge | A past day is meant to recede into the page, so its fill can't also carry a 1.10 edge. The border does it, on the card and on the tile inside it |
 | One day at every width, no accordion | Both mockups show one day. Seven columns gave each day ~150px, narrower than most recipe names, and the accordion that fixed that needed a whole second layout for narrow screens. One day needs neither, and deleting it took the rails, `expandAll`, the animated tracks and the `subgrid` sharing with it |
 | The nav list is the sidebar | Over 1000px the docked pill unwinds into a vertical list in a left column. Building a separate sidebar would mean two nav lists to keep in step and two landmarks for one control; restyling the one that exists means neither |
 | The view switch floats at the bottom on narrow | It is the one control used from every screen, and the top bar was carrying a wordmark, three tabs and a theme toggle. Docking it leaves the header quiet. On a wide screen there is a sidebar to put it in instead |
@@ -273,7 +283,9 @@ the saved blob can't grow forever.
 | A past day is quieter by colour, never by opacity | Dimming a control blends its text back towards the tile and undoes the palette the contrast figures were computed from. Different tokens keep the numbers |
 | The recipe sheet fills the slot it came from | Dropping "Add to week" there was right — the day and meal are known — but dropping the add entirely left reading a recipe as a dead end. The icon fills the slot directly |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
-| The day row wraps 4 + 3 under 620px | Seven across a 320px screen gives a 39px button, under the 44px floor — and the floor is width as well as height. Two rows keep every day tappable and still show the whole week |
+| The day row wraps 4 + 3 under 400px | Seven across a 320px screen gives a 39px button, under the 44px floor — and the floor is width as well as height. Two rows keep every day tappable. 400px, not 620px, because at 401px seven chips still get 46px each: it first shipped wrapping from 620 and turned a week that fitted on one row into two rows of oversized buttons |
+| The whole wide layout lives in one media block at the end of the file | A media query adds no specificity, so a wide rule written above the base rule it means to override loses on source order. The wide `.page` padding and toast offset were dead for exactly that reason, and nothing about the CSS looked wrong |
+| `.page` carries an explicit `width: 100%` | Over 1000px it is a grid item, and a grid item with auto inline margins doesn't stretch to its track — the margins absorb the space and it shrink-to-fits. `margin: 0 auto` therefore sized the page to its own max-content and rendered the week at a third of its width. Reading the CSS twice missed it; one screenshot found it |
 | Which day you're looking at isn't saved | It means nothing next session, and reopening on a day you happened to tap last Tuesday would be stranger than opening on today |
 | No drag-and-drop | Touch needs an entirely separate code path from mouse dragging, and clear/replace already covers moving meals |
 | Redraw the whole view, no diffing | 50 recipes is small; the simplicity is worth more than the cycles saved |
@@ -342,10 +354,19 @@ Today button appearing only off the current week, the seven-day row and its sing
 empty and filled meal cards, the meta line, the glance arithmetic and progress width, every shape
 `balanceOf` and `tipFor` can return, plan writes and clears, the storage round-trip, focus
 restoration after a clear and after a save toggle, week paging, day switching, and the past-day
-class. Contrast computed for all fourteen new colour pairs in both themes — the lowest is 4.67,
-so every one clears 4.5. Static checks: every id the JS looks up exists in the HTML, no class is
-emitted without a rule, the `max-width` queries are still descending, and the storage key still
-matches in both places. Thrown away with the rest.
+class. Static checks: every id the JS looks up exists in the HTML, no class is emitted without a
+rule, the `max-width` queries are still descending, no base rule is written below the first media
+query, and the storage key still matches in both places.
+
+Contrast is computed in **both directions** after the palette inversion, and the tokens are read
+out of `style.css` so the script cannot drift from what ships: fourteen text pairs against a 4.5
+floor — lowest 4.67, dark `--ink-faint` on a card — and eleven surface-against-surface edges
+against about 1.10, which is the check the first attempt at a warm page failed. Two edges failed
+here and were fixed rather than tolerated: dark `--accent-soft` at 1.03 against a card, and the
+active sidebar pill at 1.05 against the page.
+
+All of it thrown away with the rest — and worth saying plainly: none of these scripts caught the
+layout rendering at a third of its width. A screenshot did.
 
 ### What has been seen, and what hasn't
 
@@ -353,10 +374,12 @@ matches in both places. Thrown away with the rest.
 both themes. Earlier versions of this file claimed nobody had ever looked at the app; that was
 wrong, and it is the thing to correct if it creeps back in.
 
-**The `sidebar-day-view` branch is the exception, and it matters.** The browser tooling was
-unavailable while it was built, so nothing on it has been rendered by anyone: not the sidebar,
-not the week bar, not the meal cards, not the summary column, in either theme. Everything above
-about how it looks is reasoning from the CSS. That is the first job on it.
+**The `sidebar-day-view` branch is the exception, and it matters.** The browser tooling would not
+connect while it was built, so the only rendering anyone has seen is your two screenshots — which
+found six flaws, including a wide layout at a third of its width that two careful readings of the
+CSS had missed. Those are fixed, and **the fixes are themselves unseen**. Everything this file
+says about how the branch looks is reasoning from the CSS. A second round of screenshots is the
+first job on it.
 
 Still genuinely unverified beyond that, in rough order of how likely it is to bite:
 
@@ -416,6 +439,7 @@ the dialog's icon buttons. Worth re-checking against the block whenever a contro
 | **Docs corrected** | Several rounds of notes had hardened into "nobody has ever opened this app in a browser", which was simply false — you check it in a browser as you iterate, wide and narrow and in both themes. Corrected in both files. The real gap is narrower and more specific: a real phone, and a keyboard-only pass |
 | **Mockups supplied** | You added three desktop concepts and three mobile ones, committed to `main` as `f58bf0f` under `Mockups/` — reference material, so no branch |
 | **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline, as you asked. The seven-column accordion and everything holding it up came out — one day at a time is now the layout at every width. Three of the seven small things from the last review were fixed on the way past. **Not looked at in a browser by either of us**: the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
+| **Screenshots found six flaws** | You opened it and shot it wide and narrow. The wide layout was rendering at a third of its width — `.page` had become a grid item, where `margin: 0 auto` stops it stretching and it shrink-to-fits to its own max-content. The `min-width: 1001px` block was also partly dead, sitting above the base rules it meant to override. Beyond those: the palette read as one cream wash, empty meal cards were 140px tall, the day row wrapped from 620px instead of 400px, and the nav pill landed on a tap target. All six fixed in `01239e8`, with the palette re-measured for surface separation as well as text contrast, and a new static check that fails if a base rule is ever written below the first media query. **The lesson worth keeping: reading the CSS twice found none of this. One screenshot found all of it.** |
 
 ---
 

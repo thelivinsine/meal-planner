@@ -84,11 +84,15 @@ Established in v1 and extended since — follow them or say why not:
   hairline and a label, never a second outline. Nested boxes were the main thing wrong with
   v1's week. There is no day card around the meals for the same reason — the `<h2>` above
   them names the day, so a card holding three cards would be a box saying nothing.
-- **The page is the white; the tiles carry the colour.** `--bg` is plain white, `--surface` is
-  the warm tint every card and panel takes, `--surface-sunk` is one step deeper for trays and
-  tags, `--surface-past` is nearly the page again for days gone by. A tray holding cards must sit
-  a step deeper than the cards, or their edges vanish. Check a colour pair's contrast with a
-  script rather than eyeballing it — several of these sit within 0.1 of the 4.5 floor.
+- **The page carries the warmth; the cards are the light.** `--bg` is a warm off-white,
+  `--surface` is the near-white every card and panel takes, `--surface-sunk` is a step deeper
+  for trays and inner tiles, `--surface-past` falls back towards the page for days gone by.
+  Inverted from v1, where a white page held heavy peach tiles — that read as one cream wash as
+  soon as the cards got large. **Measure both directions with a script:** text against its
+  ground needs 4.5, and any two surfaces that touch need about 1.10 or the edge disappears. The
+  first attempt at this inversion failed at 1.12 page-to-card. Where a pair has to sit closer
+  than that — a past day receding into the page — a hairline carries the edge instead, on both
+  the card and anything inside it.
 - **`--accent` fills, `--accent-ink` writes.** The accent is legible as a background but lands at
   4.47 as text on a tinted tile, so every accent-coloured *word* uses `--accent-ink`, one step
   deeper. Borders, dots, chips and button fills use `--accent`. Getting this backwards is how the
@@ -111,12 +115,24 @@ Established in v1 and extended since — follow them or say why not:
   week gains its summary column. Under it, the nav is the docked pill and the top bar has the
   brand. **One set of nav markup either way** — two lists is two things to drift, and two
   `<nav>`s is two landmarks for one control.
+- **`body` being a grid makes `.page` a grid item, which changes what `width: auto` means.**
+  A grid item with auto inline margins does not stretch to its track — the auto margins absorb
+  the space and it falls back to shrink-to-fit. `.page` has `margin: 0 auto` for centring, so it
+  needs an explicit `width: 100%` or it silently sizes itself to its own max-content, which is
+  what once rendered the week at a third of its width. Don't remove that `width`.
 - **The summary column is derived, so it may be dropped.** Everything in `.week-side` is computed
   from the day beside it, which is why hiding it under 1000px loses nothing. Anything that can
   only be read there doesn't belong there.
-- **Breakpoints:** 1000px and 620px as `max-width`, one `min-width: 1001px` block for the sidebar,
-  plus `pointer: coarse`. The `max-width` pair stays in descending order — a wider query after a
-  narrower one silently overrides it. Extend an existing block, don't open a second at one width.
+- **Breakpoints:** 1000px, 620px and 400px as `max-width`, one `min-width: 1001px` block for the
+  sidebar, plus `pointer: coarse`. Three rules, all learned the hard way:
+  **they all live at the end of the file**, because a media query adds no specificity and a base
+  rule written below one beats it on source order — that killed the whole wide block once;
+  the `max-width` ones stay in **descending order**, or a wider query overrides a narrower one;
+  and extend an existing block rather than opening a second at the same width.
+- **Put a breakpoint where the constraint actually bites, and do the arithmetic.** The day row
+  wraps at 400px because seven 44px chips plus gaps need 332px and 401px yields 46px each. It
+  first shipped wrapping from 620px — hundreds of pixels early, which turned a week that fitted
+  on one row into two rows of oversized buttons.
 - **Rendering:** change state, then redraw the whole view from it. No diffing, no partial updates.
   Views are built as HTML strings, so run any text through `escapeHtml` before it reaches
   `innerHTML`. No inline `onclick` — one delegated listener in `app.js` dispatches on
@@ -170,7 +186,12 @@ For logic, a throwaway Node script against a stub DOM: stub what `app.js` touche
 `state` and the delegated click handler, assert on the HTML strings that come back. Kept outside
 the repo — see the open question about committing a `check.mjs` in `README.md`. The static checks
 are nearly free and worth running too: `node --check`, every id the JS looks up exists in the
-HTML, no class emitted with no rule behind it, `max-width` queries still descending.
+HTML, no class emitted with no rule behind it, `max-width` queries still descending, and no base
+rule written below the first media query.
+
+**None of that catches a layout that renders at a third of its width.** It happened, and reading
+the CSS twice did not find it either — a browser did, in one screenshot. So for anything that
+changes layout, a rendered look is the check, not the optional extra.
 
 **Screenshots:** none, deliberately. Stale ones get deleted rather than captioned, because a shot
 of the wrong version is worse than none. Hard-refresh before taking a fresh set.
