@@ -4,37 +4,47 @@
 
 | | |
 |---|---|
-| **Live** | Code at `eb9ea73` (PR [#8](https://github.com/thelivinsine/meal-planner/pull/8), squash-merged), docs on top. Pages `built` at that commit. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. The four follow-ups #7 left are all closed |
-| **Confirmed** | The underline **in every scenario asked for** — card, past day, dark mode. The longest recipe name wraps cleanly. And **the live site on a phone**, which closes the one gap a desktop could not. **Your eyes, not images**, so none of it is reproducible from the repo |
-| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast` and `week-affordance-and-landmark` were deleted on merge |
+| **Live** | Code at `6e27431` (PR [#9](https://github.com/thelivinsine/meal-planner/pull/9), squash-merged), docs on top. Pages `built` at that commit. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **None.** No branch, no PR, no known defect. One thing parked by choice: the theme button's hover, below |
+| **Confirmed** | The underline on all three grounds, the longest recipe name wrapping, **the live site on a phone**, and the sidebar nav hover. **Your eyes, not images**, so none of it is reproducible from the repo. The theme button's hover is *not* on this list — see below |
+| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast`, `week-affordance-and-landmark` and `check-script` were deleted on merge |
 
 ## What just shipped
 
-**PR #8, one commit: the three loose ends #7 left, none related to each other.**
+**PR #9: `check.mjs`, and the first thing it found.**
 
-**The recipe name is underlined at rest.** #7 took the filled tile off it — one box per level — and
-left `--accent-ink` plus an underline on *hover*, which on a phone is no affordance at all. The line
-is there at rest now, at 45% of the ink so it reads as an affordance rather than as a link in prose,
-going to full strength on hover so the old feedback is kept rather than traded. Nothing measurable
-was broken before: contrast passed, focus still drew the ring. That is why it survived a round, and
-it is the reason this is now a rule in `CLAUDE.md` rather than a fix.
+**The script is saved instead of rewritten.** One file at the repo root, no dependencies, no config,
+no runner, never served to a browser. `node check.mjs` prints a tick or a cross per check and exits
+non-zero if any fail. It replaces three throwaways written and deleted five times between them, two
+of which had caught things no eye could catch. 66 checks: contrast in both themes and both
+directions with the tokens read out of `style.css`, the action and id wiring, and the three values
+written twice. The hairline rule is encoded rather than described — a pair marked `line:` is allowed
+under 1.10 and its **line** is measured instead, against both sides.
 
-**The week landmark has a stable name.** `aria-labelledby` pointed at the greeting `h1`, and the
-greeting rotates every load, so the region announced itself differently each visit. A fixed
-`aria-label="Week plan"` on the `<section>`; the greeting is untouched and still the visible heading.
+**It failed on its first run**, on `--surface-sunk` beside `--bg` at **1.08** — the pair found at
+PR #7's merge and left. Fixed rather than excused: `.nav-btn:hover` in the sidebar, where the nav
+unwinds to no fill of its own and so lands on the page, now uses `--surface` (1.11 light, 1.23
+dark). The token itself could not move — in dark mode the only value clearing 1.10 against both
+`--bg` and `--surface` is `#232323`, which is `--surface-past`, and two tokens on one shade means a
+tray inside a past card has no edge at all. The pair then **left the script's list** rather than
+being marked known, with a comment saying to put it back if a bare sunk fill lands on the page
+again; `--line-strong` on `--bg` took its slot.
 
-**And one stale comment** — `style.css` still called the save glyph a filled star, a round after it
-became a bookmark.
+### The one the script could not have caught
 
-`CLAUDE.md` gained both conventions and `docs/decisions.md` both stories, with the code rather than
-after it.
+`.theme-btn:hover` was changed alongside the nav button on the reasoning that both put a sunk fill
+on the page. **Only the sidebar one did.** The theme button carries `background: var(--surface)` at
+rest, so its hover sits on that, not on `--bg` — and setting it to `--surface` made the rule a
+no-op, leaving only the icon colour changing. Every token involved stayed legal and every pair still
+measured fine, so **a contrast script is blind to a rule that changes nothing**. It took a mouse.
+The lesson is now in `architecture.md`: *a fill has to differ from what the control sits on, not
+from the page behind it.* Reverted to `--surface-sunk`, which measures 1.20 light and 1.14 dark
+against the button.
 
-### Confirmed, in full
-
-You checked the underline on all three grounds — a card, a **past day** (where the 45% line is
-weakest, on `--surface-past`) and dark mode — and called all of them good. The caveat this section
-carried for a day is gone.
+**That revert has not been looked at.** You said it was fine to come back to later, so it shipped
+measured but unseen: hovering the theme button should give a faint grey panel, not just a darker
+icon. Nothing else on the page uses that rule, and both numbers clear the floor — it is a look, not
+a risk.
 
 ## The four follow-ups #7 left: all closed
 
@@ -74,26 +84,21 @@ back on the list.
   stack. The one place the "static files only" constraint bends.
 - `applyTheme()` always stamps `data-theme`, so a dark-OS user gets a light app on first visit
   despite `<meta name="color-scheme" content="light dark">`.
-- **Three values are written twice.** The storage key `p5:mealplanner` (`STORAGE_KEY` in `app.js`,
-  again in the inline theme script in `index.html`), the `theme-color` fallback hex (tied to the
-  palette, left stale once already), and the bookmark icon path (`app.js` renders it, `index.html`
-  carries it inline for the sidebar). All three are listed together in
-  [architecture](architecture.md#storage).
+- **Three values are written twice** — the storage key `p5:mealplanner`, the `theme-color` fallback
+  hex and the bookmark icon path, each in both `app.js`/`style.css` and `index.html`. They cannot be
+  de-duplicated without a build step, which this project does not have. **`check.mjs` now compares
+  all three**, so the duplication stays but drifting apart no longer goes unnoticed — which is what
+  happened to the `theme-color` hex once. Listed in [architecture](architecture.md#storage).
 
 These are trade-offs rather than bugs. The known-defect list is empty.
 
-## One open question, yours to call
+## The open question is closed
 
-**The check scripts are thrown away every session.** Four rounds have now written the same
-throwaways — a stub DOM, a contrast measure, a static wiring sweep — and deleted all of them. The
-contrast script was written for the fourth time this round and earned its keep twice in one sitting:
-it caught dark `--accent-soft` at **1.01** against the new neutral panel, which would have made
-every accent fill invisible on a card, and light `--on-accent` on `--accent` dropping to **4.26**
-when the accent was brightened towards the mockup. Both were invisible to the eye and would have
-shipped. It was then written a **fifth** time at merge, to re-measure the palette before the button
-was pressed, and found one pair the PR had not named — `--bg`/`--surface-sunk` at 1.08 in both
-themes, reachable only at `.nav-btn:hover`. That is the case for `check.mjs` in two lines. Against
-it: a test file in a repo whose constraints say no test framework.
+**`check.mjs` exists.** The argument for it — five rewrites, two saves — is above; the argument
+against was that a file that looks like a test invites someone to grow a suite around it. That risk
+is unchanged and now lives in a comment at the top of the file. `CLAUDE.md` says to run it after
+touching tokens and, more importantly, **to add new pairs to its list**: a combination not in that
+list is one nobody measures, which is the way this check will rot if it rots.
 
 ## Screenshots
 
