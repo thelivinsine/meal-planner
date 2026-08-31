@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Live** | Code at `6e27431` (PR [#9](https://github.com/thelivinsine/meal-planner/pull/9), squash-merged), docs on top. Pages `built` at that commit. https://thelivinsine.github.io/meal-planner/ |
+| **Live** | Code at `6e27431` (PR [#9](https://github.com/thelivinsine/meal-planner/pull/9), squash-merged); docs on top through `5a5ec57`, markdown only, no code touched. Pages `built` at `5a5ec57`. https://thelivinsine.github.io/meal-planner/ |
 | **Open work** | **None.** No branch, no PR, no known defect. One thing parked by choice: the theme button's hover, below |
 | **Confirmed** | The underline on all three grounds, the longest recipe name wrapping, **the live site on a phone**, and the sidebar nav hover. **Your eyes, not images**, so none of it is reproducible from the repo. The theme button's hover is *not* on this list — see below |
 | **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast`, `week-affordance-and-landmark` and `check-script` were deleted on merge |
@@ -77,6 +77,12 @@ back on the list.
    after a redraw is asserted in five places and driven in none of them. **This is now the biggest
    untested thing left**, and the section it lives under says every defect this project has shipped
    has been an accessibility defect.
+3. **Act on the dark-mode findings, or decide not to.** [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens)
+   names two: there is no token above `--surface`, so hover and selected states have nowhere to go
+   and the nesting ladder ends one level up from the page; and `--surface-sunk` sits **1.08** from
+   `--bg` in dark, the same token that is correct in light. Both are measured, neither is a defect,
+   and moving a surface token means new pairs in `check.mjs` **and** a browser. Wants your eye on
+   whether dark mode actually feels flat before any hex changes.
 
 ## Three small things open, none urgent
 
