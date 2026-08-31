@@ -802,8 +802,10 @@ function renderGlance(iso) {
   el.glanceBody.innerHTML =
     '<p class="glance-count">' + list.length + ' / ' + MEALS.length + ' meals planned</p>' +
     '<div class="glance-bar"><span style="width: ' + Math.round(list.length / MEALS.length * 100) + '%"></span></div>' +
+    // "0 min" rather than an em dash: the dash read as a rendering fault, and zero is
+    // the honest answer when nothing is planned.
     '<div class="glance-row"><p class="glance-label">Estimated time</p>' +
-      '<p class="glance-value">' + (minutes ? minutes + ' min' : '—') + '</p></div>' +
+      '<p class="glance-value' + (minutes ? '' : ' is-quiet') + '">' + minutes + ' min</p></div>' +
     '<div class="glance-row"><p class="glance-label">Dietary balance</p>' +
       '<p class="glance-value is-' + balance.tone + '">' + escapeHtml(balance.text) + '</p></div>';
 

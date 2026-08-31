@@ -7,19 +7,23 @@
 
 /* ---------- tokens: light ---------- */
 :root {
-  /* The page is the white; the tiles carry the colour. */
-  --bg: #ffffff;
-  --surface: #fce3d3;        /* day cards, recipe cards, panels */
-  --surface-sunk: #f6d2ba;   /* trays, tags and rails — a step deeper than a tile */
-  --surface-past: #faf7f5;   /* a day that has been and gone: nearly the page */
+  /* The page carries the warmth; the cards are the light. Inverted from v1 of this
+     palette, where the page was white and every tile a heavy peach — that read as one
+     cream wash the moment the cards got large. The earlier attempt at this inversion
+     failed on separation (1.12 between page and card), so these are measured: page to
+     card is 1.20, card to sunk 1.20, and no text pair is under 4.5. */
+  --bg: #f2ece5;             /* the page */
+  --surface: #fffefc;        /* meal cards, recipe cards, panels — nearly white */
+  --surface-sunk: #ebe3da;   /* trays and inner tiles — a step deeper than a card */
+  --surface-past: #f7f3ee;   /* a day that has been and gone: back towards the page */
   --ink: #1c1410;
   --ink-soft: #5c4a3d;
   --ink-faint: #6d5749;
-  --line: #f2cdb4;
-  --line-strong: #e0b092;
+  --line: #ddd2c5;
+  --line-strong: #c9b9a7;
 
   --accent: #bd4b2f;
-  --accent-soft: #f9e8e1;
+  --accent-soft: #f8e4da;
   --accent-ink: #9a422a;
   --on-accent: #ffffff;
 
@@ -44,7 +48,9 @@
   --bg: #14100d;
   --surface: #2a2019;
   --surface-sunk: #1e1712;
-  --surface-past: #191512;
+  /* A step further from the card than the page is, so the tile inside a past card
+     still has an edge — at #151110 it was 1.06 against the tile and vanished. */
+  --surface-past: #100d0b;
   --ink: #f8f0e9;
   --ink-soft: #c6b3a3;
   --ink-faint: #9d8776;
@@ -52,7 +58,9 @@
   --line-strong: #52402f;
 
   --accent: #ed7b59;
-  --accent-soft: #302115;
+  /* Lifted from #302115, which sat 1.03 against --surface: the + circle and every
+     accent-soft fill were invisible on a card in dark mode. */
+  --accent-soft: #3d2a1b;
   --accent-ink: #f2ac93;
   --on-accent: #1a1209;
 
@@ -203,55 +211,19 @@ button, input, select { font: inherit; color: inherit; }
 [data-theme="dark"] .theme-icon-moon { display: block; }
 
 /* ---- wide: sidebar beside a content column ---- */
-@media (min-width: 1001px) {
-  body {
-    display: grid;
-    grid-template-columns: 236px minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-  }
-  /* The sidebar spans both rows; the top bar and the page share the second column. */
-  .nav-wrap { grid-column: 1; grid-row: 1 / 3; }
-  .topbar, .page { grid-column: 2; }
-
-  .nav-wrap {
-    position: sticky; top: 0; bottom: auto; align-self: start;
-    height: 100vh; padding: 22px 14px;
-    display: flex; flex-direction: column; align-items: stretch; gap: 24px;
-    justify-content: flex-start;
-    border-right: 1px solid var(--line);
-    pointer-events: auto;
-  }
-  .brand-side { display: flex; padding: 0 10px; }
-  .brand-top { display: none; }
-
-  /* The pill unwinds into a plain vertical list: no fill, no border, no shadow. */
-  .nav {
-    flex-direction: column; gap: 2px; padding: 0;
-    background: none; backdrop-filter: none; border: 0;
-    border-radius: 0; box-shadow: none;
-  }
-  .nav-btn {
-    width: 100%; justify-content: flex-start; gap: 11px;
-    padding: 9px 10px; min-height: 40px;
-    border-radius: var(--radius-sm);
-    color: var(--ink-soft); font-size: .9375rem;
-  }
-  .nav-btn:hover { background: var(--surface); color: var(--ink); }
-  .nav-btn[aria-current="page"] { background: var(--accent-soft); color: var(--accent-ink); }
-
-  /* Nothing docks over the content any more, so the top bar stops being a bar: just
-     the theme button, floated to the top right of the column. */
-  .topbar {
-    position: static; background: none; backdrop-filter: none; border-bottom: 0;
-  }
-  .topbar-inner { max-width: none; padding: 22px 28px 0; }
-  .page { padding: 14px 28px 48px; }
-  .toast { bottom: 28px; }
-}
+/* The wide layout lives in one `min-width: 1001px` block at the end of this file, next
+   to the responsive section. It has to sit after every base rule it overrides — it used
+   to be here, and the base `.page` and `.toast` rules below beat it on source order,
+   which silently killed the wide padding. Media queries do not raise specificity. */
 
 /* ---------- page + views ---------- */
-.page { max-width: 1180px; margin: 0 auto; padding: 30px 20px 104px; }
+/* `width: 100%` is load-bearing, not belt-and-braces. Over 1000px `.page` is a grid
+   item, and a grid item with auto inline margins does not stretch to its track — the
+   auto margins win and it falls back to shrink-to-fit. So `margin: 0 auto`, which
+   merely centres a block, silently sized this to its own max-content and left the week
+   about a third of the width it should have. A definite width restores the stretch and
+   keeps the centring. */
+.page { width: 100%; max-width: 1180px; margin: 0 auto; padding: 30px 20px 104px; }
 
 /* One entrance per view switch. Deliberately not per card: the whole view is
    re-rendered on every keystroke, so a card-level stagger would replay while
@@ -377,16 +349,18 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 
 .meal {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 12px 14px 14px;
-  display: flex; flex-direction: column; gap: 10px;
+  border-radius: var(--radius); padding: 9px 12px 11px;
+  display: flex; flex-direction: column; gap: 7px;
   transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
   animation: slot-in .28s var(--ease) both;
 }
 .meal:hover { box-shadow: var(--shadow); }
-/* A day that has been and gone stays legible but visibly settled. Its card is nearly
-   the page, so the tile inside has to move the other way or its edge vanishes. */
+/* A day that has been and gone stays legible but visibly settled: its card falls back
+   towards the page. The tile inside then has to go a step deeper, or its edge vanishes. */
 .meals.is-past .meal { background: var(--surface-past); }
-.meals.is-past .meal-open { background: var(--surface); }
+/* Both fills sit close together on a receded card, in dark mode especially, so the
+   tile borrows the same trick the card uses: a hairline carries the edge. */
+.meals.is-past .meal-open { background: var(--surface-sunk); border: 1px solid var(--line); }
 
 .meal-head { display: flex; align-items: center; gap: 10px; }
 .meal-icon { flex: none; display: grid; place-items: center; color: var(--accent); }
@@ -416,11 +390,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .meal-meta { font-size: .75rem; font-weight: 500; color: var(--ink-faint); }
 .meal-row .bookmark { flex: none; }
 
-/* An empty meal is an invitation, so it is the width of the card and dashed. */
+/* An empty meal is an invitation, so it is the width of the card and dashed. 44px, not
+   the 52 it was: three empty cards were filling a whole phone screen, and the coarse
+   block puts the floor here anyway. */
 .meal-add {
   cursor: pointer; width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  min-height: 52px; padding: 12px;
+  min-height: 44px; padding: 8px 12px;
   background: none; border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
   color: var(--ink-soft); font-size: .875rem; font-weight: 600;
@@ -476,8 +452,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .glance-row + .glance-row {
   margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
 }
+/* 9px uppercase was unreadable in the panel it labels — the eyebrow size elsewhere is
+   fine on a tag, not on a line you are meant to read a number off. */
 .glance-label {
-  font-size: .5625rem; text-transform: uppercase; letter-spacing: .12em;
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .09em;
   color: var(--ink-faint); font-weight: 700;
 }
 /* One accent colour, so a good balance is accent ink rather than the mockup's green. */
@@ -486,11 +464,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .glance-value.is-warn { color: var(--ink-soft); }
 .glance-value.is-quiet { color: var(--ink-faint); }
 .side-tip { font-size: .8125rem; line-height: 1.55; font-weight: 500; color: var(--ink-soft); }
-
-@media (min-width: 1001px) {
-  #view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
-  .week-side { display: flex; flex-direction: column; gap: 16px; }
-}
 
 /* ---------- filters ---------- */
 .filters {
@@ -801,11 +774,68 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 
 /* ---------- responsive ---------- */
-/* Two breakpoints, both max-width, in descending order — a wider query placed after a
-   narrower one silently overrides it. 1000px is where the sidebar and the summary
-   column go; 620px is the phone.
-   The week itself needs no breakpoint any more: one day at a time is the layout at
-   every width, so there is only ever one set of week markup on the page. */
+/* Three breakpoints and a pointer query. The two `max-width` ones must stay in
+   descending order — a wider query placed after a narrower one silently overrides it.
+   All of them sit here, after every base rule they override: a media query adds no
+   specificity, so a wide rule placed above the base rule it means to beat simply loses.
+   The week needs no breakpoint of its own: one day at a time is the layout at every
+   width, so there is only ever one set of week markup on the page. */
+
+/* ---- wide: sidebar beside a content column, plus the summary column ---- */
+@media (min-width: 1001px) {
+  body {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+  /* The sidebar spans both rows; the top bar and the page share the second column. */
+  .nav-wrap { grid-column: 1; grid-row: 1 / 3; }
+  .topbar, .page { grid-column: 2; }
+
+  .nav-wrap {
+    position: sticky; top: 0; bottom: auto; align-self: start;
+    height: 100vh; padding: 22px 14px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 24px;
+    justify-content: flex-start;
+    border-right: 1px solid var(--line);
+    pointer-events: auto;
+  }
+  .brand-side { display: flex; padding: 0 10px; }
+  .brand-top { display: none; }
+
+  /* The pill unwinds into a plain vertical list: no fill, no border, no shadow. */
+  .nav {
+    flex-direction: column; gap: 2px; padding: 0;
+    background: none; backdrop-filter: none; border: 0;
+    border-radius: 0; box-shadow: none;
+  }
+  .nav-btn {
+    width: 100%; justify-content: flex-start; gap: 11px;
+    padding: 9px 10px; min-height: 40px;
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft); font-size: .9375rem;
+  }
+  .nav-btn:hover { background: var(--surface-sunk); color: var(--ink); }
+  /* A card-coloured pill, not an accent-soft one: on the tinted page accent-soft sits
+     at 1.05 and the pill had no edge at all. The accent is carried by the text. */
+  .nav-btn[aria-current="page"] {
+    background: var(--surface); color: var(--accent-ink);
+    box-shadow: var(--shadow);
+  }
+
+  /* Nothing docks over the content any more, so the top bar stops being a bar: just
+     the theme button, floated to the top right of the column. */
+  .topbar {
+    position: static; background: none; backdrop-filter: none; border-bottom: 0;
+  }
+  .topbar-inner { max-width: none; padding: 22px 28px 0; }
+  .page { padding: 14px 28px 48px; }
+  .toast { bottom: 28px; }
+
+  #view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
+  .week-side { display: flex; flex-direction: column; gap: 16px; }
+}
 
 @media (max-width: 1000px) {
   .filter-groups { gap: 14px 20px; }
@@ -824,15 +854,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .filter-toggle { width: 100%; }
   .day-picker .day-chip { flex: 0 0 calc(33.333% - 4px); }
 
-  /* Seven across a 320px screen is a 39px chip, under the 44px floor — width as well
-     as height. So the strip wraps 4 + 3 and centres, which still shows the whole week
-     with no horizontal scroll and no day off-screen. */
-  .day-strip {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
-    max-width: 420px; margin: 10px auto 0;
-  }
-  .day-strip .day-chip { flex: 0 0 calc(25% - 5px); }
-
   .weekbar { padding: 8px 10px 10px; }
   .weekbar-range { font-size: .9375rem; }
   .day-title { margin: 18px 0 10px; }
@@ -845,6 +866,19 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   }
   .sheet-body { padding: 20px 16px 28px; }
   .sheet-title { font-size: 1.375rem; }
+}
+
+/* Seven across stops clearing the 44px floor — width as well as height — at about
+   400px, not at 620: at 401px the strip still gives 46px a chip. Below that it wraps
+   4 + 3 and centres, which shows the whole week with no scroll and no day off-screen.
+   This was in the 620px block, where it fired hundreds of pixels early and turned the
+   week into two rows of 100px buttons on a screen that had room for one row of seven. */
+@media (max-width: 400px) {
+  .day-strip {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+    margin: 10px auto 0;
+  }
+  .day-strip .day-chip { flex: 0 0 calc(25% - 5px); }
 }
 
 /* ---------- motion preference ---------- */
