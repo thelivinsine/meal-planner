@@ -3,18 +3,16 @@
 ## Project
 Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
 
-See `README.md` for what the app does, the data model, and the decisions already taken.
-Read it before proposing changes — several things are missing on purpose, not by oversight.
-**Starting a session:** read *Where things stand* at the top of `README.md` first — it names the
-live commit, any open PR, known defects, and what's queued next.
+**Starting a session:** read *Where things stand* at the top of `README.md` first — live commit,
+open PRs, known defects, what's queued. The rest of that file has the data model and the decisions
+already taken; read it before proposing changes, because several things are missing on purpose.
 
 ## Working with me
 - Ask when something is unclear or a decision is uncertain. Don't guess silently.
 - State the decisions you did make and why, in one or two lines each.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
-- **"Update the docs"** (or refresh / update documentation, however I phrase it) means sweep
-  *every* markdown file in the repo against the current state of the project — `CLAUDE.md`,
-  `README.md`, and anything else that exists by then — not just the one we were looking at.
+- **"Update the docs"** (however I phrase it) means sweep *every* markdown file in the repo
+  against the current state — `CLAUDE.md`, `README.md`, and anything else by then.
 - Keep this file at **around 150 lines**. It's meant to be read, not skimmed: a convention with
   its reasoning attached is worth more than a terse bullet that gets misapplied later.
 
@@ -24,39 +22,33 @@ live commit, any open PR, known defects, and what's queued next.
   `README.md` — may be committed straight to `main`.
 - Vanilla HTML, CSS, JavaScript only. No frameworks, no libraries, no build step.
 - All data persists in the browser (`localStorage`). No server, no database, no API calls.
-- Hosted on GitHub Pages: everything must work from static files opened over plain HTTP.
-  - Relative paths only (no leading `/`).
-  - Entry point is `index.html` at the repo root.
-  - ES modules are fine (`<script type="module">`), but they need a local server to test —
-    `python -m http.server` from the repo root.
+- Hosted on GitHub Pages: static files over plain HTTP. Relative paths only (no leading `/`),
+  entry point `index.html` at the repo root. ES modules are fine but need a local server to
+  test — `python -m http.server` from the repo root.
 
 ## Workflow
 The loop every code change goes through, in order:
 
-1. Branch off `main`. Name it for the change, not the round (`mobile-week`, `feat/ui-polish`).
-2. Build it, then check it — see *Testing* below. A visual change means opening a browser, or
-   handing it to me to look at; don't merge a layout claim neither of us has seen.
+1. Branch off `main`. Name it for the change, not the round (`mobile-week`, `sidebar-day-view`).
+2. Build it, then check it — see *Testing*. A visual change means opening a browser, or handing
+   it to me to look at; don't merge a layout claim neither of us has seen.
 3. Open a PR whose description says what changed and what was **not** verified. Be honest in
    that second half; it's the part that gets read before merging.
 4. Review the PR against its own description before merging. Re-read the diff if commits were
    pushed after the review — a branch can grow into a different change than the one reviewed.
 5. Squash-merge, delete the branch.
 6. Watch the Pages build to `built` (command in *Deployment* in `README.md`), then update
-   *Where things stand* in `README.md` — live commit, open work, anything that shipped broken.
-   Part of merging, not an optional tidy afterwards.
+   *Where things stand* — live commit, open work, anything that shipped broken. Part of
+   merging, not an optional tidy afterwards.
 
 ## Layout
-```
-index.html   page shell: top bar, three view sections, inline slot picker, docked nav,
-             two <dialog> panels. The nav sits at body level, not in .topbar — a
-             backdrop-filter ancestor would become its containing block
-style.css    all styling
-app.js       recipe catalogue, state, rendering, one event handler
-README.md    documentation
-Screenshots/ deleted — stale shots get removed, not captioned. Recreate it with descriptive
-             filenames, not camera defaults
-```
-Add files only when one gets unwieldy.
+`index.html` is the whole page shell, `style.css` all styling, `app.js` the catalogue plus state,
+rendering and one event handler. `Mockups/` holds the supplied design concepts the current layout
+was built against; `Screenshots/` was deleted, and a new one takes descriptive filenames rather
+than camera defaults. *How the code is organised* in `README.md` has the detail. Two things worth
+knowing here: the nav lives at body level rather than inside `.topbar`, because a
+`backdrop-filter` ancestor would become its containing block — and add files only when one gets
+unwieldy.
 
 ## Conventions
 Established in v1 and extended since — follow them or say why not:
@@ -68,99 +60,114 @@ Established in v1 and extended since — follow them or say why not:
 - **Two ways to add a meal, never merged:** from an *empty* week slot, the inline picker under the
   week — day and meal already known, so never ask again; from a recipe card, the `#picker` dialog.
   One component draws both: `cardHtml(recipe, slot)` renders every list of recipes, and the slot
-  argument is what swaps its primary button between the two routes. Don't fork it for a new list.
+  argument swaps its primary button between the two routes. Don't fork it for a new list.
 - **Plan shape:** flat, keyed by real date and meal — `state.plan['2026-08-26|Dinner'] = recipeId`.
   Keyed by date, not weekday, so each week is genuinely its own plan.
-- **Storage:** one JSON blob under one key, `p5:mealplanner`. Every read *and* write wrapped in
+- **Storage:** one JSON blob under one key, `p5:mealplanner`. Wrap every read *and* write in
   try/catch — quota errors and private mode are real. Validate on load and drop anything
-  unrecognised; never trust what's in storage. The plan, the bookmarks and the
-  theme are saved; view, week, search, filters, `focusDay` and `expandAll` are per-session on
-  purpose. Theme is the one deliberate exception: a theme the user picked and lost on reload is
-  a bug, not a fresh start. `index.html` reads it inline in `<head>` to paint before first
-  paint, so the key is written in two places — change one, change the other.
-- **One box per level:** a card gets the border; the rows inside it get a hairline and a
-  label, not borders of their own. Nested boxes were the main thing wrong with v1's week.
-  This applies inside the day cards — lists of recipes use the recipe card instead.
-- **The page is the white; the tiles carry the colour.** `--bg` is plain white, `--surface` is
-  the warm tint every card and panel takes, `--surface-sunk` is one step deeper for trays and
-  tags, `--surface-past` is nearly the page again for days gone by. A tray holding cards must sit
-  a step deeper than the cards, or their edges vanish. Check a colour pair's contrast with a
-  script rather than eyeballing it — several of these sit within 0.1 of the 4.5 floor.
+  unrecognised. The plan, bookmarks and theme are saved; view, week, search, filters and
+  `focusDay` are per-session on purpose. Theme is the deliberate exception: one the user picked
+  and lost on reload is a bug, not a fresh start. `index.html` reads the key inline in `<head>`
+  to paint before first paint, so it is written in two places — change one, change the other.
+- **One day at a time, at every width.** The week is a bar — date range between two arrows, seven
+  day buttons under it — then that day as three meal cards (`state.focusDay`). No accordion and
+  no mobile-only week: the seven columns, the rails, `expandAll`, `--week-cols` and the `subgrid`
+  row sharing went when the mockups settled on one day. Don't bring a second week markup back.
+- **The shell flips at 1000px, the week does not.** Over 1000px `body` is a two-column grid: the
+  nav becomes a left sidebar under the brand, the top bar keeps only the theme button, and the
+  week gains its summary column. Under it, the nav is the docked pill and the top bar has the
+  brand. **One set of nav markup either way** — two lists is two things to drift, and two
+  `<nav>`s is two landmarks for one control.
+- **The summary column is derived, so it may be dropped.** Everything in `.week-side` is computed
+  from the day beside it, which is why hiding it under 1000px loses nothing. Anything that can
+  only be read there doesn't belong there.
+- **One box per level:** a card gets the border; what sits inside is a filled tile or a hairline
+  and a label, never a second outline. Nested boxes were the main thing wrong with v1's week, and
+  it's why there is no day card around the meals — the `<h2>` above them already names the day.
+- **The page carries the warmth; the cards are the light.** `--bg` is a warm off-white,
+  `--surface` the near-white every card takes, `--surface-sunk` a step deeper for trays and inner
+  tiles, `--surface-past` back towards the page for days gone by. **Measure both directions with
+  a script:** text on its ground needs 4.5, and two surfaces that touch need about 1.10 or the
+  edge disappears. Where a pair must sit closer, as a receding past day does, a hairline carries
+  the edge instead — on the card and on anything inside it.
 - **`--accent` fills, `--accent-ink` writes.** The accent is legible as a background but lands at
   4.47 as text on a tinted tile, so every accent-coloured *word* uses `--accent-ink`, one step
-  deeper. Borders, dots, chips and button fills use `--accent`. Getting this backwards is how the
-  contrast floor gets broken quietly.
+  deeper; borders, dots, chips and fills use `--accent`. Backwards is how the floor breaks quietly.
 - **Subject gets the weight:** in the add-to-week dialog the recipe carries the large type and
-  "Add to week" is a small uppercase eyebrow above it. The views themselves have no eyebrows —
-  they were removed when the week heading became one rotating line.
-- **Dialog `display` hangs off `[open]`.** A bare `display` on `.sheet` beats the user agent's
-  `dialog:not([open]) { display: none }`, because the UA origin loses to the author origin, and
-  both sheets render in the page at all times. This has already happened once.
+  "Add to week" is a small uppercase eyebrow above it. The views have no eyebrows — a heading and
+  one line of subtitle, hard left, lined up with the sidebar's edge.
 - **Filter chips:** grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
   renders, under *More* — so adding a recipe tag can never make a chip disappear.
-- **Wide week is an accordion:** one day open, the other six collapsed to vertical rails that
-  expand on click (`state.focusDay`). `expandAll` gives all seven equal columns. **An open day's
-  header is never a button** — the rails are the controls, and a header claiming `aria-expanded`
-  that cannot collapse anything is worse than plain text. `--week-cols` is set on the grid as a
-  custom property, not as inline `grid-template-columns`, so the narrow media query can still
-  override it — and **every track must be the same type** (`minmax(0, Nfr)` throughout), or
-  `grid-template-columns` will not interpolate and the widths snap instead of animating. Under
-  expand-all the day cards share the grid's row tracks via `subgrid` so meal rows line up across
-  all seven; don't put anything in a day header that can wrap.
-- **Narrow week:** under 1000px the week is a strip of seven day buttons, wrapped 4 + 3 and
-  centred, plus the one day it selects. Same day card as the wide layout — CSS hides the six
-  that aren't focused. Don't build a second set of week markup for mobile.
-- **Breakpoints:** two, 1000px and 620px, plus a `pointer: coarse` block. Both are `max-width`,
-  so they must stay in descending order — a wider query placed after a narrower one silently
-  overrides it. Extend the existing block rather than opening a second one at the same width.
 - **Rendering:** change state, then redraw the whole view from it. No diffing, no partial updates.
   Views are built as HTML strings, so run any text through `escapeHtml` before it reaches
-  `innerHTML`. No inline `onclick` — one delegated listener in `app.js` dispatches on
-  `data-action`, which is why a redraw never needs listeners re-attached.
+  `innerHTML`. No inline `onclick` — one delegated listener dispatches on `data-action`, which is
+  why a redraw never needs listeners re-attached.
 - **CSS:** colours and spacing via the custom properties at the top of `style.css` — don't
   hardcode new hex values. One accent colour.
+
+### Five CSS traps this project has already fallen into
+Each cost a real bug; *Decisions worth recording* in `README.md` has the full story of each.
+- **Media queries add no specificity,** so a base rule written *below* one beats it on source
+  order. All of them therefore live at the end of `style.css`, after what they override.
+- **A grid item with auto inline margins does not stretch to its track** — it shrink-to-fits.
+  `.page` has `margin: 0 auto`, so over 1000px, where `body` is a grid, it needs an explicit
+  `width: 100%`. Without it the week rendered at a third of its width. Don't remove that `width`.
+- **Breakpoints:** 1000px, 620px, 400px as `max-width`, one `min-width: 1001px`, plus
+  `pointer: coarse`. The `max-width` ones stay in **descending order**, or a wider query
+  overrides a narrower one. Extend an existing block; don't open a second at the same width.
+- **Put a breakpoint where the arithmetic says the constraint bites.** The day row wraps at 400px
+  because seven 44px chips plus gaps need 332px, and 401px yields 46px each.
+- **Dialog `display` hangs off `[open]`.** A bare `display` on `.sheet` beats the UA's
+  `dialog:not([open]) { display: none }` — author origin wins — and both sheets then render in
+  the page at all times.
 
 ## Accessibility
 Every defect this project has shipped has been one of these, so it gets its own section:
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
 - **Keyboard must work without a mouse.** Redrawing a view destroys whatever was focused — if the
-  control the user just activated lives inside what gets re-rendered, put focus back afterwards.
-  `closeSlotPicker()` is the worked example; the day strip is where it was forgotten.
-- **Never leave a card unnamed, and never hide a focusable control from sight.** Under 1000px the
-  day header is redundant with the chip above it, so it is hidden with `.sr-only` — never
-  `display: none`, which takes the `<h2>` out of the heading outline. That is only safe because
-  the header is a `<span>`; if it were ever a button again, `.sr-only` would leave something
-  focusable that nobody can see, and the name would have to move to the `<article>` instead.
+  control just activated lives inside what gets re-rendered, put focus back afterwards. Four
+  places do it, each aiming at what *replaced* the control: `closeSlotPicker()`, the day strip
+  chip, the Add button a cleared meal leaves behind, and the save star, whose one lookup covers
+  the week, both recipe lists and the open dialog.
+- **Never leave a card unnamed, and never hide a focusable control from sight.** The day's name is
+  a real `<h2>` above the meal cards and each meal name an `<h3>`, so nothing is hidden to make
+  the layout work. If a heading ever must vanish on screen, `.sr-only` keeps it in the outline
+  where `display: none` would not — and only on something that isn't focusable.
 - **Touch targets at least 44px**, width as well as height, measured at 360px rather than at
   whatever your own window happens to be. Controls are compact on a fine pointer and the
   `pointer: coarse` block lifts them back — so a rule that outranks that block on specificity
-  silently breaks the floor, which has already happened to the dialog's icon buttons.
+  silently breaks the floor, which has happened to the dialog's icon buttons and again to the
+  week bar's arrows.
 
 ## Scope
 Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag-and-drop,
-sharing/syncing. Don't add these unless asked. See *Not in v1* in `README.md`.
+sharing/syncing, recipe photography. Don't add these unless asked — *Not in v1* in `README.md`
+has the reasoning. Photography is the newest: the mockups show a photo per meal, the catalogue
+has none, and fetching any would break "static files, no API calls".
 
 ## Testing
-No open defects — PR #4 fixed all three that shipped with PR #3. No test framework unless asked.
+No test framework unless asked. Open work is in *Where things stand* in `README.md`.
 
-**I check the app in a browser as we iterate** — wide, the window dragged narrow for the day
-strip, and both themes. Don't write that the app has never been looked at; earlier versions of
-these notes said exactly that and it was false. Do still say plainly which specific things a
-change has *not* been checked against, which is the honest half of a PR description.
+**A rendered look is the check for anything that changes layout, not the optional extra.** Reading
+the CSS twice missed a week rendering at a third of its width; one screenshot found it and five
+other flaws in the same pass. **I check the app in a browser as we iterate**, so don't write that
+it has never been looked at. Do name what a change has *not* been seen against, and hand over a
+layout change neither of us has looked at rather than calling it done.
 
-Three gaps a desktop browser cannot close, so name them rather than assuming they're covered:
+For logic, a throwaway Node script against a stub DOM: stub what `app.js` touches on load, drive
+`state` and the delegated click handler, assert on the HTML strings that come back. Kept outside
+the repo — see the open question about committing a `check.mjs` in `README.md`. The static checks
+are nearly free: `node --check`, every id the JS looks up exists in the HTML, no class emitted
+without a rule, `max-width` queries descending, no base rule below the first media query.
+
+Three gaps neither a script nor a desktop browser closes, so name them rather than assume:
 - **A real phone.** Controls are compact on a mouse and only return to 44px under
-  `@media (pointer: coarse)`, which a desktop never enters. Touch targets are untested by
-  construction.
-- **Keyboard-only and screen reader.** Focus order and accessible names. Every defect this
-  project has shipped lived here.
-- **Contrast as a number.** Several pairs sit within 0.1 of the 4.5 floor — compute it.
+  `@media (pointer: coarse)`, a block a desktop never enters. Untested by construction.
+- **Keyboard-only and screen reader.** Focus order and accessible names.
+- **Contrast as a number,** both directions, and mind what *opacity* does: dimming a control
+  blends its text back towards the tile and undoes the tokens, which is why past days are
+  quieter by colour instead.
 
-For logic, a throwaway Node script against a stub DOM is the cheap check: stub the few DOM pieces
-`app.js` touches on load, drive `state` and the delegated click handler, assert on the HTML
-strings that come back. Kept outside the repo — see the open question about committing a
-`check.mjs` in `README.md`.
-
-**Screenshots:** there are none, deliberately. Stale ones get deleted rather than captioned,
-because a shot of the wrong version is worse than none. Hard-refresh before taking a fresh set.
+**Screenshots:** none in the repo. Stale ones get deleted rather than captioned, because a shot of
+the wrong version is worse than none. Hard-refresh before taking a fresh set.
