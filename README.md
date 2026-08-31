@@ -14,13 +14,14 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **`main`** | Commit `49b3c16`, the bold-consumer redesign from PR [#4](https://github.com/thelivinsine/meal-planner/pull/4), plus `f58bf0f` adding `Mockups/`. Pages build `built`, live at the link above. `main` is one full redesign behind the branch below |
-| **Open work** | Branch **`sidebar-day-view`**, PR [#6](https://github.com/thelivinsine/meal-planner/pull/6): the Concept A rebuild — left sidebar, one day at a time, and a summary column. Two rounds of your screenshots: the first found six flaws, all fixed in `01239e8`; the second confirms the wide layout in light mode. **Narrow and dark are still unseen**, and that is what the PR is waiting on |
-| **Screenshots** | **None.** The two pre-redesign shots were deleted once they went stale. Nothing in the repo shows the current app |
-| **Mockups** | `Mockups/` holds the supplied concepts. The branch implements Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
+| **`main`** | Commit `7e10f85`, the Concept A rebuild from PR [#6](https://github.com/thelivinsine/meal-planner/pull/6), squash-merged and live. Pages build `built` on that commit. Branch `sidebar-day-view` deleted. `main` and the live site are the same thing again |
+| **Open work** | **None on a branch.** What is outstanding is looking, not building — see *Next jobs*. `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are old, already-merged branches still lying around |
+| **Shipped unseen** | **Dark mode and the narrow layout.** Both changed after the one screenshot that exists, and both went out on your say-so rather than on a shot. If something looks wrong on the live site, start there — a past day in dark mode is the most likely thing |
+| **Screenshots** | **None.** The pre-redesign shots were deleted once they went stale, and `*.png` is now gitignored so a camera-named one cannot be committed by accident. Nothing in the repo shows the current app |
+| **Mockups** | `Mockups/` holds the supplied concepts. The live app is Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline |
 | **Deploy** | Merging to `main` triggers a Pages build on its own. Watch it with `gh api repos/thelivinsine/meal-planner/pages/builds/latest --jq .status` until it reads `built` |
 
-**What the branch changes.** The seven-column accordion is gone, along with the vertical rails,
+**What shipped.** The seven-column accordion is gone, along with the vertical rails,
 **Expand all**, the animated column tracks and the `subgrid` row sharing — both mockups show one
 day at a time, so one layout now serves every width and there is no mobile-only week to keep in
 step. Over 1000px the nav becomes a left sidebar and the week gains a right-hand column: *At a
@@ -28,7 +29,7 @@ glance* (meals planned, cooking time, dietary balance) and *Tips for today*, bot
 the day on screen. Under 1000px that column is dropped rather than stacked, because everything in
 it can be read off the meals themselves.
 
-**Two rounds of screenshots, and they are the reason the branch is worth anything.**
+**Three rounds, and the first two are the reason this shipped at all.**
 
 *Round one found six flaws.* The wide layout was rendering at a third of its width with the
 content adrift in dead space; everything was one flat cream; meal cards were tall enough that
@@ -42,20 +43,48 @@ summary column and fills the width; the warm page against near-white cards reads
 hierarchy; and the derived panels are right on a full day — 3/3 planned, 37 min, *Protein-heavy*,
 with the tip that fires when all three slots are high-protein.
 
+*Round three was a review of the diff, not a screenshot, and found six more.* Three mattered.
+`theme-color` was only half-fixed: both tags hung off `prefers-color-scheme`, but the theme here
+is a choice the user *stores*, so anyone whose theme disagreed with their OS got the wrong browser
+chrome — and the light value was still `#ffffff` from before the palette inversion. One tag now,
+written from the live `--bg` by `applyTheme()` and by the inline `<head>` script, so the hex is
+never copied a third time. The **Today** button dropped keyboard focus: it renders only while you
+are off the current week, so pressing it deletes it — the exact case the four existing focus fixes
+were written for, missed because it used to be static markup. And dark `--surface-past` was
+`#100d0b`, *darker* than the page at 1.02 against it, so a past day read as a hole punched in the
+page rather than a card receded into it; `#201a15` puts it between card and page as the light one
+is. The other three were housekeeping: the stylesheet's only two ID selectors turned back into
+classes (an ID outranks any media query meant to override it), two classes emitted with no CSS
+rule deleted, and `*.png` gitignored.
+
+**The lesson from round three is narrower than round one's but worth the same.** All six were
+invisible to the eye and visible to a script — a contrast number, a class with no rule, a focus
+target that no longer exists. Screenshots caught what reading missed; scripts caught what looking
+could not.
+
 **What is checked, and what still isn't.** Checked: the wide light layout in a browser,
-`node --check`, 19 stub-DOM assertions, contrast *and* surface-to-surface separation computed from
-the tokens in the stylesheet for both themes, and static wiring — every id resolves, no class
-without a rule, no base rule written below the first media query. **Not** checked: the narrow
-layout and dark mode. Both changed in `01239e8` — the day row's wrap threshold moved and the dark
-palette gained two new values — so neither is covered by the shot that exists.
+`node --check`, 29 stub-DOM assertions, contrast *and* surface-to-surface separation computed from
+the tokens in the stylesheet for both themes, and static wiring — every id resolves, all 106
+emitted classes have a rule, `max-width` queries descending, no base rule below the first media
+query, and no ID selectors left in the stylesheet. The contrast script now separates bare surface
+edges, which must clear 1.10, from edges a hairline carries, where the line must clear 1.15
+against both sides — the distinction the convention already drew in prose.
+
+**Not** checked, and it shipped anyway: **the narrow layout and dark mode.** The wrap threshold
+moved in `01239e8` and the dark past-day colour moved again in the round-three fixes, so neither
+is covered by the one screenshot in the record. You opened the app before merging and told me to
+go; that is your look, not a shot, and it is not in the record. Treat any visual claim above other
+than *round two* as reasoning.
 
 **Next jobs, in the order they'd earn their place:**
 
-1. **Look at the branch narrow, and in dark mode.** The two things `01239e8` changed that the
-   wide light screenshot cannot show. It blocks the PR.
+1. **Look at the live site narrow, and in dark mode.** Shipped unseen, so this is a check on
+   production now rather than a gate on a PR. A past day in dark mode is the specific thing: its
+   meal cards should sit slightly *lighter* than the page, a card that has settled into it, not a
+   dark hole punched in it.
 2. **Open the live site on a phone.** Still the one gap a desktop cannot close.
-3. **Commit a screenshot set once the branch lands.** There are none in the repo. The wide light
-   shot from round two is accurate and worth keeping under a descriptive name; still wanted are
+3. **Take a screenshot set.** There are none, and `*.png` is gitignored now — so this means either
+   excepting a `Screenshots/` directory in `.gitignore` or keeping them outside the repo. Wanted:
    the narrow layout, an empty day, and both of those in dark mode.
 4. **Three small things still open**, none urgent:
    - Google Fonts is the app's first external request; blocked or offline, you get the fallback
@@ -65,18 +94,21 @@ palette gained two new values — so neither is covered by the shot that exists.
    - The storage key `p5:mealplanner` is written twice — `STORAGE_KEY` in `app.js` and again in
      the inline theme script in `index.html`. Change one, forget the other.
 
-Three from that list were fixed on the branch: `theme-color` now has a light and a dark value and
-matches the current page colour, the unmatched `is-upcoming` class is gone, and toggling Save no
-longer throws focus away — one lookup after the redraw covers the week, both recipe lists and the
-open dialog. The missing week date-range line is back, in the week bar.
+Three more from that list were fixed and shipped in `7e10f85`: the unmatched `is-upcoming` class
+is gone, toggling Save no longer throws focus away — one lookup after the redraw covers the week,
+both recipe lists and the open dialog — and `theme-color` follows the page for real, on the second
+attempt (round three above). The missing week date-range line is back, in the week bar. The three
+still open are the ones listed just above: Google Fonts, the `data-theme` stamp on a first visit,
+and the storage key written twice.
 
 **One open question, yours to call:**
 
-- **The stub-DOM check scripts are still thrown away each session.** This round wrote 19 more
-  assertions, a contrast script and a static wiring check, then deleted all three — so a
-  regression between rounds still has nothing to catch it. Committing a single `check.mjs` would
-  fix that; it also puts a test file in a repo whose constraints say no test framework. Not done
-  either way.
+- **The check scripts are still thrown away each session, and round three is the argument for
+  stopping.** Three sessions have now written the same three throwaways — a stub DOM, a contrast
+  measure, a static wiring sweep — and deleted all of them; 29 assertions this time. Two of round
+  three's six findings were things a *committed* script would have failed on the day they were
+  written, which is the case for `check.mjs` in one line. Against it: a test file in a repo whose
+  constraints say no test framework. Still your call, still not done.
 
 The `subgrid` fallback question is closed: the accordion that depended on it is gone, so nothing
 in the app needs `subgrid` any more.
@@ -356,14 +388,21 @@ Thrown away with the rest.
 
 ### The Concept A round
 
-Branch `sidebar-day-view`. `node --check`, 19 stub-DOM assertions covering the week bar and its
+Merged to `main` as `7e10f85`. `node --check`, 29 stub-DOM assertions covering the week bar and its
 Today button appearing only off the current week, the seven-day row and its single selection,
 empty and filled meal cards, the meta line, the glance arithmetic and progress width, every shape
 `balanceOf` and `tipFor` can return, plan writes and clears, the storage round-trip, focus
-restoration after a clear and after a save toggle, week paging, day switching, and the past-day
-class. Static checks: every id the JS looks up exists in the HTML, no class is emitted without a
-rule, the `max-width` queries are still descending, no base rule is written below the first media
-query, and the storage key still matches in both places.
+restoration after a clear, after a save toggle and after pressing Today, week paging, day
+switching, the past-day class, and `theme-color` tracking `--bg` across three theme switches.
+Static checks: every id the JS looks up exists in the HTML, all 106 emitted classes have a rule,
+the `max-width` queries are still descending, no base rule is written below the first media query,
+the storage key still matches in both places, and there are no ID selectors in the stylesheet.
+
+The contrast script grew a distinction the convention had only made in prose: surface pairs that
+touch bare must clear 1.10, while pairs deliberately closer than that are checked on the hairline
+between them instead — the line against *both* sides, over 1.15. Four pairs looked like failures
+until they were sorted that way; three were legitimate hairline-carried edges, and the fourth was
+a real defect (dark `--surface-past` at 1.02 against the page).
 
 Contrast is computed in **both directions** after the palette inversion, and the tokens are read
 out of `style.css` so the script cannot drift from what ships: fourteen text pairs against a 4.5
@@ -381,11 +420,12 @@ layout rendering at a third of its width. A screenshot did.
 both themes. Earlier versions of this file claimed nobody had ever looked at the app; that was
 wrong, and it is the thing to correct if it creeps back in.
 
-**On the `sidebar-day-view` branch the looking has been yours, not mine.** The browser tooling
-would not connect while it was built, so every rendering anyone has seen is a screenshot you took.
-Round one found six flaws, including a wide layout at a third of its width that two careful
-readings of the CSS had missed. Round two confirms the fixes wide and in light mode. **Narrow and
-dark remain unseen** — both changed in the fix commit — so what this file says about them is
+**Through the Concept A round the looking was yours, not mine.** The browser tooling would not
+connect while it was built, so every rendering anyone has seen is a screenshot you took. Round one
+found six flaws, including a wide layout at a third of its width that two careful readings of the
+CSS had missed. Round two confirms the fixes wide and in light mode. **Narrow and dark remain
+unseen** — the wrap threshold moved in the fix commit and the dark past-day colour moved again
+before the merge — so what this file says about them is
 reasoning from the CSS, not observation.
 
 Still genuinely unverified beyond that, in rough order of how likely it is to bite:
@@ -445,10 +485,12 @@ the dialog's icon buttons. Worth re-checking against the block whenever a contro
 | **Direction B closed** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. It conflicted with `main` the moment A merged — both proposals rewrote the same three files — and rebasing would have meant rewriting it. The table-shaped week is the part worth bringing back |
 | **Docs corrected** | Several rounds of notes had hardened into "nobody has ever opened this app in a browser", which was simply false — you check it in a browser as you iterate, wide and narrow and in both themes. Corrected in both files. The real gap is narrower and more specific: a real phone, and a keyboard-only pass |
 | **Mockups supplied** | You added three desktop concepts and three mobile ones, committed to `main` as `f58bf0f` under `Mockups/` — reference material, so no branch |
-| **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline, as you asked. The seven-column accordion and everything holding it up came out — one day at a time is now the layout at every width. Three of the seven small things from the last review were fixed on the way past. **Not looked at in a browser by either of us**: the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
+| **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline, as you asked. The seven-column accordion and everything holding it up came out — one day at a time is now the layout at every width. Three of the seven small things from the last review were fixed on the way past. **Not looked at in a browser by either of us** at this point: the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
 | **Screenshots found six flaws** | You opened it and shot it wide and narrow. The wide layout was rendering at a third of its width — `.page` had become a grid item, where `margin: 0 auto` stops it stretching and it shrink-to-fits to its own max-content. The `min-width: 1001px` block was also partly dead, sitting above the base rules it meant to override. Beyond those: the palette read as one cream wash, empty meal cards were 140px tall, the day row wrapped from 620px instead of 400px, and the nav pill landed on a tap target. All six fixed in `01239e8`, with the palette re-measured for surface separation as well as text contrast, and a new static check that fails if a base rule is ever written below the first media query. **The lesson worth keeping: reading the CSS twice found none of this. One screenshot found all of it.** |
 | **Fixes confirmed wide** | A third screenshot shows the wide light layout right: main column about 2.8× the summary column and filling the width, warm page against near-white cards reading with hierarchy, and the derived panels correct on a full day — 3/3 planned, 37 min, *Protein-heavy*, with the all-protein tip firing. Narrow and dark are still unseen, and both changed in the fix commit |
-| **Docs split from the feature** | At your request the documentation went straight to `main` — allowed, and the only thing that is — leaving PR #6 as a code-only diff. `main` therefore documents work still sitting on a branch, which is exactly what *Where things stand* is for. `CLAUDE.md` was also swept and cut from 197 lines to 173 against its own 150-line budget; what remains is conventions with their reasoning, each of which has cost a bug |
+| **Docs split from the feature** | At your request the documentation went straight to `main` — allowed, and the only thing that is — leaving PR #6 as a code-only diff. `main` therefore documented work still sitting on a branch, which is exactly what *Where things stand* is for. `CLAUDE.md` was also swept and cut from 197 lines to 173 against its own 150-line budget; what remains is conventions with their reasoning, each of which has cost a bug |
+| **Reviewing the diff found six more** | Asked to review the PR's own diff before merging, and it turned up six things, three of them real: `theme-color` was only half-fixed — both tags hung off `prefers-color-scheme`, but the theme here is a *stored choice*, and the light value was still the pre-inversion `#ffffff`; the **Today** button dropped keyboard focus, because it is rendered only while off the current week and so deletes itself when pressed; and dark `--surface-past` was darker than the page at 1.02 against it, making a past day a hole rather than a receded card. Also: the stylesheet's only two ID selectors turned back into classes, two classes emitted with no CSS rule deleted, and `*.png` gitignored. **The lesson pairs with the screenshot one**: all six were invisible to the eye and visible to a script — a contrast number, a class with no rule, a focus target that no longer exists |
+| **Concept A shipped, dark and narrow unseen** | PR #6 squash-merged to `main` as `7e10f85`, branch deleted, Pages build `built`. You opened the app locally before telling me to merge, so the layout was looked at — but not shot, so it is not in the record, and the dark past-day colour had changed since the one screenshot that is. Shipping ahead of a screenshot was your call and is recorded as such; *Where things stand* names it under **Shipped unseen** rather than letting it read as verified |
 
 ---
 

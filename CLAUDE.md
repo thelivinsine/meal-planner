@@ -103,7 +103,8 @@ Established in v1 and extended since — follow them or say why not:
   `innerHTML`. No inline `onclick` — one delegated listener dispatches on `data-action`, which is
   why a redraw never needs listeners re-attached.
 - **CSS:** colours and spacing via the custom properties at the top of `style.css` — don't
-  hardcode new hex values. One accent colour.
+  hardcode new hex values. One accent colour. **Style by class, never by id:** an id outranks
+  every media query written to override it, which is trap one below waiting to happen again.
 
 ### Five CSS traps this project has already fallen into
 Each cost a real bug; *Decisions worth recording* in `README.md` has the full story of each.
@@ -169,5 +170,6 @@ Three gaps neither a script nor a desktop browser closes, so name them rather th
   blends its text back towards the tile and undoes the tokens, which is why past days are
   quieter by colour instead.
 
-**Screenshots:** none in the repo. Stale ones get deleted rather than captioned, because a shot of
-the wrong version is worse than none. Hard-refresh before taking a fresh set.
+**Screenshots:** none in the repo, and `*.png` is gitignored so a camera-named one cannot be
+committed by accident — `Mockups/` is excepted. Stale ones get deleted rather than captioned,
+because a shot of the wrong version is worse than none. Hard-refresh before taking a fresh set.
