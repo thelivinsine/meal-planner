@@ -85,20 +85,40 @@ re-attached — but it *does* destroy focus, which is why five places put it bac
 
 ## How this gets tested
 
-No test framework, per the project constraints. Every check is a throwaway Node script, and the
-approach is stable even though the scripts are not kept:
+No test framework, per the project constraints. **`check.mjs` at the repo root is not one** — one
+file, no dependencies, no config, no runner, never served to a browser. Run it by hand:
 
-- **`node --check app.js`** — free, catches nothing subtle, run it anyway.
-- **A stub DOM.** Stub what `app.js` touches on load, drive `state` and the delegated click
-  handler, assert on the HTML strings that come back.
-- **Static wiring.** Every id the JS looks up exists in the HTML; no class emitted without a CSS
-  rule; no id selectors in the stylesheet; `max-width` queries descending; no base rule below the
-  first media query; the storage key matching in both places.
+```
+node check.mjs
+```
+
+It reads `style.css`, `app.js` and `index.html` as text and prints a tick or a cross per check,
+exiting non-zero if any fail. It replaces the three throwaways this project had written and deleted
+five times. What it covers:
+
 - **Contrast, computed in both directions,** with the tokens read out of `style.css` so the script
   cannot drift from what ships. Text on its ground needs 4.5. Two surfaces that touch need about
   1.10 — *unless* a hairline carries the edge, in which case the **line** is measured instead,
-  against both sides. That distinction is load-bearing; see
-  [decisions.md](decisions.md#colour-and-contrast).
+  against both sides. That distinction is load-bearing and is now encoded in the pair list as a
+  `line:` option; see [decisions.md](decisions.md#colour-and-contrast).
+- **Wiring.** Every `data-action` the app emits has a branch in the dispatcher, every branch is
+  reachable from some emitted action, and every `getElementById` finds an id that exists in the
+  HTML. All typo-shaped failures, all silent, all invisible in a diff.
+- **The three values written twice** — storage key, bookmark path, `theme-color` fallback — checked
+  against each other. The `theme-color` one has already been left stale once.
+
+**The pair list is the part that rots.** A colour combination not in it is a combination nobody
+measures, so a new surface or ink token means adding its pairs by hand.
+
+Still done by hand, not in the script:
+
+- **`node --check app.js`** — free, catches nothing subtle, run it anyway.
+- **A stub DOM.** Deliberately left out of `check.mjs`: of the three throwaways it was the one that
+  never caught anything. Marked with a `ponytail:` comment there, to be added when a storage or
+  render bug gets past what is written.
+- **The CSS-shape checks** the throwaways sometimes did — no id selectors in the stylesheet,
+  `max-width` queries descending, no base rule below the first media query. Worth folding in the
+  next time one of them bites.
 
 `README.md` links the per-round record of what each of these actually found; the running history is
 in [log.md](log.md).
@@ -112,6 +132,21 @@ in [log.md](log.md).
 - **Keyboard-only and a screen reader.** Focus order, focus restoration after a redraw, and the
   accessible names on the day row and meal cards are asserted in a stub DOM and reasoned about,
   never driven. **Every accessibility defect this project has shipped was in this category.**
+
+**All 66 checks pass.** The one that did not — `--surface-sunk` beside `--bg` at **1.08**, known
+since PR #7 — was fixed rather than excused: `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill
+of its own and so lands on the page — now uses `--surface`, clearing the floor at 1.11 light and
+1.23 dark. `.theme-btn:hover` was changed with it and changed back: it looked like the same bug but
+sits on the *button's own* `--surface` fill, so `--surface-sunk` was right there all along (1.20 and
+1.14), and setting it to `--surface` made the rule a no-op. **A fill has to differ from what the
+control sits on, not from the page behind it.** The token itself could not move: in dark mode the only
+value clearing 1.10 against both `--bg` and `--surface` is `#232323`, which is `--surface-past`, and
+two tokens holding the same shade means a tray inside a past card has no edge at all.
+
+The pair is now **absent from the script's list on purpose**, with a comment saying to put it back
+the moment a bare sunk fill lands on the page again. `--line-strong` against `--bg` was added in its
+place, since `.chip` and `.slot-picker` are the two sunk fills that can still reach the page and
+both carry that border (2.30, comfortable).
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on

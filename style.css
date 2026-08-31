@@ -221,6 +221,11 @@ button, input, select { font: inherit; color: inherit; }
   border: 1px solid var(--line); border-radius: 9px;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
 }
+/* Sunk on the button's own --surface fill, which is 1.20 light and 1.14 dark — this
+   hover never touched the page, so the 1.08 page problem the sidebar had does not
+   apply here. It was briefly changed to --surface and that made the rule a no-op,
+   since the button is already --surface at rest: the fill has to differ from what the
+   control sits on, not from the page behind it. */
 .theme-btn:hover { background: var(--surface-sunk); color: var(--ink); }
 /* An inline SVG sits on the text baseline and leaves descender space under it, so
    the glyph rides high in a centred box. Making it a block removes the baseline. */
@@ -841,7 +846,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
     border-radius: var(--radius-sm);
     color: var(--ink-soft); font-size: .9375rem;
   }
-  .nav-btn:hover { background: var(--surface-sunk); color: var(--ink); }
+  /* The nav unwinds to no fill above, so this hover lands on the page: --surface-sunk
+     measured 1.08 there and the hover barely registered. --surface clears the floor and
+     the current-page pill stays distinct by its shadow and its accent text. */
+  .nav-btn:hover { background: var(--surface); color: var(--ink); }
   /* A card-coloured pill, not an accent-soft one: on the tinted page accent-soft sits
      at 1.05 and the pill had no edge at all. The accent is carried by the text. */
   .nav-btn[aria-current="page"] {
