@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | **Live** | Code at `7e10f85` (PR [#6](https://github.com/thelivinsine/meal-planner/pull/6), squash-merged), docs on top. Pages `built`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | Branch **`palette-contrast`**, PR [#7](https://github.com/thelivinsine/meal-planner/pull/7), two commits, **open**. A palette round and a week-view round, from your screenshots. Nothing in it is on the live site |
-| **Confirmed** | You opened the branch locally after the palette commit and called it good — light and dark both. **Your eyes, not an image.** The week-view commit that followed has not been looked at by either of us |
+| **Open work** | Branch **`palette-contrast`**, PR [#7](https://github.com/thelivinsine/meal-planner/pull/7), **three** commits, **open**. A palette round, a week-view round and an icon-and-token round, all from your screenshots. Nothing in it is on the live site |
+| **Confirmed** | You opened the branch locally after the palette commit and again after the week-view commit, and called both good. **Your eyes, not an image.** The third commit has not been looked at by anyone |
 | **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever |
 
 ## What is in PR #7
@@ -23,11 +23,20 @@ all the colour. The summary column also moved down to start level with the week 
 
 **`9e554dd` — the week view.** The rotating `WEEK_GREETINGS` heading is back, one line, no
 subtitle, centred over the content column. The week bar came down a notch on every dimension and
-the meal cards took the room. The save star lost its border. The recipe inside a meal card lost
+the meal cards took the room. The save control lost its border. The recipe inside a meal card lost
 its filled tile — the name carries the affordance now.
 
-**Three `CLAUDE.md` conventions moved with the code**, so `CLAUDE.md` on `main` is a version behind
-until #7 merges: one box per level, view heads, and a new rule that the week bar stays compact.
+**`4f66fb1` — icons and one token.** The save control is a **bookmark**, the same path as the
+sidebar's *Saved* icon, replacing a star that said *rate* rather than *keep*. And `--bg` stopped
+filling anything inside a card: tags, time pills, filter chips and the search field all moved to
+`--surface-sunk`, because with dark mode now neutral a pill filled with the page shade read as a
+hole punched through the tile. The `--bg` fills were wrong all along and cost nothing while the
+page was close in lightness to the tiles — **a token used off its own layer is latent, not
+harmless**, and what exposed it was a palette change two commits earlier.
+
+**Five `CLAUDE.md` conventions moved with the code**, so `CLAUDE.md` on `main` is a version behind
+until #7 merges: one box per level, view heads, the week bar staying compact, `--bg` being the page
+and nothing else, and one shape for one idea.
 That is the one file the docs sweep deliberately left alone, to keep the squash-merge clean.
 
 ## The gap in PR #7, stated plainly
@@ -35,20 +44,24 @@ That is the one file the docs sweep deliberately left alone, to keep the squash-
 **Neither commit was rendered by me.** The Chrome extension refused to connect for the whole
 session, twice. So:
 
-- The palette is measured, not seen — but *you* saw it and approved it, which closes it.
-- **The week-view commit is seen by nobody.** Two parts of it are arithmetic on paper: the
-  compaction figures (the bar comes down roughly 122px → 100px, computed from padding and line
-  heights, not measured), and the heading centring, which places all three `.view-week` items by
-  hand. If any of those placements is wrong the *aside* moves, not the heading — so the thing to
-  check is that the summary column still starts level with the week bar.
-- Unlooked-at details: the recipe name at `1.125rem` display weight may wrap in a narrow card on a
-  long Indian recipe name, and the now-borderless save star sits beside a bordered "Add to week"
-  button on the recipe cards, where it may read unbalanced even though it is right in the meal
-  cards.
+- The first two commits are measured, not seen — but *you* saw both and approved them, which
+  closes them.
+- **The third commit is seen by nobody.** It is the smallest of the three and the least likely to
+  hide a layout fault, but two things in it are guesses about how something looks: whether the
+  bookmark glyph reads at 18px in a 30px button as well as the star did at 19px, and whether
+  `--surface-sunk` pills on a `--surface` card are distinct enough in *light* mode, where the pair
+  is 1.20 apart but both are nearly white.
+- Still unmeasured from the week-view commit: the compaction figures (the bar comes down roughly
+  122px → 100px, computed from padding and line heights, not measured), and the heading centring,
+  which places all three `.view-week` items by hand. If any of those placements is wrong the
+  *aside* moves, not the heading — so the thing worth a glance is that the summary column still
+  starts level with the week bar.
+- One unlooked-at detail: the recipe name at `1.125rem` display weight may wrap in a narrow card on
+  a long Indian recipe name.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Look at PR #7 and merge or send it back.** It is the only open work, and half of it is
+1. **Look at PR #7 and merge or send it back.** It is the only open work, and its last commit is
    unverified by anyone.
 2. **Open the live site on a phone.** The one gap a desktop cannot close: every control is compact
    on a mouse and only returns to the 44px floor under `@media (pointer: coarse)`, a block a
@@ -68,9 +81,11 @@ session, twice. So:
 - `applyTheme()` always stamps `data-theme`, so a dark-OS user gets a light app on first visit
   despite `<meta name="color-scheme" content="light dark">`.
 - The storage key `p5:mealplanner` is written twice — `STORAGE_KEY` in `app.js` and again in the
-  inline theme script in `index.html`. Change one, forget the other. The `theme-color` fallback in
-  that same `<head>` is a third hardcoded value tied to the palette; it was left stale once
-  already and had to be updated again in `96743b3`.
+  inline theme script in `index.html`. Change one, forget the other. It is one of **three** values
+  written twice — the others are the `theme-color` fallback hex, tied to the palette and left stale
+  once already, and now the bookmark icon path, which `app.js` renders and `index.html` also carries
+  inline for the sidebar. All three are listed together in
+  [architecture](architecture.md#storage).
 
 These are trade-offs rather than bugs. The known-defect list is empty.
 
@@ -87,7 +102,7 @@ repo whose constraints say no test framework.
 
 ## Screenshots
 
-**None in the repo.** The five you took this session — three of the app, two of the reference dark
+**None in the repo.** The ones you took this session — of the app, and of the two reference dark
 UIs — live in the working directory and are gitignored, so **the reasoning in PR #7 cites images
 nobody else can see.** That is the cost of the current policy, and it is the sharpest it has been:
 the dark palette was rebuilt against two pictures that are not in the repo.

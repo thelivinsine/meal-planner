@@ -59,7 +59,8 @@ Five documents, each with one job:
 - Below it, the day's name and then **one card per meal** — the biggest thing on the screen, which
   is the point of them. A filled one shows the recipe name in accent ink, underlined when you hover
   it because tapping it opens the recipe, then its time and what it is (*10 min · Balanced ·
-  Vegetarian*), with a save star and a × to clear it. Nothing inside the card gets a box of its own.
+  Vegetarian*), with a save bookmark and a × to clear it. Nothing inside the card gets a box of its
+  own — no pill, no tile, no second border.
   An empty card is a dashed **+ Add a dinner** the width of it
 - Each slot can be filled, replaced, or cleared. Past days stay editable, so you can log what you
   actually ate — they just read quieter
@@ -93,7 +94,9 @@ small dialog. The recipe name is the headline; "Add to week" sits above it as a 
   button is drawn with a dashed border
 - If the slot is taken, the dialog names what's there and the button reads **Replace**
 
-**Saved** — exactly the recipes you've bookmarked, from either the card or the detail panel.
+**Saved** — exactly the recipes you've bookmarked, from either the card or the detail panel. The
+save control is the same bookmark shape as the *Saved* item in the sidebar, so the button that keeps
+a recipe and the place it goes look like one idea.
 Removing a bookmark drops it from Saved immediately but leaves it in your week: unsaving a recipe
 isn't the same as cancelling dinner.
 

@@ -38,6 +38,8 @@
 | **Docs restructured** | This split: `README.md` back to a front door for a reviewer, `CLAUDE.md` to rules an agent must follow, and `docs/` for status, architecture, decisions and this log. `README.md` had reached 529 lines doing six unrelated jobs, and `CLAUDE.md` was 20 over its own budget because reasoning had nowhere else to live |
 | **Palette round** | Branch `palette-contrast`, from three screenshots of the shipped app plus two of reference dark UIs (ChatGPT settings, Windows PowerToys). Light mode read as one beige wash despite passing every ratio, so the page went near-white and the card white, per Concept A. Dark mode's surfaces went neutral grey, taken from the references, with the app's orange left in charge of all the colour — brown that dark had read muddy. The summary column moved down to start level with the week bar, which meant taking the week heading out of `.week-main` so the grid could give it a row of its own. **Not rendered by me — the Chrome extension refused to connect all session.** You opened it locally and called it good, light and dark |
 | **Week-view round** | Same branch, from your look at it. Four things: the rotating `WEEK_GREETINGS` heading came back, one line and no subtitle, now centred over the content column; the week bar came down a notch on every dimension and the meal cards took the room; the save star lost its border; and the recipe inside a meal card lost its filled tile, with the name carrying the affordance instead. Three `CLAUDE.md` conventions described the code this replaced, so they moved with it. **Seen by nobody** — the extension still would not connect, and the compaction figures are arithmetic on paper |
+| **Icon and token round** | Same branch, third commit. The save control became a bookmark — the same path as the sidebar's *Saved* icon — replacing a star that said *rate* rather than *keep*. And `--bg` stopped filling anything inside a card: tags, time pills, filter chips and the search field all moved to `--surface-sunk`, because with dark mode now neutral a pill filled with the page shade read as a hole punched through the tile. Two more `CLAUDE.md` rules, both stated as bans rather than preferences |
+| **A defect that light mode had been hiding** | The `--bg` fills were wrong all along and cost nothing while the page was a warm off-white close to the tiles. Changing dark mode's lightness is what made them visible. **A token used off its own layer is latent, not harmless** — and the thing that exposed it was a palette change three commits earlier, not the code that introduced it |
 | **The fixed heading was a wrong call** | Recorded in [decisions](decisions.md#the-week-and-one-day-at-a-time): the rotating greeting had been read as a stand-in for the missing week date range, so restoring the range made it look redundant. It was never a stand-in. **A feature that overlaps another is not therefore replaced by it** |
 | **Docs swept, straight to `main`** | This entry and the rest of the sweep went to `main` directly, which markdown is allowed to do, leaving PR #7 as a code-only diff — the same split as the Concept A round. `CLAUDE.md` was deliberately left out of the sweep: its three changed conventions ship with the code on the branch, and editing the same lines on `main` would only manufacture a merge conflict |
 
@@ -123,7 +125,13 @@ extension would not connect at any point**, so nothing was rendered by me. What 
   `theme-color` fallback updated with the page colour, and the two lines in the 620px block that
   were setting the week bar *larger* than its new base removed.
 
-**Not covered, and it is most of what matters here:** no stub-DOM assertions, no rendered look at
-either commit, and the compaction figures (~122px → ~100px for the week bar) are computed from
-padding and line heights rather than measured. You confirmed the palette commit in your own browser;
-the week-view commit is unseen.
+The third commit added: `node --check`, a grep proving no `star` identifier survives anywhere, a
+check on where `var(--bg)` is still allowed to appear — five places, all of them either the page
+itself, an inverted surface using it as *ink* (the toast, and the docked nav pill, which is filled
+with `--ink`), or a `color-mix` for the translucent top bar — and the one fill that now sits flush measured on its border instead, the
+search field inside the sunk slot picker at 1.57 light and 2.13 dark.
+
+**Not covered, and it is most of what matters here:** no stub-DOM assertions, and no rendered look
+at any of the three commits by me. The compaction figures (~122px → ~100px for the week bar) are
+computed from padding and line heights rather than measured. You confirmed the palette commit and
+then the week-view commit in your own browser; the icon-and-token commit is the one now unseen.

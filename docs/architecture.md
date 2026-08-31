@@ -54,6 +54,14 @@ One key, `p5:mealplanner`, holding one JSON blob of the plan, the bookmarks and 
 `index.html` reads that same key inline in `<head>` to paint the theme before first paint, **so
 the key name is written in two places** — change one and you must change the other.
 
+It is not the only value written twice. The others, so they can be found together:
+
+| Duplicated | Where | Why |
+|---|---|---|
+| `p5:mealplanner` | `STORAGE_KEY` in `app.js`; inline `<head>` script in `index.html` | The theme must paint before `app.js` loads |
+| The bookmark icon path | `BOOKMARK_PATH` in `app.js`; the *Saved* nav button in `index.html` | The nav is static markup, the save buttons are rendered. Same shape by rule, not by mechanism |
+| The light `--bg` hex | `--bg` in `style.css`; `theme-color` meta in `index.html` | The meta needs a value for an unstyled first paint. Left stale once already |
+
 Reads and writes are wrapped in `try`/`catch`: private browsing and full quotas are real and
 neither should take the app down. Loading also *validates* rather than trusting — every entry
 needs a real date, a real meal name and a recipe that still exists, or it is dropped. Junk in
