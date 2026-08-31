@@ -6,7 +6,7 @@
 |---|---|
 | **Live** | Code at `eb9ea73` (PR [#8](https://github.com/thelivinsine/meal-planner/pull/8), squash-merged), docs on top. Pages `built` at that commit. https://thelivinsine.github.io/meal-planner/ |
 | **Open work** | **None.** No branch, no PR, no known defect. The four follow-ups #7 left are all closed |
-| **Confirmed** | You looked at #8 in the browser and called the underline fine, and separately that the longest recipe name wraps cleanly. **Your eyes, not an image**, so neither is reproducible from the repo — and see the caveat under *What just shipped* about what you were not asked to check |
+| **Confirmed** | The underline **in every scenario asked for** — card, past day, dark mode. The longest recipe name wraps cleanly. And **the live site on a phone**, which closes the one gap a desktop could not. **Your eyes, not images**, so none of it is reproducible from the repo |
 | **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast` and `week-affordance-and-landmark` were deleted on merge |
 
 ## What just shipped
@@ -30,12 +30,11 @@ became a bookmark.
 `CLAUDE.md` gained both conventions and `docs/decisions.md` both stories, with the code rather than
 after it.
 
-### What you confirmed, and what nobody has
+### Confirmed, in full
 
-You called the underline fine. **You were asked to check three grounds — a card, a past day, and
-dark mode — and said only that it looks fine**, so treat the past-day case as unconfirmed: that is
-where the 45% line is weakest, sitting on `--surface-past`. It is a fade on a passing ratio, not a
-floor, so nothing is known to be wrong. Worth a glance next time you have a past day on screen.
+You checked the underline on all three grounds — a card, a **past day** (where the 45% line is
+weakest, on `--surface-past`) and dark mode — and called all of them good. The caveat this section
+carried for a day is gone.
 
 ## The four follow-ups #7 left: all closed
 
@@ -45,20 +44,29 @@ floor, so nothing is known to be wrong. Worth a glance next time you have a past
 4. **The long recipe name wrapping.** Closed by eye: *Masala Yoghurt Bowl with Roasted Chana*, the
    catalogue's longest at 40 characters, wraps cleanly. No code change.
 
+## The phone gap is closed
+
+**You opened the live site on a phone and it works well.** That was the top job here for four
+rounds and the one thing a desktop could not do: every control is compact on a fine pointer and
+only returns to the 44px floor inside `@media (pointer: coarse)`, a block a desktop browser never
+enters. The week round had shrunk several of them — day chips 58→48px, arrows 32→28px, the recipe
+button losing its 46px minimum — and the merge check was arithmetic: the coarse block still lifts
+all three, nothing after it overrides them. Now a thumb agrees with the arithmetic.
+
+**Your eyes, not a screenshot**, and no device or browser was named, so this is one phone rather
+than a matrix. It does not need re-doing per round — but a change to any control's size puts it
+back on the list.
+
 ## Next jobs, in the order they'd earn their place
 
-1. **Open the live site on a phone.** The one gap a desktop cannot close: every control is compact
-   on a mouse and only returns to the 44px floor under `@media (pointer: coarse)`, a block a desktop
-   never enters. The week-view round changed several of those sizes — day chips 58→48px, arrows
-   32→28px, and the recipe button lost its 46px minimum — so this is less theoretical than it was.
-   The floors were re-measured on merge and all three are still lifted to 44px by the coarse block,
-   with nothing after it overriding them. That is arithmetic, not a phone.
-2. **Take a screenshot set.** There are still none in the repo, so nothing here shows the current
+1. **Take a screenshot set.** There are still none in the repo, so nothing here shows the current
    app. `*.png` is gitignored, so this needs either a `!Screenshots/**` exception or keeping them
    outside the repo — your call which. Wanted: the wide layout, an empty day, the narrow layout at
    360px, and dark mode.
-3. **A keyboard-only pass.** Tab through the week, the picker and both dialogs. Focus restoration
-   after a redraw is asserted in five places and driven in none of them.
+2. **A keyboard-only pass.** Tab through the week, the picker and both dialogs. Focus restoration
+   after a redraw is asserted in five places and driven in none of them. **This is now the biggest
+   untested thing left**, and the section it lives under says every defect this project has shipped
+   has been an accessibility defect.
 
 ## Three small things open, none urgent
 
