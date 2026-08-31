@@ -4,22 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <!-- Browser chrome follows the page, and the page has a light and a dark colour. -->
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#14100d" media="(prefers-color-scheme: dark)">
+  <!-- Browser chrome follows the page. One tag, no `prefers-color-scheme`: the theme is
+       a choice the user stores, not the OS preference, so a media-query pair gets it
+       wrong for anyone whose theme disagrees with their system. applyTheme() rewrites
+       this from the live --bg on every switch; the value here is the light --bg, which
+       is what an unstyled first paint shows. -->
+  <meta name="theme-color" content="#f2ece5">
   <title>Mise — weekly meal planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="style.css">
   <!-- Paint the stored theme before first paint, so a dark-mode user never sees a
-       white flash. Inline on purpose: app.js loads at the end of the body. -->
+       white flash. Inline on purpose: app.js loads at the end of the body. The browser
+       chrome gets the same treatment, and for the same reason — a light title bar over
+       a dark page is the identical flash. Reading --bg back off the element rather than
+       repeating the hex works because the stylesheet link above blocks this script. -->
   <script>
     try {
       var saved = JSON.parse(localStorage.getItem('p5:mealplanner') || '{}');
       if (saved && (saved.theme === 'dark' || saved.theme === 'light')) {
         document.documentElement.dataset.theme = saved.theme;
       }
+      document.querySelector('meta[name="theme-color"]').content =
+        getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
     } catch (err) { /* private mode, or nothing stored yet */ }
   </script>
 </head>
@@ -48,7 +56,7 @@
 
   <main class="page">
     <!-- WEEK -->
-    <section id="view-week" class="view" aria-labelledby="week-heading">
+    <section id="view-week" class="view view-week" aria-labelledby="week-heading">
       <div class="week-main">
         <div class="view-head">
           <h1 id="week-heading">Your week</h1>
@@ -104,7 +112,7 @@
               </svg>
             </span>At a glance
           </h2>
-          <div class="side-body" id="glance-body"></div>
+          <div id="glance-body"></div>
         </section>
 
         <section class="side-card" aria-labelledby="tips-heading">

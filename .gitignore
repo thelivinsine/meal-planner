@@ -141,3 +141,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Screenshots. None live in the repo: a shot of the wrong version is worse than none,
+# so they are taken, looked at, and left on disk. Mockups/ is the supplied design work
+# and is tracked, so it is excepted.
+*.png
+*.jpg
+*.jpeg
+!Mockups/**

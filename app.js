@@ -578,6 +578,7 @@ const el = {
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
   slotSearch: document.getElementById('slot-search'),
   themeToggle: document.getElementById('theme-toggle'),
+  themeColor: document.querySelector('meta[name="theme-color"]'),
   toast: document.getElementById('toast')
 };
 
@@ -590,6 +591,13 @@ function applyTheme() {
   const dark = state.theme === 'dark';
   el.themeToggle.setAttribute('aria-pressed', String(dark));
   el.themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  // Browser chrome follows the page. Read --bg back off the element rather than keeping a
+  // copy of the two hexes here: the tokens are the one place a colour is written, and a
+  // third copy is a third thing to forget when the palette next moves.
+  if (el.themeColor) {
+    el.themeColor.content =
+      getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  }
 }
 
 // ---------------------------------------------------------------- helpers
@@ -873,7 +881,9 @@ function renderTagFilters() {
 
   el.tagFilters.innerHTML = groups.map(function (g, i) {
     const labelId = 'filter-group-' + i;
-    return '<div class="filter-group">' +
+    // A bare wrapper, no class: it is the grid item that keeps a label with its chips,
+    // and it carries no styling of its own. The inner .chips has the group role.
+    return '<div>' +
         '<p class="filter-group-label" id="' + labelId + '">' + escapeHtml(g.label) + '</p>' +
         '<div class="chips" role="group" aria-labelledby="' + labelId + '">' +
           g.tags.map(chipHtml).join('') +
@@ -1093,6 +1103,11 @@ document.addEventListener('click', function (event) {
     state.focusDay = defaultFocusDay(state.weekStart);
     closeSlotPicker();
     renderWeek();
+    // This button only exists while you are off the current week, so pressing it deletes
+    // it — focus would drop to <body>. The week's arrows need no such handling: they are
+    // static markup and survive the redraw. Focus goes where the button was taking you.
+    const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
+    if (again) again.focus();
     return;
   }
 

@@ -48,9 +48,12 @@
   --bg: #14100d;
   --surface: #2a2019;
   --surface-sunk: #1e1712;
-  /* A step further from the card than the page is, so the tile inside a past card
-     still has an edge — at #151110 it was 1.06 against the tile and vanished. */
-  --surface-past: #100d0b;
+  /* Back towards the page, like its light counterpart — not past it. #100d0b was
+     *darker* than --bg and sat 1.02 against it, so a past card read as a hole in the
+     page rather than a card that had receded into it. This clears 1.10 against the page
+     on its own, and the tile inside is carried by the hairline, as the convention has
+     it: 1.03 is far too close to hold an edge by colour. */
+  --surface-past: #201a15;
   --ink: #f8f0e9;
   --ink-soft: #c6b3a3;
   --ink-faint: #9d8776;
@@ -279,7 +282,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* The day column, and the summary column beside it. Everything in the aside is derived
    from the day showing on the left, so under 1000px it is dropped rather than stacked
    below — there is nothing in it you cannot read off the meals themselves. */
-#view-week { display: grid; gap: 20px; align-items: start; }
+.view-week { display: grid; gap: 20px; align-items: start; }
 .week-main { min-width: 0; }
 .week-side { display: none; }
 
@@ -533,7 +536,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 
 /* ---------- inline slot picker (week view) ---------- */
-#week-grid:focus { outline: none; }  /* programmatic focus target when the picker closes */
+.meals:focus { outline: none; }  /* programmatic focus target when the picker closes */
 
 /* A tray one step deeper than the tiles it holds, so the cards inside keep an edge. */
 .slot-picker {
@@ -833,7 +836,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .page { padding: 14px 28px 48px; }
   .toast { bottom: 28px; }
 
-  #view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
+  .view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
   .week-side { display: flex; flex-direction: column; gap: 16px; }
 }
 
