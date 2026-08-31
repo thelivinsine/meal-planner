@@ -134,9 +134,12 @@ in [log.md](log.md).
   never driven. **Every accessibility defect this project has shipped was in this category.**
 
 **All 66 checks pass.** The one that did not — `--surface-sunk` beside `--bg` at **1.08**, known
-since PR #7 — was fixed rather than excused: the two hover states that put a bare sunk fill on the
-page (`.nav-btn:hover` in the sidebar, `.theme-btn:hover` in the top bar) now use `--surface`, which
-clears the floor at 1.11 light and 1.23 dark. The token itself could not move: in dark mode the only
+since PR #7 — was fixed rather than excused: `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill
+of its own and so lands on the page — now uses `--surface`, clearing the floor at 1.11 light and
+1.23 dark. `.theme-btn:hover` was changed with it and changed back: it looked like the same bug but
+sits on the *button's own* `--surface` fill, so `--surface-sunk` was right there all along (1.20 and
+1.14), and setting it to `--surface` made the rule a no-op. **A fill has to differ from what the
+control sits on, not from the page behind it.** The token itself could not move: in dark mode the only
 value clearing 1.10 against both `--bg` and `--surface` is `#232323`, which is `--surface-past`, and
 two tokens holding the same shade means a tray inside a past card has no edge at all.
 

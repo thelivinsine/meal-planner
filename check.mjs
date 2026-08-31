@@ -97,11 +97,13 @@ const SURFACE_PAIRS = [
   ['--surface', '--bg'],
   ['--surface-sunk', '--surface'],
   /* --surface-sunk beside --bg is deliberately absent: nothing fills the page shade's
-     neighbour with it any more. The two hover states that did (.nav-btn, .theme-btn)
-     measured 1.08 and now use --surface. Everything else sunk fills sits inside a card,
-     and the two that can reach the page (.chip, .slot-picker) carry a --line-strong
-     border, measured below. Put the pair back the moment a bare sunk fill lands on the
-     page again. */
+     neighbour with it any more. The one hover that did — .nav-btn:hover in the sidebar,
+     where the nav unwinds to no fill of its own — measured 1.08 and now uses --surface.
+     (.theme-btn:hover looked like the same bug and is not: it sits on the button's own
+     --surface fill, so it is the pair above that governs it.) Everything else sunk fills
+     sits inside a card, and the two that can reach the page (.chip, .slot-picker) carry
+     a --line-strong border, measured below. Put the pair back the moment a bare sunk
+     fill lands on the page again. */
   ['--line-strong', '--bg'],
   ['--surface-past', '--bg', { line: '--line' }],
   ['--accent-soft', '--surface'],      /* the 1.01 catastrophe lived here */
