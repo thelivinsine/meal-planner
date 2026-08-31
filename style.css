@@ -1,30 +1,36 @@
 /* ============================================================================
    Mise — "Bold consumer" direction.
-   White page, warm tinted tiles, one vibrant orange, compact controls, and a
-   week that collapses to rails around the day you are looking at.
+   A near-white warm page, white cards, one vibrant orange, compact controls,
+   and one day of the week at a time.
    Light and dark palettes; every colour comes from a token below.
    ========================================================================= */
 
 /* ---------- tokens: light ---------- */
 :root {
-  /* The page carries the warmth; the cards are the light. Inverted from v1 of this
-     palette, where the page was white and every tile a heavy peach — that read as one
-     cream wash the moment the cards got large. The earlier attempt at this inversion
-     failed on separation (1.12 between page and card), so these are measured: page to
-     card is 1.20, card to sunk 1.20, and no text pair is under 4.5. */
-  --bg: #f2ece5;             /* the page */
-  --surface: #fffefc;        /* meal cards, recipe cards, panels — nearly white */
-  --surface-sunk: #ebe3da;   /* trays and inner tiles — a step deeper than a card */
-  --surface-past: #f7f3ee;   /* a day that has been and gone: back towards the page */
-  --ink: #1c1410;
-  --ink-soft: #5c4a3d;
-  --ink-faint: #6d5749;
-  --line: #ddd2c5;
-  --line-strong: #c9b9a7;
+  /* The page carries the warmth; the cards are the light — but lightly. The previous
+     values (#f2ece5 page, #ebe3da tiles) cleared every ratio and still read as one
+     beige wash next to the mockups, because a heavy page plus a heavy inner tile leaves
+     the white card as the only bright thing on screen. So the page moves up to a
+     near-white warm off-white and the card to pure white, matching Concept A, and the
+     separation is carried by the hairline as much as by the fill. Measured: page to
+     card 1.11, card to sunk 1.20, --line 1.24 on the page and 1.37 on a card, no text
+     pair under 4.5. --surface-past (1.04) and --accent-soft (1.06) sit closer than 1.10
+     against the page on purpose — there is no room left between a near-white page and
+     white — so both are drawn with a --line border, which measures 1.29 and 1.17
+     against them. */
+  --bg: #f6f3ee;             /* the page */
+  --surface: #ffffff;        /* meal cards, recipe cards, panels — nearly white */
+  --surface-sunk: #f0eae1;   /* trays and inner tiles — a step deeper than a card */
+  --surface-past: #faf8f5;   /* a day that has been and gone: back towards the page */
+  --ink: #191310;
+  --ink-soft: #56463c;
+  --ink-faint: #6a5849;
+  --line: #e3dbd0;
+  --line-strong: #cabbaa;
 
-  --accent: #bd4b2f;
-  --accent-soft: #f8e4da;
-  --accent-ink: #9a422a;
+  --accent: #c8491f;
+  --accent-soft: #fbe9e1;
+  --accent-ink: #ad4020;
   --on-accent: #ffffff;
 
   --radius: 13px;
@@ -44,28 +50,36 @@
 }
 
 /* ---------- tokens: dark ---------- */
+/* Greys taken from the reference dark UIs — ChatGPT's settings sheet and the Windows
+   PowerToys panels — and the app's orange left in charge of every bit of colour. Dark
+   mode used to be a brown (#14100d page, #2a2019 cards), and browns that dark read as
+   muddy rather than warm. So the surfaces go neutral and do the one job those references
+   do well: a page that is properly dark, panels a clear step *up* from it, a hairline
+   you can see on both, near-white text instead of beige text, and the accent appearing
+   only on small elements — a chip, a dot, a fill — the way PowerToys uses its blue.
+   Warmth is now the light theme's job and the accent's.
+   Measured: page to panel 1.23, panel to sunk 1.14, --line 1.53 on the page and 1.24 on
+   a panel, accent-soft 1.12 on a panel, no text pair under 4.5. */
 [data-theme="dark"] {
-  --bg: #14100d;
-  --surface: #2a2019;
-  --surface-sunk: #1e1712;
-  /* Back towards the page, like its light counterpart — not past it. #100d0b was
-     *darker* than --bg and sat 1.02 against it, so a past card read as a hole in the
-     page rather than a card that had receded into it. This clears 1.10 against the page
-     on its own, and the tile inside is carried by the hairline, as the convention has
-     it: 1.03 is far too close to hold an edge by colour. */
-  --surface-past: #201a15;
-  --ink: #f8f0e9;
-  --ink-soft: #c6b3a3;
-  --ink-faint: #9d8776;
-  --line: #3a2d23;
-  --line-strong: #52402f;
+  --bg: #1a1a1a;
+  --surface: #2b2b2b;
+  --surface-sunk: #212121;
+  /* Back towards the page, like its light counterpart — not past it. A past card that
+     is *darker* than --bg reads as a hole in the page rather than a card that has
+     receded into it. Clears 1.10 against the page on its own. */
+  --surface-past: #232323;
+  --ink: #f5f3f1;
+  --ink-soft: #c2bebb;
+  --ink-faint: #9b9794;
+  --line: #3a3a3a;
+  --line-strong: #545454;
 
-  --accent: #ed7b59;
-  /* Lifted from #302115, which sat 1.03 against --surface: the + circle and every
-     accent-soft fill were invisible on a card in dark mode. */
-  --accent-soft: #3d2a1b;
-  --accent-ink: #f2ac93;
-  --on-accent: #1a1209;
+  --accent: #ff7a4f;
+  /* Must stay clear of --surface, or the + circle and every accent-soft fill go
+     invisible on a card in dark mode. 1.12 here. */
+  --accent-soft: #4a2c1a;
+  --accent-ink: #ffab8b;
+  --on-accent: #1e1207;
 
   --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 26px -16px rgba(0, 0, 0, .85);
   --shadow-lg: 0 26px 60px -22px rgba(0, 0, 0, .9);
@@ -282,7 +296,11 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* The day column, and the summary column beside it. Everything in the aside is derived
    from the day showing on the left, so under 1000px it is dropped rather than stacked
    below — there is nothing in it you cannot read off the meals themselves. */
+/* The heading is a direct child rather than part of .week-main, so on a wide screen it
+   spans both columns and the summary column starts level with the week bar instead of
+   level with the heading. The 20px gap replaces its own margin. */
 .view-week { display: grid; gap: 20px; align-items: start; }
+.view-week > .view-head { margin-bottom: 0; }
 .week-main { min-width: 0; }
 .week-side { display: none; }
 
@@ -837,6 +855,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .toast { bottom: 28px; }
 
   .view-week { grid-template-columns: minmax(0, 1fr) 292px; gap: 24px; }
+  .view-week > .view-head { grid-column: 1 / -1; }
   .week-side { display: flex; flex-direction: column; gap: 16px; }
 }
 
