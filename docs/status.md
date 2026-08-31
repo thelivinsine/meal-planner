@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Live** | Code at `88e27d0` (PR [#7](https://github.com/thelivinsine/meal-planner/pull/7), squash-merged), docs on top. Pages `built`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. Four follow-ups below, all small, none blocking |
+| **Open work** | [PR #8](https://github.com/thelivinsine/meal-planner/pull/8) on `week-affordance-and-landmark`: three of the four follow-ups, **none of it rendered yet**. No known defect |
 | **Confirmed** | You checked the latest changes in your browser and called the whole PR good — that closes all three commits, including the icon-and-token one that had been seen by nobody. **Your eyes, not an image**, so it is not reproducible from the repo |
 | **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast` was deleted on merge |
 
@@ -37,19 +37,26 @@ and what exposed it was a palette change two commits earlier.
 `CLAUDE.md` gained the five conventions these changes established, and it shipped with the code
 rather than in the docs sweep, so `main` is no longer a version behind.
 
-## Four follow-ups, none blocking
+## Four follow-ups: three in a PR, one closed
 
-1. **`style.css` still calls the save glyph a star.** One comment above `.bookmark` says "carried by
-   the filled star glyph". Text only, wrong for a round now.
+Items 1–3 are all in [PR #8](https://github.com/thelivinsine/meal-planner/pull/8), open and
+unmerged. **Nothing in it has been rendered** — the browser extension would not connect the session
+that wrote it, so the underline is a visual judgement nobody has made yet.
+
+1. **`style.css` still calls the save glyph a star.** Comment above `.bookmark`, text only. *Fixed in
+   #8.*
 2. **The recipe name is a colour-only affordance until hover** — and touch has no hover. It is the
-   app's most-used control and it now has no box, no fill and no underline at rest, only
-   `--accent-ink`. Contrast passes (5.95 on a card, 5.61 on a past one) and focus still gets the
-   global ring, so no stated floor is broken. An underline at rest may still be the better call.
+   app's most-used control and it had no box, no fill and no underline at rest, only `--accent-ink`.
+   Contrast passes (5.95 on a card, 5.61 on a past one) and focus still gets the global ring, so no
+   stated floor was broken; it was the touch case that made an underline the better call. *#8
+   underlines it at rest in `--accent-ink` at 45%, hover to `currentColor`* — **unlooked-at, and the
+   fade is weakest on a past day.**
 3. **`aria-labelledby="week-heading"` names the week region with a random greeting**, so the
-   landmark name changes on every load. Landmark names are meant to be stable; a fixed `aria-label`
-   on the `<section>` fixes it without giving up the greeting.
-4. **The recipe name at `1.125rem` display weight may wrap** in a narrow card on a long Indian
-   recipe name. Never looked at against the longest name in the catalogue.
+   landmark name changed on every load. *#8 gives the `<section>` a fixed `aria-label="Week plan"`;
+   the greeting stays the visible `h1`.*
+4. ~~**The recipe name at `1.125rem` display weight may wrap** in a narrow card.~~ **Closed.** You
+   looked at the catalogue's longest name, *Masala Yoghurt Bowl with Roasted Chana* (40 characters),
+   and it wraps cleanly. Your eyes, not an image, so it is not reproducible from the repo.
 
 ## Next jobs, in the order they'd earn their place
 
