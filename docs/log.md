@@ -45,6 +45,13 @@
 | **Re-read before merging, and the description was the finding** | The PR body still described only the first of three commits — the two rounds with the most visual risk in them were undescribed, and the body is what gets read before merging. Nothing in the code was wrong: contrast re-measured from the tokens found no text pair under 4.5 in either theme, and the three touch targets the week-view round shrank are all still lifted to 44px by the `pointer: coarse` block with nothing after it overriding them. **A branch can grow into a different change than the one described**, which is why step 4 says re-read the diff when commits land after the review. The body was rewritten to cover all three before the merge |
 | **Palette round shipped** | PR #7 squash-merged to `main` as `88e27d0`, branch deleted, Pages `built`. You checked the latest changes in your own browser first, which closed the third commit — the one that had been seen by nobody. Still your eyes rather than an image, so the repo holds no picture of it |
 | **Four follow-ups left open deliberately** | Listed in [status](status.md): a comment in `style.css` still calling the save glyph a star; the recipe name being a colour-only affordance until hover, on a control touch users cannot hover at all; `aria-labelledby` now naming the week landmark with a random greeting, so the name changes every load; and the recipe name possibly wrapping at `1.125rem` on a long Indian name. None blocks anything and none was folded into the merge, because scope creep in a merge commit is how a reviewed diff stops matching what shipped |
+| **Three follow-ups closed** | Branch `week-affordance-and-landmark`, PR [#8](https://github.com/thelivinsine/meal-planner/pull/8), one commit. The recipe name is underlined **at rest** now, in the accent ink at 45% with hover taking it to full strength — it had passed every measurable floor and still failed the device nobody tested on. The week `<section>` took a fixed `aria-label`, since `aria-labelledby` was pointing at a heading that rotates every load. And the `.bookmark` comment stopped saying *star*. Squash-merged as `eb9ea73`, Pages `built` |
+| **The fourth closed by eye** | You checked the catalogue's longest name, *Masala Yoghurt Bowl with Roasted Chana* at 40 characters, and it wraps cleanly. No code change |
+| **The phone gap closed at last** | You opened the live site on a phone and it works well. That had been the top job for four rounds and the one thing a desktop cannot do: every control is compact on a fine pointer and only returns to the 44px floor inside `@media (pointer: coarse)`, a block a desktop browser never enters. Arithmetic had said it was fine three times; a thumb now agrees. One phone, unnamed, so a change to any control's size puts it back on the list |
+| **The check script saved** | Branch `check-script`, PR [#9](https://github.com/thelivinsine/meal-planner/pull/9). `check.mjs` at the repo root — one file, no dependencies, no config, no runner, never served to a browser. 66 checks: contrast in both themes and both directions with the tokens read out of `style.css`, the action and id wiring, and the three values written twice. **The same three throwaways had been written and deleted five times**, and two of those rewrites caught things that would have shipped. The stub DOM was deliberately left out — of the three it was the only one that never caught anything — with a `ponytail:` comment recording when to add it |
+| **It failed on its first run** | `--surface-sunk` beside `--bg` at **1.08**, the pair found at PR #7's merge and left alone. Fixed rather than excused: `.nav-btn:hover` in the sidebar, where the nav unwinds to no fill of its own and so lands on the page, moved to `--surface`. The token itself could not move — in dark mode the only value clearing 1.10 against both `--bg` and `--surface` is `#232323`, which is already `--surface-past`, and two tokens on one shade means a tray inside a past card has no edge. The pair then **left the script's list** rather than being marked known, with a comment saying to put it back if a bare sunk fill lands on the page again |
+| **The script could not catch the next one** | `.theme-btn:hover` was changed alongside the nav button on the reasoning that both put a sunk fill on the page. Only the sidebar one did: the theme button carries `background: var(--surface)` at rest, so setting its hover to `--surface` made the rule a **no-op**, leaving only the icon colour changing. Every token stayed legal and every pair still measured fine — **a contrast script is blind to a rule that changes nothing.** You found it with a mouse, one hover. Reverted to `--surface-sunk`, 1.20 light and 1.14 dark against the button it sits on. The lesson is in [architecture](architecture.md#how-this-gets-tested): *a fill has to differ from what the control sits on, not from the page behind it* |
+| **Check script shipped** | PR #9 squash-merged as `6e27431`, branch deleted, Pages `built`, 66 of 66 passing on `main`. The `.theme-btn` revert shipped **measured but not looked at**, at your call to come back to it later |
 
 ---
 
@@ -145,3 +152,24 @@ The same pass re-checked the three touch targets the week-view round shrank and 
 at any of the three commits by me. The compaction figures (~122px → ~100px for the week bar) are
 computed from padding and line heights rather than measured. You confirmed all three in your own
 browser before the merge, which is the only look any of them got.
+
+### The follow-up and check-script rounds (PRs #8 and #9)
+
+**The extension would not connect for a third round running**, so again nothing was rendered by me.
+What changed is that the measuring stopped being thrown away.
+
+- **`check.mjs` replaced the throwaways.** 66 checks, run by hand. Its numbers were cross-read
+  against the figures earlier rounds had computed by hand and recorded in `architecture.md` and
+  `decisions.md`, and they match — different code, same answers, which is the strongest evidence
+  available that the arithmetic is right.
+- **It found the 1.08 pair immediately**, which was the case for saving it, made concrete on the
+  first run.
+- **And it was blind to the bug it caused.** The `.theme-btn:hover` no-op left every token legal and
+  every pair passing. **A check that reads values cannot see a rule that changes nothing** — the
+  clearest demonstration yet of why read, look and measure are three checks and not one.
+- **You closed the phone gap and three of the four follow-ups by looking**, which is the other half
+  of the same point.
+
+**Not covered:** the underline was confirmed by you on all three grounds, but the `.theme-btn`
+revert was not looked at by anyone — measured only. Still no stub DOM, still no keyboard-only pass,
+and the CSS-shape checks earlier rounds sometimes did by hand are not in the script yet.

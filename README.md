@@ -14,7 +14,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. Every check is a throwaway Node script against a stub DOM, plus computed contrast and static wiring — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
@@ -57,8 +57,9 @@ Five documents, each with one job:
   something planned has a tinted circle, and a day gone by is quieter. So the row is the overview:
   where you are, what day it is, and the shape of the week
 - Below it, the day's name and then **one card per meal** — the biggest thing on the screen, which
-  is the point of them. A filled one shows the recipe name in accent ink, underlined when you hover
-  it because tapping it opens the recipe, then its time and what it is (*10 min · Balanced ·
+  is the point of them. A filled one shows the recipe name in accent ink and underlined — tapping it
+  opens the recipe, and the line is there at rest rather than only on hover because a phone has no
+  hover — then its time and what it is (*10 min · Balanced ·
   Vegetarian*), with a save bookmark and a × to clear it. Nothing inside the card gets a box of its
   own — no pill, no tile, no second border.
   An empty card is a dashed **+ Add a dinner** the width of it
@@ -130,9 +131,11 @@ The full set is in [docs/decisions.md](docs/decisions.md). These three cost the 
   makes next week a genuinely separate plan rather than the same seven slots relabelled — and it's
   why entries older than four weeks get pruned on load.
 - **Contrast gets measured in both directions, by a script that reads the tokens out of the
-  stylesheet.** Text on its ground needs 4.5; two surfaces that touch need about 1.10 or the edge
-  disappears. Checking only the first is how a palette ends up legible and shapeless — one colour
-  sat at 1.03 against a card, making a control invisible, while every text pair passed.
+  stylesheet** — `check.mjs`. Text on its ground needs 4.5; two surfaces that touch need about 1.10
+  or the edge disappears. Checking only the first is how a palette ends up legible and shapeless —
+  one colour sat at 1.03 against a card, making a control invisible, while every text pair passed.
+  The script was rewritten from scratch five times before it was finally saved, which is its own
+  lesson: a check reconstructed from memory each round quietly gets weaker.
 - **Passing the measurements is not the same as looking right.** A palette that cleared every ratio
   still read as one beige wash next to the mockups, twice, one shade apart. The script is a floor,
   not a verdict — which is why the mockups get looked at again after it passes.
@@ -153,3 +156,12 @@ python -m http.server 8765
 ```
 
 then visit http://localhost:8765.
+
+To check the colours and wiring after an edit:
+
+```
+node check.mjs
+```
+
+Ticks and crosses, one line each; it exits non-zero if anything fails. It reads the source files as
+text and changes nothing.
