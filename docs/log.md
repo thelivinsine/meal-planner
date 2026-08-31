@@ -1,0 +1,100 @@
+# Development log
+
+*Append-only. What happened, in order. The reasoning behind any choice is in
+[decisions.md](decisions.md); the current state is in [status.md](status.md).*
+
+| | |
+|---|---|
+| **Setup** | Repo created; project constraints written into `CLAUDE.md` — vanilla JS only, browser storage only, GitHub Pages as the target |
+| **Scope** | Settled on v1: three views, ~25 recipes, week planning, bookmarks. Month calendar and drag-and-drop explicitly excluded |
+| **v1 built** | `index.html` / `style.css` / `app.js` on branch `feat/v1-meal-planner`. Week view moved to real dates during planning, at your request |
+| **First review** | Two changes from your feedback: past days now visually distinct from upcoming ones, and the day dropdown in the add dialog became a grid of day buttons |
+| **Published** | Merged to `main` and pushed to GitHub as a public repo |
+| **Second round** | Branch `feat/slot-picker-and-indian-recipes`: the slot's **+ Add** now opens the recipe list inline under the week instead of asking for the day and meal a second time, and the catalogue grew to 50 with 27 Indian and 38 high-protein recipes |
+| **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root |
+| **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
+| **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
+| **Contrast** | One wrong turn, recorded in full under [decisions](decisions.md#one-wrong-turn-worth-recording): a local figure/ground problem got a global palette fix, which was wrong and was reverted |
+| **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in the docs were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
+| **UI round merged** | PR [#2](https://github.com/thelivinsine/meal-planner/pull/2) squash-merged to `main` as `409d7d2`, then `f60a79d` for the notes. The stale v1 screenshots were deleted; no fresh set yet |
+| **Narrow week** | Branch `mobile-week`. Started as a CSS-only compaction of the meal rows below 1000px, then grew on the same branch into the day strip: seven day buttons plus the one day they select, the same card as the wide layout with six hidden. `focusDay` added to state, not persisted |
+| **Reviewed twice** | The first review covered the compaction and produced one fixup — a duplicate `@media (max-width: 1000px)` block folded back into the existing one, which had been sitting after the 620px block and overriding it. The branch then grew two more commits, so the PR was re-read from scratch. That pass found three defects, which shipped open and were fixed a round later |
+| **Merged anyway** | PR [#3](https://github.com/thelivinsine/meal-planner/pull/3) squash-merged to `main` as `236ce5b` with the three defects open, at your call |
+| **Seen at last** | You took screenshots of the Week view and committed them to `main` as `f0dfe07`. The wide week and the day strip both looked right. Two of the four turned out to be of an older version and were deleted rather than left to mislead |
+| **Two directions** | Two redesign proposals opened side by side off the same `main`: PR #4, bold consumer product, and PR #5, app shell / control surface. Nine rounds of feedback into #4 before it was reviewed |
+| **Reviewed** | PR #4 read against its own description. Three real defects: the recipe dialog had no way to fill the slot it was opened from, `display: none` on the day `<h2>` had come back one selector along after being listed as fixed, and the open day's header was an `aria-expanded="true"` button that could not collapse anything. All three fixed on the branch, with 21 stub-DOM assertions. Two camera-named screenshots that nothing referenced were dropped from the diff |
+| **Direction A shipped** | PR [#4](https://github.com/thelivinsine/meal-planner/pull/4) squash-merged to `main` as `49b3c16`. The branch was kept, not deleted, at your request |
+| **Direction B closed** | PR [#5](https://github.com/thelivinsine/meal-planner/pull/5) closed and `design/app-shell` deleted. It conflicted with `main` the moment A merged — both proposals rewrote the same three files — and rebasing would have meant rewriting it. The table-shaped week is the part worth bringing back |
+| **Docs corrected** | Several rounds of notes had hardened into "nobody has ever opened this app in a browser", which was simply false — you check it in a browser as you iterate. Corrected. The real gap is narrower: a real phone, and a keyboard-only pass |
+| **Mockups supplied** | You added three desktop concepts and three mobile ones, committed to `main` as `f58bf0f` under `Mockups/` — reference material, so no branch |
+| **Concept A built** | Branch `sidebar-day-view`: Concept A's desktop layout with Concept C's right-hand column, and Concept C's mobile view minus its vertical timeline. The seven-column accordion and everything holding it up came out. **Not looked at in a browser by either of us at this point** — the Chrome tooling was unavailable, so the checks were reading, 19 stub-DOM assertions, computed contrast and static wiring only |
+| **Screenshots found six flaws** | You opened it and shot it wide and narrow. The wide layout was rendering at a third of its width; the `min-width: 1001px` block was partly dead on source order; the palette read as one cream wash; empty meal cards were 140px tall; the day row wrapped from 620px instead of 400px; and the nav pill landed on a tap target. All six fixed in `01239e8`. **The lesson worth keeping: reading the CSS twice found none of this. One screenshot found all of it** |
+| **Fixes confirmed wide** | A third screenshot showed the wide light layout right — main column about 2.8× the summary column and filling the width, and the derived panels correct on a full day (3/3 planned, 37 min, *Protein-heavy*, all-protein tip firing). Narrow and dark still unseen |
+| **Docs split from the feature** | At your request the documentation went straight to `main` — allowed, and the only thing that is — leaving PR #6 as a code-only diff |
+| **Reviewing the diff found six more** | Asked to review the PR's own diff before merging. Three were real: `theme-color` only half-fixed and keyed to the wrong signal, the **Today** button dropping keyboard focus, and dark `--surface-past` darker than the page at 1.02 against it. Also: two id selectors turned back into classes, two classes emitted with no CSS rule deleted, `*.png` gitignored. **The lesson pairs with the screenshot one** — all six were invisible to the eye and visible to a script |
+| **Three old defects closed on the way** | Shipped with Concept A: the `is-upcoming` class that no CSS rule matched is gone (the "no class without a rule" static check exists because of it), toggling Save no longer throws keyboard focus away, and the missing week date-range line is back in the week bar |
+| **Concept A shipped** | PR #6 squash-merged to `main` as `7e10f85`, branch deleted, Pages `built`. You looked at it locally before telling me to merge, but it wasn't shot, and the dark past-day colour had changed since the one screenshot that existed. Shipping ahead of a screenshot was your call and was recorded as such rather than left to read as verified |
+| **Confirmed on the live site** | You opened the deployed site and called it good, closing the narrow layout and dark mode. Recorded as your look, not an image — the repo still holds no picture of the current app |
+| **Docs restructured** | This split: `README.md` back to a front door for a reviewer, `CLAUDE.md` to rules an agent must follow, and `docs/` for status, architecture, decisions and this log. `README.md` had reached 529 lines doing six unrelated jobs, and `CLAUDE.md` was 20 over its own budget because reasoning had nowhere else to live |
+
+---
+
+## What each round of testing actually checked
+
+Kept because the *coverage* is the record — every script itself was thrown away. See
+[architecture.md](architecture.md#how-this-gets-tested) for the standing approach.
+
+### v1 and the early rounds
+
+- 50 unique, complete recipes, each tagged `high-protein` or `balanced`, and both catalogue
+  thresholds (over half Indian, over two thirds high-protein)
+- Week-start arithmetic landing on a Monday across month, year and leap-day boundaries
+- 7 day cards and 21 slots rendered, with the right past / today / upcoming split for the real date
+- The inline slot picker: hidden on load, opens with the tapped day and meal in its heading, offers
+  all 50 recipes, filters on its own search without disturbing the Recipes view, fills exactly the
+  tapped slot in one click without the dialog opening, closes on Escape, week navigation and view
+  change, and returns focus to the slot it was opened from
+- The dialog route: 7 day buttons with one preselected; add → replace → clear leaving exactly one
+  correct entry
+- The filter panel: a chip for every catalogue tag and no duplicates, every tag landing in a named
+  group, the count badge and active row appearing and clearing, the collapse toggle carrying
+  `aria-expanded`
+- The picker and the Recipes grid rendering byte-identical card markup apart from the primary
+  action, and a picker card's star following a bookmark made from the open sheet
+- A save/reload round-trip, and nine kinds of corrupt storage (truncated JSON, `null`, `[]`, wrong
+  types, unknown recipe ids, invalid dates) all falling back to a clean state
+
+### The bold-consumer redesign
+
+All three files replaced. Alongside your own passes in the browser: `node --check`, contrast
+computed rather than eyeballed, and **89 stub-DOM assertions** — 68 during the build, 21 more at
+review. They covered the seven-column and accordion renders, rail sides and count, that every
+column track is the same type so the width animation can run at all, focus restoration on both
+layouts, the expand-all toggle and its relabelling, plan writes and clears, bookmarks, tag
+filters, theme persistence and restore, the recipe dialog's two tool states, and the fill-slot
+route out of the inline picker.
+
+### The Concept A round
+
+`node --check`, plus **29 stub-DOM assertions**: the week bar and its Today button appearing only
+off the current week, the seven-day row and its single selection, empty and filled meal cards, the
+meta line, the glance arithmetic and progress width, every shape `balanceOf` and `tipFor` can
+return, plan writes and clears, the storage round-trip, focus restoration after a clear, after a
+save toggle and after pressing Today, week paging, day switching, the past-day class, and
+`theme-color` tracking `--bg` across three theme switches.
+
+Static checks: every id the JS looks up exists in the HTML, all 106 emitted classes have a rule,
+`max-width` queries descending, no base rule below the first media query, the storage key matching
+in both places, and no id selectors in the stylesheet.
+
+Contrast, both directions, tokens read out of `style.css`: **16 text pairs per theme against 4.5**
+— lowest 4.67, dark `--ink-faint` on a card — **6 bare surface edges against 1.10**, and **8
+hairline-carried edges** measured on the line against both sides. Four edges were fixed rather
+than tolerated across the round: dark `--accent-soft` at 1.03 against a card, the active sidebar
+pill at 1.05 against the page, the 1.12 page-to-card edge that sank the first attempt at a warm
+page, and dark `--surface-past` at 1.02.
+
+**And worth saying plainly: none of these scripts caught the layout rendering at a third of its
+width. A screenshot did.** Three rounds of reading have found fifteen bugs between them — six a
+browser would have shown, six only a script or a diff review could, and one that was invisible to
+two careful readings and obvious in a single shot.
