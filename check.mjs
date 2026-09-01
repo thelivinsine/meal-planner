@@ -88,6 +88,9 @@ const TEXT_PAIRS = [
   ['--accent-ink', '--bg'], ['--accent-ink', '--surface'], ['--accent-ink', '--surface-sunk'],
   ['--accent-ink', '--surface-past'], ['--accent-ink', '--accent-soft'],
   ['--on-accent', '--accent'],
+  /* The sidebar nav hover sets --ink on --hover, so that pair is real text on a real
+     ground. --ink-soft is the label's rest colour on the page, already measured above. */
+  ['--ink', '--hover'],
 ];
 
 /* `line` means: this pair is allowed under 1.10 because a hairline carries the
@@ -110,6 +113,9 @@ const SURFACE_PAIRS = [
   ['--accent-soft', '--bg', { line: '--line' }],
   ['--accent', '--surface'],
   ['--accent', '--bg'],
+  /* The one hover fill that lands on the page rather than inside a card. Light spends
+     state downward, so this sits *below* --bg; the check is the same either way. */
+  ['--hover', '--bg'],
   ['--line', '--bg'],
   ['--line', '--surface'],
   ['--line-strong', '--surface'],
