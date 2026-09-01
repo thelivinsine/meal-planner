@@ -33,6 +33,19 @@
   --ink-faint: #6a5849;
   --line: #e3dbd0;
   --line-strong: #cabbaa;
+  /* The hover fill for a control that sits on the *page*. It goes DOWN into grey, which
+     is the light-mode direction: a light theme has almost nothing above its surfaces —
+     white is the ceiling — so state has to be spent downward. (Elevation still goes up:
+     a card is lighter than the page in both themes. The two point opposite ways and both
+     are right; see docs/light-mode-reference.md §3.) 1.14 on --bg, mid-band for the
+     1.10–1.25 the reference apps measure at. A control that sits on a *card* does not use
+     this — --surface-sunk is already a correct downward step from --surface, at 1.20.
+     Dark's own hover ramp is the parked dark-mode job, so there --hover is today's value
+     unchanged. */
+  --hover: #eae4da;
+  /* The scrim behind a dialog. Both light references use a mid grey around 2.9 over
+     white, not a heavy black; .42 composites to #9a9591 here, which measures 2.97. */
+  --scrim: rgba(28, 20, 16, .42);
 
   --accent: #c8491f;
   --accent-soft: #fbe9e1;
@@ -79,6 +92,11 @@
   --ink-faint: #9b9794;
   --line: #3a3a3a;
   --line-strong: #545454;
+  /* Unchanged behaviour: this is the same #2b2b2b the sidebar hover already used. Dark
+     spends state *upward*, and there is nothing above --surface to spend — that is the
+     open dark-mode finding, deliberately not answered here. */
+  --hover: #2b2b2b;
+  --scrim: rgba(28, 20, 16, .5);
 
   --accent: #ff7a4f;
   /* Must stay clear of --surface, or the + circle and every accent-soft fill go
@@ -143,7 +161,13 @@ button, input, select { font: inherit; color: inherit; }
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+/* A ring with a gap, so it reads against the control it surrounds *and* the surface
+   behind it. The reference draws 4px; that was tried here and looked at, and on this
+   palette it was too loud — a thick orange band around the search field rather than a
+   ring. 3px keeps the reference's intent at a weight this accent can carry. --accent
+   measures 4.74 on a card and 4.28 on the page — a ring is a non-text component, so 3.0
+   is its floor, but it clears the text floor on both anyway. */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- shell: top bar, sidebar, docked nav ---------- */
 /* Narrow first: a sticky top bar with the brand and the theme button, and the view
@@ -626,6 +650,17 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 15px 15px 12px; flex: 1;
 }
 .card-open:hover .card-name { color: var(--accent-ink); }
+/* The ring goes *inside* this one, and it takes two properties to do it. .card-open is
+   flush with the card's edges and .card clips its overflow (it has to — the accent button
+   in the foot would otherwise square off the rounded corner), so an outward ring is cut
+   on three sides and shows only as a stray orange rule along the bottom. The negative
+   offset draws it inside; the radius has to come with it, because an outline follows its
+   element's border-radius and .card-open has none of its own — it fell back to the 4px in
+   the :focus-visible rule above and its square top corners were clipped by the card's 13px
+   curve all over again. Bottom stays square: that edge is mid-card, against the foot's
+   divider. Anything else in a card — the foot buttons, the bookmark — is inset already and
+   keeps the outward ring. */
+.card-open:focus-visible { outline-offset: -4px; border-radius: var(--radius) var(--radius) 0 0; }
 
 .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .card-name {
@@ -679,7 +714,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    `dialog:not([open]) { display: none }` and leave both dialogs on the page. */
 .sheet[open] { display: flex; flex-direction: column; }
 .sheet-sm { width: min(420px, calc(100vw - 32px)); }
-.sheet::backdrop { background: rgba(28, 20, 16, .5); backdrop-filter: blur(3px); }
+.sheet::backdrop { background: var(--scrim); backdrop-filter: blur(3px); }
 
 .sheet[open] { animation: sheet-in var(--mid) var(--ease); }
 
@@ -847,9 +882,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
     color: var(--ink-soft); font-size: .9375rem;
   }
   /* The nav unwinds to no fill above, so this hover lands on the page: --surface-sunk
-     measured 1.08 there and the hover barely registered. --surface clears the floor and
-     the current-page pill stays distinct by its shadow and its accent text. */
-  .nav-btn:hover { background: var(--surface); color: var(--ink); }
+     measured 1.08 there and the hover barely registered. It then went *up* to --surface,
+     which cleared the floor but is the wrong direction for a light theme — hover belongs
+     below what it sits on. --hover is that step down: 1.14 on the page. */
+  .nav-btn:hover { background: var(--hover); color: var(--ink); }
   /* A card-coloured pill, not an accent-soft one: on the tinted page accent-soft sits
      at 1.05 and the pill had no edge at all. The accent is carried by the text. */
   .nav-btn[aria-current="page"] {
