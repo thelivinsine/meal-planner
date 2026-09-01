@@ -161,11 +161,14 @@ button, input, select { font: inherit; color: inherit; }
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-/* 4px with a gap, matching the reference: the ring has to read against the control it
-   surrounds *and* the surface behind it, so it is drawn outside both. --accent measures
+/* A ring with a gap, so it reads against the control it surrounds *and* the surface
+   behind it. The reference draws 4px; that was tried here and looked at, and on this
+   palette it was too loud — a thick orange band around the search field rather than a
+   ring. 3px keeps the reference's intent at a weight this accent can carry. --accent
+   measures
    4.74 on a card and 4.28 on the page — a ring is a non-text component, so 3.0 is its
    floor, but it clears the text floor on both anyway. */
-:focus-visible { outline: 4px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- shell: top bar, sidebar, docked nav ---------- */
 /* Narrow first: a sticky top bar with the brand and the theme button, and the view
@@ -648,6 +651,18 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 15px 15px 12px; flex: 1;
 }
 .card-open:hover .card-name { color: var(--accent-ink); }
+/* The ring goes *inside* this one. .card-open is flush with the card's edges and .card
+   clips its overflow (it has to — the accent button in the foot would otherwise square
+   off the rounded corner), so an outward ring is cut on three sides and shows only as a
+   stray orange rule along the bottom. A negative offset draws it inside the card
+   instead. Anything else in a card — the foot buttons, the bookmark — is inset already
+   and keeps the outward ring. */
+/* The radius has to come with it: an outline follows its element's border-radius, and
+   .card-open has none of its own, so it fell back to the 4px in the :focus-visible rule
+   and the ring's square top corners were clipped by the card's 13px curve. Matching the
+   card's top corners lets the inset ring curve inside them. Bottom stays square — that
+   edge is mid-card, against the foot's divider. */
+.card-open:focus-visible { outline-offset: -4px; border-radius: var(--radius) var(--radius) 0 0; }
 
 .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .card-name {
