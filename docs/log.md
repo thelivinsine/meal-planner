@@ -56,6 +56,11 @@
 | **What it says about Mise** | Light mode measured structurally right — page below white so cards rise to it, sunk trays stepping down, `--line` carrying the edge at 1.24/1.37 exactly where PowerToys puts its hairline. Dark mode has two gaps: **no token above `--surface`**, so states have nowhere to go and the ladder ends at depth 1; and `--surface-sunk` at **1.08** from the page, the same token doing the right thing in light and the wrong thing in dark. Neither acted on — `check.mjs` and a browser both have to agree before a token moves |
 | **A docs commit had deleted the mockups** | Found while sweeping. `a3b34c0`, a routine README-and-log sweep, carried a silent `Mockups/*.png` deletion in its diff: the folder had been renamed on disk to `Light mode Mockups/`, the `!Mockups/**` exception was anchored to a path that no longer existed, and `*.png` swallowed all four. The repo had tracked **zero** images for two commits while `architecture.md` still said otherwise. Restored from `f58bf0f` under the folder's real name, exception rewritten as `!Light mode Mockups/*.png` — `*.png` not `**`, so the reference shots in `Other references/` stay out. **A negated gitignore path is a dependency on a folder name**, and renaming the folder fails silently in the one direction nobody checks |
 | **Check script shipped** | PR #9 squash-merged as `6e27431`, branch deleted, Pages `built`, 66 of 66 passing on `main`. The `.theme-btn` revert shipped **measured but not looked at**, at your call to come back to it later |
+| **Light mode polished** | Branch `light-mode-states`, driven by [light-mode-reference.md](light-mode-reference.md#9-against-mises-current-light-tokens) rather than by a screenshot — the first round to work that way. Its §9 verdict, *the light palette is structurally right*, is what kept the change small: **no surface token moved.** `--hover: #eae4da` added, a fill 1.14 *below* the page, closing the report's one named gap and retiring PR #9's workaround of sending the sidebar hover *up* to white. `--selected` deliberately not added — every selected state here is an accent fill, so it would have had no consumer. Dark's `--hover` holds dark's existing value: light-only was your call, and dark's own ramp is still the open question |
+| **The reference was right and still wrong** | Section 6 of the report puts the focus ring at 4px with a gap, read off a real app's pixels. Built at 4px it was too loud here — a thick orange band around the search field, not a ring — and shipped at 3px after you looked. Same round, the opposite direction: the report warns against heavy black scrims, and Mise's supposedly-heavy one measured **3.7** where the reference sits at 2.93, so the correction to .42 was real but far smaller than the wording implied. **A measured reference is evidence, not a spec** |
+| **Tabbing found a ring clipped for months** | The recipe card's focus ring was cut on three sides by `.card`'s `overflow: hidden` and showed as a stray orange rule across the middle of the card. Present since it was 2px; 3px made it visible. The fix took two goes — a negative `outline-offset` to draw it inside, then the card's top radius, because **an outline follows its own element's `border-radius`** and `.card-open` has none, so it fell back to the 4px in the global `:focus-visible` rule. Neither the script (reads source text) nor a screenshot (taken at rest) can see a focus ring at all |
+| **A false alarm, resolved by arithmetic** | A second ring looked clipped at the sidebar's left edge across two screenshots. It was the crop of a zoomed snip: the sidebar has 14px of padding and the ring extends 5px, so nothing could cut it. Checked against the CSS before changing anything, and confirmed by you at 100% zoom. **Worth recording because the standing rule is to trust the look over the arithmetic** — here the arithmetic was specific enough to be worth one question first |
+| **Light round shipped** | PR [#10](https://github.com/thelivinsine/meal-planner/pull/10) squash-merged as `1dd7a52`, branch deleted, Pages `built`, 70 of 70 passing on `main`. Two pairs added to the script with the new token. Left open and seen: the focus ring on an accent-filled button is orange on orange, legible but blobby |
 
 ---
 
@@ -177,3 +182,38 @@ What changed is that the measuring stopped being thrown away.
 **Not covered:** the underline was confirmed by you on all three grounds, but the `.theme-btn`
 revert was not looked at by anyone — measured only. Still no stub DOM, still no keyboard-only pass,
 and the CSS-shape checks earlier rounds sometimes did by hand are not in the script yet.
+
+### The light-mode round (PR #10)
+
+**The first round driven by a reference document rather than by a screenshot.**
+[light-mode-reference.md](light-mode-reference.md) had been written the round before and never
+acted on. Its §9 verdict — the light palette is *structurally right* — is what kept this small: no
+surface token moved.
+
+- **`--hover` closes the report's one named gap.** No hover or selected token existed. The sidebar
+  hover had been going *up* to `--surface`, the dark-mode direction, as a workaround for
+  `--surface-sunk` measuring 1.08 on the page. It now goes down, to `#eae4da`, 1.14 on the page.
+  Dark's `--hover` is set to the value dark already used — your call was light-only.
+- **No `--selected` token was added**, because every selected state in this app is an accent fill.
+  A neutral one would have had no consumer.
+- **The reference's 4px focus ring was built, looked at, and reduced to 3px.** Too loud on this
+  palette. **A number measured out of a reference app was still wrong for this one** — the round's
+  clearest argument for looking at things.
+- **The scrim went .50 → .42**, 2.97 over white against the reference's 2.93. Recorded honestly:
+  the old value measured 3.7, so this was a smaller correction than the report's wording suggested.
+- **Tabbing found a clipped focus ring on the recipe card** — cut on three sides by `.card`'s
+  `overflow: hidden`, showing as a stray orange rule across the middle. Present since 2px and never
+  noticed. The fix took two goes: the negative offset, and then the radius, because **an outline
+  follows its element's own `border-radius`** and `.card-open` has none.
+- **Two `check.mjs` pairs added** with the new token, per the rule that a pair not in the list is a
+  pair nobody measures. 70 checks, all passing.
+
+**The extension would not connect for a fourth round running.** Everything seen this round was seen
+by you, in your browser, from seven screenshots — which is also how the false alarm got resolved: a
+ring that looked clipped in the sidebar turned out to be the crop of a zoomed snip, and the
+arithmetic (14px of padding against a ring extending 5px) is what said so before anything was
+changed.
+
+**Not covered:** dark mode and narrow widths, for changes that apply to both; the rest of the
+keyboard pass — the week view, the slot picker and both dialogs; and the accent-on-accent focus
+ring, which was seen, discussed and deliberately left.

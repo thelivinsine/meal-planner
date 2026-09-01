@@ -132,10 +132,12 @@ in [log.md](log.md).
 
 ### The gaps
 
-- **Keyboard-only and a screen reader.** Focus order, focus restoration after a redraw, and the
-  accessible names on the day row and meal cards are reasoned about and never driven — the script
-  reads source text, so none of it is exercised. **Every accessibility defect this project has
-  shipped was in this category**, and with the phone gap closed this is the largest one left.
+- **Keyboard-only and a screen reader — started, not finished.** PR #10 tabbed through the recipe
+  grid and the sidebar in light mode on a wide screen, and immediately found a defect nothing else
+  could see. **Still undriven: the week view, the inline slot picker and both dialogs** — which is
+  where the interesting part is, since focus restoration after a redraw is asserted in five places
+  and exercised in none. A screen reader has never been run at all. **Every accessibility defect
+  this project has shipped was in this category**, and it remains the largest gap.
 - **A real phone — closed once, and it reopens.** A dragged-narrow desktop window is not one:
   controls are compact on a fine pointer and only return to the 44px floor under
   `@media (pointer: coarse)`, which a desktop browser never enters. You opened the live site on a
@@ -145,12 +147,17 @@ in [log.md](log.md).
   cannot see a rule that *changes nothing*: `.theme-btn:hover` was briefly set to the fill the
   button already had, and every token stayed legal and every pair still measured fine while the
   hover did nothing at all. **A check that reads values is blind to a no-op.** That one took a
-  mouse.
+  mouse. Its sibling took a keyboard: the recipe card's focus ring had been clipped away by an
+  ancestor's `overflow: hidden` since it was 2px wide, and **no check this project runs looks at a
+  page that has keyboard focus on it** — not the script, which reads source text, and not a
+  screenshot, which is taken at rest.
 
-**All 66 checks pass.** The one that did not — `--surface-sunk` beside `--bg` at **1.08**, known
-since PR #7 — was fixed rather than excused: `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of
-its own and so lands on the page — now uses `--surface`, clearing the floor at 1.11 light and
-1.23 dark. `.theme-btn:hover` was changed with it and changed back: it looked like the same bug but
+**All 70 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+known since PR #7 — was fixed rather than excused, twice over. The first fix sent
+`.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
+page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the
+dark-mode direction. PR #10 replaced it with `--hover`, a proper step **down** into grey at 1.14,
+which is what a light theme is supposed to do. `.theme-btn:hover` was changed with it and changed back: it looked like the same bug but
 sits on the *button's own* `--surface` fill, so `--surface-sunk` was right there all along (1.20 and
 1.14), and setting it to `--surface` made the rule a no-op. **A fill has to differ from what the
 control sits on, not from the page behind it.** The token itself could not move: in dark mode the only
@@ -168,6 +175,10 @@ under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, l
 Since the light page went near-white there is also less room between surfaces than there was, so two
 edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-contrast). And
 `color-mix` is load-bearing for old browsers; `subgrid` no longer is.
+
+The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
+That is the rule in practice — a new colour token means adding its pairs by hand, in the same
+commit, or it ships unmeasured.
 
 ## Deployment
 

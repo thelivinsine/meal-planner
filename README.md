@@ -14,14 +14,14 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 70 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
 
 ## Where to read what
 
-Five documents, each with one job:
+Eight documents, each with one job:
 
 | | |
 |---|---|
@@ -125,9 +125,9 @@ numbers in it: how many meals you've planned, roughly how long they'll take, and
 recipes, no sharing a plan with anyone else. Those are sensible next steps rather than oversights —
 the reasoning for each is in [docs/decisions.md](docs/decisions.md#deliberately-not-built).
 
-## Three decisions worth reading
+## Four decisions worth reading
 
-The full set is in [docs/decisions.md](docs/decisions.md). These three cost the most to learn:
+The full set is in [docs/decisions.md](docs/decisions.md). These four cost the most to learn:
 
 - **The plan is keyed by real date, not by weekday.** `state.plan['2026-08-26|Dinner']`. It's what
   makes next week a genuinely separate plan rather than the same seven slots relabelled — and it's
@@ -141,10 +141,15 @@ The full set is in [docs/decisions.md](docs/decisions.md). These three cost the 
 - **Passing the measurements is not the same as looking right.** A palette that cleared every ratio
   still read as one beige wash next to the mockups, twice, one shade apart. The script is a floor,
   not a verdict — which is why the mockups get looked at again after it passes.
+- **Read it, look at it, and measure it — they are three checks, not one.** Each has caught what
+  the other two could not. Two careful readings of the CSS missed a week rendering at a third of its
+  width, and one screenshot found it. A script found six things no screenshot could. And a hover
+  rule that changed nothing, plus a focus ring clipped away to a stray orange line, were invisible
+  to both — one took a mouse, the other a keyboard.
 - **A grid item with auto inline margins doesn't stretch to its track.** `margin: 0 auto` centres a
   block but shrink-to-fits a grid item, so the week once rendered at a third of its width. Two
   careful readings of the CSS missed it and one screenshot found it — which is why a rendered look
-  is now the check for anything touching layout, not the optional extra.
+  is the check for anything touching layout, not the optional extra.
 
 ## Running it locally
 

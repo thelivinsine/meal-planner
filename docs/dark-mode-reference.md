@@ -319,7 +319,11 @@ any of it.
 
 ## 8. Against Mise's current dark tokens
 
-Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01.
+Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01. **Nothing here has been acted on**
+— PR #10 fixed the *light* half of the shared hover gap and deliberately left dark alone, so the
+two themes are asymmetric on purpose until someone looks at dark. `--hover` exists in dark as of
+that PR, holding `#2b2b2b`, which is the value the dark sidebar hover already used: a placeholder
+carrying today's behaviour, not an answer to anything below.
 
 ```
 --bg           #1a1a1a
@@ -334,6 +338,7 @@ Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01.
 --accent       #ff7a4f   5.49 on surface
 --accent-ink   #ffab8b   7.72 on surface
 --accent-soft  #4a2c1a   1.12 on surface
+--hover        #2b2b2b   = --surface; placeholder, see above
 --on-accent    #1e1207   7.12 on accent
 ```
 

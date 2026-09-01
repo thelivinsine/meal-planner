@@ -348,7 +348,10 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 7. Separating hairlines are **darker than the page** in light mode exactly as in dark mode.
 8. Floating surfaces get a **dark rim plus a soft gradient shadow**; docked ones get a flat
    2 px seam and no shadow.
-9. Scrims are a mid grey around 2.9 over white, not a heavy black.
+9. Scrims are a mid grey around 2.9 over white, not a heavy black. **Measure before assuming a
+   scrim is heavy:** Mise's `rgba(28,20,16,.5)` looked like the thing this item warns against and
+   actually composited to 3.7. It went to .42 and 2.97 — a real correction, a much smaller one than
+   the wording here suggests.
 10. One accent, re-picked for this theme rather than reused from the dark one: a solid fill with
     white text on it.
 11. Give focus its own ring, offset from the control, measured against **both** the control and
@@ -361,7 +364,8 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 
 ## 9. Against Mise's current light tokens
 
-Measured from `style.css`, `:root`, on 2026-09-01.
+Measured from `style.css`, `:root`, on 2026-09-01. **Three of the four observations below were
+acted on in PR #10** — each is marked where it stands. The token list is as it shipped after that.
 
 ```
 --bg           #f6f3ee
@@ -377,6 +381,8 @@ Measured from `style.css`, `:root`, on 2026-09-01.
 --accent-ink   #ad4020   5.95 on surface
 --accent-soft  #fbe9e1   1.18 on surface
 --on-accent    #ffffff   4.74 on accent
+--hover        #eae4da   1.14 below bg      (added in PR #10)
+--scrim        rgba(28,20,16,.42)           (added in PR #10; composites to #9a9591, 2.97 on white)
 ```
 
 **The light theme is structurally right, and more right than the dark one.** Read against
@@ -401,23 +407,43 @@ page and 1.37 on a card. That is the right answer and matches PowerToys' 1.14–
 exactly. No change needed; it is simply worth knowing that this is not a Mise problem but the
 structural limit of light mode from section 2.
 
-**b) There is no hover or selected token, in either theme.** Section 4 puts light-mode state
+**b) There is no hover or selected token, in either theme.** — *hover: done for light in PR #10;
+selected: declined; dark: deliberately left.* Section 4 puts light-mode state
 changes at 1.10–1.25. Against `--surface` that means roughly `#f0f0f0`–`#e8e8e8`, warmed to
 match; against `--bg`, roughly `#ebe6df`. This is the light-mode half of the same gap flagged
 in the dark report — there, states have nowhere to go *up*; here, nowhere to go *down* that is
 named. Both would be fixed by the same pair of tokens, pointing opposite ways per theme.
 
-**c) `--accent` at 4.74 on white is close to the floor, and 4.74 is also `--on-accent`.** The
+> **What shipped.** `--hover: #eae4da`, 1.14 below `--bg` — inside the range this section predicted.
+> The sidebar nav hover, the one fill in the app that lands on the page, uses it; controls sitting
+> on a *card* were left on `--surface-sunk`, already a correct downward step at 1.20.
+>
+> **`--selected` was declined.** Every selected state in this app is an accent fill — the pressed
+> chip, the day circle, the current nav item — so a neutral selected shade would have had no
+> consumer.
+>
+> **Dark was deliberately left.** Its `--hover` holds the value dark already used. Closing the
+> symmetry would have meant inventing a hex for the theme nobody has looked at yet, which is the
+> dark report's open question, not this one's.
+
+**c) `--accent` at 4.74 on white is close to the floor, and 4.74 is also `--on-accent`.** — *still
+true; now load-bearing in one more place.* The
 accent both writes at 4.74 and is written on at 4.74. It clears, but there is no margin, and
 this is why `--accent-ink` at 5.95 exists for words. Worth keeping in mind if the orange is ever
-warmed further — it moves both numbers at once.
+warmed further — it moves both numbers at once, and since PR #10 it also moves the focus ring, which
+is drawn in `--accent` and reads against whatever sits behind the control.
 
-**d) No shadow token differences between themes are documented.** Section 5 is emphatic that
+**d) No shadow token differences between themes are documented.** — *unchanged; still a question
+for a browser.* Section 5 is emphatic that
 shadows are a light-mode device and do nothing in dark mode. `style.css` does define a darker
 `--shadow` for dark mode, which is the right instinct, but both reference dark themes dropped
 shadows entirely in favour of lightness. Whether Mise's dark shadows are visible at all is a
 question for the browser, not the script.
 
-None of this is a proposal to change tokens. `check.mjs` and a browser both have to agree
-before anything moves — this is the measured gap between `style.css` today and what the
-reference apps do.
+None of this was written as a proposal to change tokens. `check.mjs` and a browser both had to
+agree before anything moved, and in PR #10 they did — with one correction from the browser that the
+numbers could not have given. **Section 6's focus ring is 4px; built at 4px here it was too loud,
+and shipped at 3px.** Nothing about the measurement was wrong; this accent is simply louder than the
+reference's blue at the same width. Two other items from section 8 were checked and needed nothing:
+the dialog already carries a `--line-strong` rim plus `--shadow-lg` (item 8), and the toast is
+already a full inversion (item 12).

@@ -4,55 +4,70 @@
 
 | | |
 |---|---|
-| **Live** | Code at `6e27431` (PR [#9](https://github.com/thelivinsine/meal-planner/pull/9), squash-merged); docs on top through `5a5ec57`, markdown only, no code touched. Pages `built` at `5a5ec57`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. One thing parked by choice: the theme button's hover, below |
-| **Confirmed** | The underline on all three grounds, the longest recipe name wrapping, **the live site on a phone**, and the sidebar nav hover. **Your eyes, not images**, so none of it is reproducible from the repo. The theme button's hover is *not* on this list — see below |
-| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. `palette-contrast`, `week-affordance-and-landmark` and `check-script` were deleted on merge |
+| **Live** | Code at `1dd7a52` (PR [#10](https://github.com/thelivinsine/meal-planner/pull/10), squash-merged). Pages `built` at `1dd7a52`. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **None.** No branch, no PR, no known defect. Two things parked by choice, both below: the theme button's hover, and the accent-on-accent focus ring |
+| **Confirmed** | The new sidebar hover, the 3px focus ring on a chip, a bookmark, a primary button and a recipe card, and the dialog scrim — **your eyes on the running app**, wide light layout only. Earlier and still standing: the underline on all three grounds, the longest recipe name wrapping, **the live site on a phone**. None of it reproducible from the repo |
+| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. Everything else has been deleted on merge, `light-mode-states` included |
 
 ## What just shipped
 
-**PR #9: `check.mjs`, and the first thing it found.**
+**PR #10: the light-mode reference report, acted on.**
 
-**The script is saved instead of rewritten.** One file at the repo root, no dependencies, no config,
-no runner, never served to a browser. `node check.mjs` prints a tick or a cross per check and exits
-non-zero if any fail. It replaces three throwaways written and deleted five times between them, two
-of which had caught things no eye could catch. 66 checks: contrast in both themes and both
-directions with the tokens read out of `style.css`, the action and id wiring, and the three values
-written twice. The hairline rule is encoded rather than described — a pair marked `line:` is allowed
-under 1.10 and its **line** is measured instead, against both sides.
+[light-mode-reference.md](light-mode-reference.md#9-against-mises-current-light-tokens) §9 says the
+light palette is **structurally right** — every direction correct, all three text tiers clear. So
+this was polish, not a repaint, and **no surface token moved.** Three changes and one bug.
 
-**It failed on its first run**, on `--surface-sunk` beside `--bg` at **1.08** — the pair found at
-PR #7's merge and left. Fixed rather than excused: `.nav-btn:hover` in the sidebar, where the nav
-unwinds to no fill of its own and so lands on the page, now uses `--surface` (1.11 light, 1.23
-dark). The token itself could not move — in dark mode the only value clearing 1.10 against both
-`--bg` and `--surface` is `#232323`, which is `--surface-past`, and two tokens on one shade means a
-tray inside a past card has no edge at all. The pair then **left the script's list** rather than
-being marked known, with a comment saying to put it back if a bare sunk fill lands on the page
-again; `--line-strong` on `--bg` took its slot.
+**`--hover`, a hover fill that points down.** The report's one named gap was that no hover or
+selected token existed in either theme. The sidebar nav hover was going *up* to `--surface`, which
+is the dark-mode direction: a light theme has almost nothing above its surfaces, so state is spent
+downward into grey. `#eae4da`, **1.14** on `--bg`, mid-band for the 1.10–1.25 the reference apps
+measure at. It also retires the workaround from PR #9 — bare `--surface-sunk` measured 1.08 on the
+page, and the fix at the time was to jump over the page to white rather than find a proper step
+below it. Controls sitting on a *card* are untouched: `--surface-sunk` is already a correct
+downward step at 1.20.
 
-### The one the script could not have caught
+**No `--selected` token, because nothing would use one.** Every selected state in this app is an
+accent fill — the pressed chip, the day circle, the current nav item. A neutral selected shade
+would have had no consumer.
 
-`.theme-btn:hover` was changed alongside the nav button on the reasoning that both put a sunk fill
-on the page. **Only the sidebar one did.** The theme button carries `background: var(--surface)` at
-rest, so its hover sits on that, not on `--bg` — and setting it to `--surface` made the rule a
-no-op, leaving only the icon colour changing. Every token involved stayed legal and every pair still
-measured fine, so **a contrast script is blind to a rule that changes nothing**. It took a mouse.
-The lesson is now in `architecture.md`: *a fill has to differ from what the control sits on, not
-from the page behind it.* Reverted to `--surface-sunk`, which measures 1.20 light and 1.14 dark
-against the button.
+**Dark is deliberately unchanged.** `--hover` there is `#2b2b2b`, exactly the value the dark sidebar
+hover already used. Dark spends state *upward* and has nothing above `--surface` to spend, which is
+the open dark-mode finding below — it needs your eye on whether dark mode feels flat, not a hex
+picked to close a ticket. Your call was light-only, and that is what shipped.
 
-**That revert has not been looked at.** You said it was fine to come back to later, so it shipped
-measured but unseen: hovering the theme button should give a faint grey panel, not just a darker
-icon. Nothing else on the page uses that rule, and both numbers clear the floor — it is a look, not
-a risk.
+**The focus ring: 4px, looked at, then 3px.** The reference draws 4px with a gap. It was built that
+way, you looked, and it was too loud on this palette — a thick orange band around the search field
+rather than a ring. 3px keeps the intent at a weight the accent can carry. **This is the round's
+clearest argument for looking:** the number came from a measured reference document and was still
+wrong for this app.
 
-## The four follow-ups #7 left: all closed
+**`--scrim`, and the light one drops .50 → .42.** Composites to `#9a9591`, **2.97** over white
+against the reference's 2.93. Worth recording honestly: the old value was *not* the "heavy black"
+the report warns against — it measured 3.7 — so this was a smaller correction than it sounded, and
+it was checked against a screenshot before being kept. Dark keeps .50: darkening a dark page does
+nothing.
 
-1. **The star comment.** Fixed in #8.
-2. **The colour-only affordance.** Fixed in #8 — see above, and the caveat with it.
-3. **The rotating landmark name.** Fixed in #8.
-4. **The long recipe name wrapping.** Closed by eye: *Masala Yoghurt Bowl with Roasted Chana*, the
-   catalogue's longest at 40 characters, wraps cleanly. No code change.
+### The bug a keyboard found
+
+**The focus ring on a recipe card was clipped, and had been all along.** `.card-open` is flush with
+the card's edges and `.card` clips its overflow — it has to, or the accent button in the foot would
+square off the rounded corner — so the ring was cut on three sides and showed only as a stray orange
+rule across the middle of the card. At 2px nobody had noticed; 3px made it obvious.
+
+It took two attempts, and the second is the part worth keeping. A negative `outline-offset` drew the
+ring inside, and the top corners were *still* square against the card's 13px curve: **an outline
+follows its element's own `border-radius`**, and `.card-open` has none, so it fell back to the 4px in
+the global `:focus-visible` rule. It now carries the card's top radius too.
+
+**Neither the contrast script nor a screenshot of a resting page could have found this.** It took
+pressing Tab — which is job 2 on the list below, still only a quarter done.
+
+### Two things looked at and left
+
+- **The ring on an accent-filled button is orange-on-orange**, separated only by the 2px gap. It is
+  legible — 4.74 against the white card behind it, and the offset gap is exactly what the reference
+  relies on — but it reads as a blob rather than a ring. Raised, seen, not answered.
+- **The theme button's hover** from PR #9 is still unlooked-at. Unchanged this round.
 
 ## The phone gap is closed
 
@@ -69,20 +84,28 @@ back on the list.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Take a screenshot set.** There are still none in the repo, so nothing here shows the current
+1. **Finish the keyboard pass.** PR #10 started one and it immediately paid: tabbing found the
+   clipped card ring, which no script and no screenshot of a resting page could see. What was
+   covered is the recipe grid and the sidebar, in light mode, on a wide screen. **Not covered: the
+   week view, the inline slot picker, and either dialog end to end** — which is where the
+   interesting part is, because focus restoration after a redraw is asserted in five places and
+   driven in none of them. This is still the biggest untested thing left, and the section it lives
+   under says every defect this project has shipped has been an accessibility defect.
+2. **Look at the round's changes in dark mode and at narrow widths.** No dark value changed in #10,
+   but the 3px ring and the `.card-open` radius apply in both themes and at every width, and have
+   only been seen in light on a wide screen. Outlines do not affect layout, so the 44px floor is
+   safe by arithmetic — which is the kind of claim this project has learned to distrust on its own.
+3. **Take a screenshot set.** There are still none in the repo, so nothing here shows the current
    app. `*.png` is gitignored, so this needs either a `!Screenshots/**` exception or keeping them
    outside the repo — your call which. Wanted: the wide layout, an empty day, the narrow layout at
    360px, and dark mode.
-2. **A keyboard-only pass.** Tab through the week, the picker and both dialogs. Focus restoration
-   after a redraw is asserted in five places and driven in none of them. **This is now the biggest
-   untested thing left**, and the section it lives under says every defect this project has shipped
-   has been an accessibility defect.
-3. **Act on the dark-mode findings, or decide not to.** [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens)
+4. **Act on the dark-mode findings, or decide not to.** [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens)
    names two: there is no token above `--surface`, so hover and selected states have nowhere to go
    and the nesting ladder ends one level up from the page; and `--surface-sunk` sits **1.08** from
    `--bg` in dark, the same token that is correct in light. Both are measured, neither is a defect,
-   and moving a surface token means new pairs in `check.mjs` **and** a browser. Wants your eye on
-   whether dark mode actually feels flat before any hex changes.
+   and moving a surface token means new pairs in `check.mjs` **and** a browser. **#10 sharpened
+   this rather than closing it:** light's half of the same gap is now fixed with `--hover`, and dark
+   was left alone on purpose, so the two themes are deliberately asymmetric until you look.
 
 ## Three small things open, none urgent
 
@@ -97,14 +120,6 @@ back on the list.
   happened to the `theme-color` hex once. Listed in [architecture](architecture.md#storage).
 
 These are trade-offs rather than bugs. The known-defect list is empty.
-
-## The open question is closed
-
-**`check.mjs` exists.** The argument for it — five rewrites, two saves — is above; the argument
-against was that a file that looks like a test invites someone to grow a suite around it. That risk
-is unchanged and now lives in a comment at the top of the file. `CLAUDE.md` says to run it after
-touching tokens and, more importantly, **to add new pairs to its list**: a combination not in that
-list is one nobody measures, which is the way this check will rot if it rots.
 
 ## Screenshots
 

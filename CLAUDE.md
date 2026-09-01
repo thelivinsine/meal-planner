@@ -16,7 +16,7 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only** — about 135 lines as it stands. The test is not the line count,
+- **Keep this file rules-only** — about 175 lines as it stands. The test is not the line count,
   it's "is this a rule or is it reasoning": reasoning goes in `docs/decisions.md`, which has no
   budget. If a rule needs a paragraph to be safe, put the paragraph there and the rule here. A
   line count is what this file kept failing when it was carrying both.
@@ -85,7 +85,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
   go darker than the page in *both* themes, but hover and selected go **up** in dark and **down** in
   light. Measured hexes and state deltas: `docs/dark-mode-reference.md`, `docs/light-mode-reference.md`.
-  Read them before moving a surface token or inventing a state colour.
+  Read them before moving a surface token or inventing a state colour. **A measured reference is
+  evidence, not a spec** — its 4px focus ring was built here and was too loud; it ships at 3px.
+- **A hover fill goes down in light, up in dark.** `--hover` is the fill for a control sitting on
+  the *page*; a control on a card uses `--surface-sunk`, already a step down. There is no
+  `--selected` token, because every selected state here is an accent fill — don't add one without a
+  consumer.
 - **`--accent` fills, `--accent-ink` writes.** Every accent-coloured *word* uses `--accent-ink`;
   borders, dots, chips and fills use `--accent`. Backwards breaks the floor quietly.
 - **Anything keyed to the *theme* reads the theme, not the OS.** It's a stored choice, so
@@ -108,7 +113,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 
-### Four CSS rules that each cost a bug
+### Five CSS rules that each cost a bug
 Mechanism only — the stories are in `docs/decisions.md`.
 
 - **Media queries add no specificity**, so a base rule *below* one beats it. All of them live at
@@ -118,6 +123,9 @@ Mechanism only — the stories are in `docs/decisions.md`.
 - **Breakpoints:** 1000/620/400px `max-width` in **descending order**, one `min-width: 1001px`,
   plus `pointer: coarse` and `prefers-reduced-motion`. Extend a block, never open a second at the
   same width, and put a new one where the arithmetic bites rather than where it feels right.
+- **An outline is clipped by an ancestor's `overflow`, and takes its *own* element's
+  `border-radius`.** `.card-open` needs both a negative `outline-offset` and the card's top radius,
+  or its focus ring is cut to a stray line. Nothing that reads a page at rest can see this.
 - **Dialog `display` hangs off `[open]`.** A bare `display` on `.sheet` beats the UA rule, and both
   sheets then render in the page always.
 
@@ -134,6 +142,8 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
   untouched.
 - **Never leave a card unnamed, never hide a focusable control.** If a heading must vanish on
   screen, `.sr-only` — never `display: none` — and only on something not focusable.
+- **Tab through anything you change.** The focus ring is the one control state neither the script
+  nor a screenshot can see, and it has hidden a defect here for months.
 - **Touch targets at least 44px**, width as well as height, measured at 360px. Controls are compact
   on a fine pointer and `pointer: coarse` lifts them back, so a later rule outranking that block
   silently breaks the floor. Name anything there that sets its own size.
