@@ -14,7 +14,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 70 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 76 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
@@ -53,11 +53,14 @@ Eight documents, each with one job:
 - The heading is a different line every time you load the app — *Seven days, twenty-one meals*,
   *Right then — what are we eating?* — one line, no subtitle, centred over the week. It is a
   greeting, not a label; the week bar under it says which week this is
-- One tile at the top carries the whole week: the date range with ← / → either side, and the seven
-  days under it — weekday over date, the date in a circle. **Today** appears beside the range only
-  once you've paged off the current week, which is the only time it has work to do
+- The week sits straight on the page — no tile around it: the date range with ← / → either side,
+  and the seven days under it, weekday over date, the date in a circle. It is capped and centred
+  rather than spread across the column, because seven chips a hand's width apart stop reading as
+  one week. **Today** appears beside the range only once you've paged off the current week, which
+  is the only time it has work to do
 - **The selected day's circle fills with the accent.** Today is marked with a dot, a day with
-  something planned has a tinted circle, and a day gone by is quieter. So the row is the overview:
+  something planned is **ringed** in the accent, and a day gone by is quieter — one shape with
+  three states, since a neutral tint has nowhere to go once the chips sit on the page. So the row is the overview:
   where you are, what day it is, and the shape of the week
 - Below it, the day's name and then **one card per meal** — the biggest thing on the screen, which
   is the point of them. A filled one shows the recipe name in accent ink and underlined — tapping it
@@ -84,10 +87,12 @@ Eight documents, each with one job:
 
 **Adding a meal — two ways in, never merged.**
 
-*From the week.* Tap **+ Add** on an empty slot and the recipe list opens in the space below your
-week. The day and meal are already known from the slot you tapped, so it never asks again: the
-recipes appear as the same cards you get on the Recipes page, except the button reads **Add to Thu
-breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
+*From the week.* Tap **+ Add** on an empty slot and the recipe list takes the day's place — the
+three meal cards step aside, the week bar above them stays put, and **Back to the day** is the way
+out. It is sized to finish on the screen, so the recipes scroll inside their own area and the page
+itself never scrolls. The day and meal are already known from the slot you tapped, so it never asks
+again: the recipes appear as the same cards you get on the Recipes page, except the button reads
+**Add to Thu breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
 recipe — the sheet's calendar icon adds it straight to the slot you came from, because the day and
 meal are already settled and this app never asks twice. This route is for empty slots only.
 
@@ -118,15 +123,15 @@ and no server to run.
 
 **One day at a time.** *Week* shows the seven days as a row of buttons and then the one day you
 picked, as three meal cards. That's true on a laptop and on a phone — the same screen, not two
-designs. A tinted date is a day you've already planned something for, so the row still shows the
-shape of your week at a glance. On a wide screen there's a column down the right with the day's
+designs. A date drawn in a circle outline is a day you've already planned something for, so the row
+still shows the shape of your week at a glance. On a wide screen there's a column down the right with the day's
 numbers in it: how many meals you've planned, roughly how long they'll take, and one suggestion.
 
 **What it deliberately doesn't do yet.** No shopping list, no month calendar, no adding your own
 recipes, no sharing a plan with anyone else. Those are sensible next steps rather than oversights —
 the reasoning for each is in [docs/decisions.md](docs/decisions.md#deliberately-not-built).
 
-## Four decisions worth reading
+## Five decisions worth reading
 
 The full set is in [docs/decisions.md](docs/decisions.md). These four cost the most to learn:
 

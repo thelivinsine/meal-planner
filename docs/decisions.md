@@ -28,6 +28,9 @@ than by date; the chronology is in [log.md](log.md).*
 | ~~The heading is fixed, not rotating~~ — **reversed** | Recorded here because the reasoning was wrong in an instructive way. The rotating greeting was read as a *substitute* for the missing week date range, so when the week bar brought the range back the greeting looked redundant and became a fixed "Your week" plus a subtitle. It was never a substitute: you had asked for a heading that changes on every load, and it changes because a greeting is nicer than a label, not because it was carrying information. `WEEK_GREETINGS` is back — one line, no subtitle, picked once per load so it holds still while you use the app. **A feature that overlaps another one is not therefore replaced by it** |
 | The view heading is centred over the content, not the window | It used to be hard left, on the argument that the sidebar sets the left edge of the app. On the week view that reads as drift: the heading sits above a week bar and three cards that stop well short of the right edge, so left-aligning it to the sidebar aligns it to nothing you can see. Centring it needs the heading placed in the **content column only** — over the two-column span it would centre on the window and sit right of the tiles it names. That means all three items in `.view-week` are placed by hand: leave the lower two to auto-flow and the aside slides up beside the heading, which is the thing this arrangement was built to fix |
 | The week bar is navigation, so it stays compact | It was taking almost as much height as the three meal cards it steers. The cards are what you came to read; the bar is how you get to them. Padding, arrow size, range type, chip height and the date circle each came down a notch and the cards took the room. A change that makes the bar taller needs a better reason than fitting |
+| The week bar has no tile | It was a card holding navigation while the meal cards below it held the content, so the page carried two levels of box competing for the same eye. Dissolving it leaves the cards as the only boxes on the week — the same "one box per level" argument as the tile that came out of the meal card, one level up. The cost is that its chips now sit on `--bg`, which is what forced both of its fills to be re-picked: `--surface-sunk` measures **1.08** against the page in both themes, so the hover moved to `--hover` and the tint on a planned day became a ring |
+| A planned day is an accent ring, not a fill | The obvious replacement for the tint was another neutral fill, and there isn't one: the page shade has nothing legal beside it that isn't already spoken for. `--hover` would have worked as a colour and been wrong as a signal — every planned day would have looked permanently hovered, and hovering one would have been a no-op, which is a defect this project has already shipped once. `--accent-soft` measured fine on the page (1.06 with a hairline, 1.38 dark) but put `--ink-faint` at **4.35** on it in dark, under the floor, on the past-and-planned day. The ring answers all of it: `--accent` is 4.28 on the page in light and 6.75 in dark, holds up over the hover fill too, and gives one shape three states — bare, ringed, filled |
+| The week bar is capped at 520px and centred | Seven chips sharing a 1180px column put Mon and Sun a hand's width apart, and the week stopped reading as one object. The cap is a plain `max-width`, a no-op below 520px, so the narrow layout is untouched — and it centres under the heading, which is already centred on the content column. It does leave the bar on a centred axis while the cards below sit on a left one; that is deliberate, navigation and content, but it is the kind of thing to look at rather than to reason about |
 | The summary column is dropped on narrow, not stacked | Every figure in it is computed from the day beside it. Stacking it under the meals would repeat what is already on screen and push the meals out of reach. **Corollary: anything that can only be read there doesn't belong there** |
 | Balance is one word off one tag | Every recipe carries exactly one macro tag, so counting them is the whole calculation. Anything finer would be nutrition advice this app is in no position to give |
 | Tips are conditional, not random | A random line stops being read after the second time. One that notices the day is empty, or all meat, or two hours of cooking, is worth the four `if`s |
@@ -39,6 +42,10 @@ than by date; the chronology is in [log.md](log.md).*
 | Decision | Why |
 |---|---|
 | Slot's **+ Add** opens the list inline, under the week | The slot already names the day and meal; asking again in a dialog was redundant, and the space below the week was empty |
+| The picker replaces the day rather than sitting under it | Under it, the recipes started below the fold: you tapped **+ Add** and then had to scroll past the three meal cards you had just left to reach anything. Taking the day's place puts the list where your eye already is, and costs nothing, because the day and meal are settled the moment you tap. The week bar stays put, so changing your mind about the day is still one tap away — and it closes the picker when you do, since the slot it was filling no longer exists |
+| It gets a back link, not a close × | An × dismisses something that appeared *over* your work. This replaced a view, so the way out is navigation, and it reads as the breadcrumb it is. Two controls doing one job was the alternative, and it would have been one more thing to tab past |
+| The picker's height is measured, not a `vh` figure | It has to finish on the screen, and what sits above it is not a fixed height: a greeting that wraps at narrow widths, a bar that grows a **Today** button once you page off this week. So `sizeSlotPicker()` measures. The part worth keeping is what it measures *to*: the first version stopped at the bottom of the window and the page still scrolled, because `.page` carries its own bottom padding **below** the panel and that counts towards document height — 24px wide, about 50px narrow. The floor is that padding now, which is also exactly the space reserved to clear the nav pill under 1000px, so one number covers both layouts. Sub-pixel rounding still left 2px, so it asks the page for the overshoot and corrects once rather than trusting the arithmetic. **A measurement that stops at the window is measuring the wrong thing** |
+| Opening the picker does not focus the search field | It did, and it was wrong twice over: scanning the cards is at least as likely as typing, and on a phone the caret throws the keyboard up over the recipes you came to read. Focus still has to go *somewhere* — the **+ Add** that opened it has just been hidden with the day, and focus on a hidden element falls to `<body>` — so it goes to the panel itself, which is the thing that replaced it. This was the app's only automatic focus into a field; the two dialogs let the browser focus their first control, which is never one |
 | The dialog stays for the recipe-first route | From a card nothing is known yet, so a day and meal still have to be picked |
 | The week's picker uses the Recipes card | It was a list of bare rows, so the same recipe looked like two different things in two places. One `cardHtml(recipe, slot)` now draws all three lists |
 | The card's button changes, not the card | Recipes says "Add to week" and asks for a day; the picker says "Add to Thu breakfast" and doesn't. Same card, one different button |
@@ -116,6 +123,17 @@ two rows of oversized buttons. The `max-width` queries also stay in **descending
 wider query overrides a narrower one; extend an existing block rather than opening a second at the
 same width, which has also happened.
 
+**`auto` grid rows are content-sized only while the grid's own height is indefinite.** `.pick-grid`
+gained `flex: 1` so it could fill the measured panel, which gives it a *definite* height — and with
+one, the height is divided among the rows instead of the rows being sized by content. 27 rows of
+recipes shared 330px, every card came out **2px tall** (its two borders), and the 125px button
+inside each was clipped away by the card's own `overflow: hidden`. On screen it was two dozen blank
+white strips. `grid-auto-rows: min-content` sizes rows by content either way, and cards still
+stretch to their own row, so a row stays level. Worth naming for three reasons: nothing in the CSS
+looks wrong, no token or wiring check can see it, and the fix is on the container rather than on
+the thing that visibly broke. It was found by reproducing the screenshot in a headless browser and
+asking the page for `.card`'s height — 2.0, with a 125px child.
+
 **Dialog `display` hangs off `[open]`.** A bare `display` on `.sheet` beats the UA's
 `dialog:not([open]) { display: none }` — author origin wins — and both sheets then render in the
 page at all times.
@@ -136,6 +154,17 @@ aiming at whatever *replaced* the control:
    lives where all the callers route through rather than in each of them.
 5. **Today** — which deletes itself when pressed, because it only renders while you're off the
    current week.
+6. `openSlotPicker()` — the **+ Add** that opened it is one of the meal cards being hidden, so
+   focus goes to the panel that replaced them.
+
+**The sixth one broke the fourth.** That single save-button lookup searched "the visible view" for
+the replacement button — sound while the whole view was visible, and wrong the moment part of a
+view became hidden without leaving the DOM. The hidden day still holds bookmark buttons, *earlier*
+in document order than the picker's, so bookmarking a recipe from the picker while the same recipe
+was planned in another meal that day aimed `.focus()` at a hidden button and dropped to `<body>`.
+It is scoped to the open dialog, then the open picker, then the view. **A lookup that assumes
+"visible view" means "everything in it is visible" is a lookup with an expiry date** — and this one
+was found by reviewing the branch's own diff, not by using the app.
 
 **A conditionally-rendered control is the one that gets missed.** Both focus bugs shipped here
 were one: the save button, and then Today — which was missed precisely because it used to be static

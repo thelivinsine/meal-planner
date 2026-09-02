@@ -16,7 +16,7 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only** — about 175 lines as it stands. The test is not the line count,
+- **Keep this file rules-only** — about 195 lines as it stands. The test is not the line count,
   it's "is this a rule or is it reasoning": reasoning goes in `docs/decisions.md`, which has no
   budget. If a rule needs a paragraph to be safe, put the paragraph there and the rule here. A
   line count is what this file kept failing when it was carrying both.
@@ -54,6 +54,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **Two ways to add a meal, never merged:** from an *empty* week slot the inline picker (day and
   meal already known, so never ask again); from a recipe card the `#picker` dialog. One component
   draws both — `cardHtml(recipe, slot)`, the slot argument swapping the primary button.
+- **The picker takes the day's place, and fits on the screen.** Opening it hides `.day-title` and
+  `.meals` and draws in their spot; one way out, a **back link**, not a close ×. The week bar,
+  sidebar and summary column never move. `sizeSlotPicker()` **measures** its height — viewport,
+  less `.page`'s own bottom padding (which sits *below* it and counts towards document height),
+  less its own top, then the leftover overshoot — and `.pick-grid` scrolls inside it, so the page
+  never does. Not a `vh` figure: above it are a greeting that wraps and a bar that grows a button.
 - **One day at a time, at every width.** Week bar, seven day buttons, then that day as three meal
   cards (`state.focusDay`). **Never bring back a second week markup** — accordion, rails,
   `expandAll`, `--week-cols` and `subgrid` sharing all went when the mockups settled on one day.
@@ -66,8 +72,13 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   filled tile around the recipe, no bordered icon button. A meal card holds a label, a name and
   a meta line, and the *name* is what shows it is clickable: `--accent-ink`, **underlined at rest**
   (the accent at 45%), the line going full strength on hover. Not hover-only — touch has no hover.
-- **The week bar is navigation, so it stays compact.** The meal cards are the content and get the
-  room. If a change makes the bar taller, it needs a reason better than fitting.
+- **The week bar is navigation, so it stays compact — and it has no tile.** No fill, no border, no
+  radius: the meal cards are the content and the only boxes on the week. Capped at 520px and
+  centred, because seven chips sharing the full column stop reading as one week. If a change makes
+  the bar taller, it needs a reason better than fitting.
+- **A planned day is an accent *ring*, never a fill.** The chips sit on the page, so a neutral tint
+  has nowhere to go — `--surface-sunk` measures 1.08 on `--bg` in both themes. One shape, three
+  states: bare circle, ringed when planned, filled when selected. Chip hover is `--hover`.
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
   tags, pills, chips, inputs use `--surface-sunk`. In dark mode the page shade is the darkest thing
   on screen, so a pill filled with it reads as a hole punched through the tile.
@@ -113,8 +124,13 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 
-### Five CSS rules that each cost a bug
+### Six CSS rules that each cost a bug
 Mechanism only — the stories are in `docs/decisions.md`.
+
+- **`grid-auto-rows: auto` is content-sized only while the grid's own height is indefinite.** Give
+  a grid a definite height — `flex: 1` inside a `max-height` panel does exactly that — and the
+  height is divided among the rows instead. `.pick-grid` needs its `min-content`, or every card
+  collapses to its two borders with its content clipped away by the card's own `overflow`.
 
 - **Media queries add no specificity**, so a base rule *below* one beats it. All of them live at
   the end of `style.css`, and an id selector outranks the lot — hence the rule above.
@@ -135,8 +151,14 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
 - **A redraw destroys focus.** If the control just activated lives inside what gets re-rendered,
-  put focus on what *replaced* it — five places do. **A conditionally-rendered control is the one
+  put focus on what *replaced* it — six places do. **A conditionally-rendered control is the one
   that gets missed**; both focus bugs here were one.
+- **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
+  `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,
+  then open picker, then the view. The hidden day still holds bookmark buttons, earlier in the
+  document than the picker's.
+- **Never open a panel with focus in a search field** — reading the list is as likely as typing,
+  and on a phone the keyboard covers it. Focus the panel (`tabindex="-1"`).
 - **A landmark's name must not change between loads**, so never point `aria-labelledby` at
   something that rotates — the week greeting did. A fixed `aria-label` on the section, greeting
   untouched.
