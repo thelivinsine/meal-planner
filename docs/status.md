@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Live** | Code at `12ce708` (PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged). Pages `built` at `46e34f3`, the docs commit on top of it — same three files, so the live app is `12ce708`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
+| **Open work** | **PR [#14](https://github.com/thelivinsine/meal-planner/pull/14) is open on `week-grid-comment-parked`** — a week-grid comment that still described the parked heading in the present tense, and `.view-week > .view-head`, a rule matching nothing. Reviewed and rendered; **not merged**, because the merge command was blocked here. Squash-merge it and delete the branch. Otherwise no known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
 | **Confirmed** | The tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
 | **Branches** | `search-filter-view-toolbar` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
 
@@ -17,6 +17,12 @@ Pages commit, the branch row, a heading that counted three bugs over a list of s
 `CLAUDE.md` came back from 229 lines to 200 with all 55 rules intact — the reasoning moved to
 [decisions.md](decisions.md), which is where it was already written. Details in
 [log.md](log.md#the-docs-maintenance-round-no-pr).
+
+The sweep also turned up one thing that is *not* documentation: `style.css` still described the
+week's parked heading in the present tense and still carried `.view-week > .view-head`, a rule the
+live page matches with 0 elements. That is PR #14 — the same present-tense-comment defect the PR
+#13 review caught in `index.html`, one file over, which is worth noting: **a parked feature leaves
+its story in more than one file, and the sweep after it only swept one of them.**
 
 **PR #13: one tools row — search, layout, filters — on Recipes, on Saved, and in the week's slot
 picker.** Four commits and a review pass.
