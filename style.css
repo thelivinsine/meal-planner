@@ -350,7 +350,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    of box competing; now the cards are the only boxes on the week. The consequence is
    that its chips sit on --bg instead of on --surface, which is why both fills below had
    to be re-picked: --surface-sunk measures 1.08 against the page in both themes. */
-.weekbar { padding: 2px 2px 4px; }
+/* Capped and centred rather than spread across the column. Seven chips sharing 1180px
+   put Mon and Sun a hand's width apart and the week stopped reading as one object; at
+   520px they sit as close as their own labels allow. It centres under the heading,
+   which is also centred on the content column, and the cap is a no-op below 520px so
+   the narrow layout is untouched. */
+.weekbar { max-width: 520px; margin: 0 auto; padding: 2px 2px 4px; }
 .weekbar-top { display: flex; align-items: center; gap: 8px; }
 .weekbar-arrow { flex: none; width: 28px; height: 28px; color: var(--ink-soft); }
 .weekbar-range {
@@ -621,12 +626,20 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .slot-picker .view-sub { color: var(--ink-soft); }
 
-/* Back link over the heading, breadcrumb order: where you came from, then where you
-   are. Both left-aligned with the cards below. */
+/* One line: where you came from, where you are, and the search. Stacked, these three
+   short controls took three rows right under the week bar and the whole area read as
+   cramped — the cards are the content and this is a header, so it gets one row. The
+   search wraps to its own line under 620px, where 280px of field will not fit beside a
+   heading. */
 .slot-picker-head {
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 2px; margin-bottom: 12px;
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 6px 16px; margin-bottom: 12px;
 }
+/* The heading takes what it needs and the search takes the rest — the other way round
+   and a fixed-width field pushes itself onto a second row, because the content column
+   is only about 640px once the summary column has its share. */
+.slot-picker-title { flex: 0 1 auto; min-width: 0; font-size: 1.125rem; }
+.slot-picker .search { flex: 1 1 190px; min-width: 150px; margin-bottom: 0; }
 /* The same "this is clickable" language as a meal name: accent-ink, underlined at rest
    because touch has no hover, full strength on hover. */
 .slot-back {
@@ -639,8 +652,9 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .slot-back:hover { text-decoration-color: currentColor; }
 .slot-back svg { flex: none; }
-.slot-picker-title { font-size: 1.125rem; }
-.slot-picker .search { margin-bottom: 12px; }
+/* Programmatic focus target: opening the picker puts focus here, because the button
+   that opened it has just been hidden with the day. No ring — nothing was clicked. */
+.slot-picker:focus { outline: none; }
 
 /* The picker shows the same cards as the Recipes view — same markup, same component —
    in a scrolling area, so the week bar stays on screen above it and the page itself
@@ -958,6 +972,8 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .nav-btn { padding: 6px 12px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; }
+  /* Its own line: 300px of search will not sit beside a heading at this width. */
+  .slot-picker .search { flex: 1 1 100%; }
   .filters { padding: 14px; }
   .meal { padding: 13px 14px 15px; }
   .filter-bar { flex-wrap: wrap; }

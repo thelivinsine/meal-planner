@@ -1028,7 +1028,14 @@ function openSlotPicker(iso, meal, opener) {
   // from wherever the page happened to be scrolled to.
   window.scrollTo(0, 0);
   sizeSlotPicker();
-  el.slotSearch.focus();
+  // Focus the panel, not the search box. Typing is one way to use this and scanning the
+  // cards is the other, so opening it with a caret blinking in a field picks the wrong
+  // one — and on a phone it throws the keyboard up over the recipes. It still has to go
+  // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
+  // and focus left on a hidden element drops to <body>. The panel is the thing that
+  // replaced it, and from here Tab reaches the back link, then the search, then the
+  // cards, in the order they are read.
+  el.slotPicker.focus();
 }
 
 // The picker stops at the bottom of the screen instead of running the page on: its

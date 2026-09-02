@@ -95,7 +95,12 @@
              day title and the three meal cards above are hidden while it is open, so
              the week bar stays put and the cards scroll inside their own area — app.js
              sets the height from the space actually left on screen. -->
-        <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" hidden>
+        <!-- tabindex so opening the picker has somewhere to put focus: the button that
+             opened it is one of the meal cards being hidden. -->
+        <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" tabindex="-1" hidden>
+          <!-- Back, heading and search on one line. They were stacked, which put three
+               short things in three rows directly under the week bar and read as clutter
+               where the day used to be. -->
           <div class="slot-picker-head">
             <!-- The one way back, in place of a close X: this replaced a view, so it
                  reads as navigation rather than dismissing a tray. -->
@@ -104,10 +109,10 @@
               Back to the day
             </button>
             <h2 class="slot-picker-title" id="slot-picker-title"></h2>
-          </div>
-          <div class="search">
-            <label class="sr-only" for="slot-search">Search recipes</label>
-            <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
+            <div class="search">
+              <label class="sr-only" for="slot-search">Search recipes</label>
+              <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
+            </div>
           </div>
           <div class="pick-grid" id="slot-picker-grid"></div>
           <p class="empty" id="slot-picker-empty" hidden>No recipes match that search.</p>
