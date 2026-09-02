@@ -648,8 +648,17 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    search: flex, not a vh figure, because the panel's max-height is measured. */
 /* The scrollbar sits just outside the cards rather than squeezed between them and the
    column edge — hence the negative margin, which lets the track hang in the gutter. */
+/* grid-auto-rows is load-bearing, and this cost a full round. Auto rows are content-sized
+   only while the grid's own height is *indefinite*. Give it a definite height — which is
+   exactly what `flex: 1` inside a max-height panel does — and the height gets divided
+   among the rows instead: 27 rows of recipes shared 330px and every card collapsed to its
+   two borders, 2px tall, with the 125px button inside it clipped by the card's own
+   overflow. It looked like blank white strips, and no token or wiring check can see it.
+   min-content rows are content-sized either way, and cards still stretch to their own
+   row, so a row stays level. */
 .pick-grid {
   flex: 1; min-height: 0; overflow-y: auto;
+  grid-auto-rows: min-content;
   padding: 2px 12px 4px 2px;
   margin-right: -13px;
   display: grid; gap: 12px; align-content: start;
