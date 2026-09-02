@@ -68,8 +68,10 @@
       </div>
 
       <div class="week-main">
-        <!-- Week and day navigation in one tile: the range with an arrow either side,
-             and under it the seven days. Same strip at every width. -->
+        <!-- Week and day navigation, sitting straight on the page: the range with an
+             arrow either side, and under it the seven days. No tile around it — this is
+             navigation, and the meal cards below are the only boxes on the page. Same
+             strip at every width. -->
         <div class="weekbar">
           <div class="weekbar-top">
             <button type="button" class="icon-btn weekbar-arrow" data-action="week-shift" data-delta="-1" aria-label="Previous week">
@@ -88,14 +90,24 @@
              land when the control that was pressed gets re-rendered away. -->
         <div class="meals" id="week-grid" tabindex="-1"></div>
 
-        <!-- Fills the space below the day: opened by a meal's "Add", so the day
-             and meal are already known and never asked for again. -->
-        <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" hidden>
+        <!-- Takes the day's place rather than sitting under it: opened by a meal's
+             "Add", the day and meal are already known and never asked for again. The
+             day title and the three meal cards above are hidden while it is open, so
+             the week bar stays put and the cards scroll inside their own area — app.js
+             sets the height from the space actually left on screen. -->
+        <!-- tabindex so opening the picker has somewhere to put focus: the button that
+             opened it is one of the meal cards being hidden. -->
+        <div class="slot-picker" id="slot-picker" role="group" aria-labelledby="slot-picker-title" tabindex="-1" hidden>
+          <!-- Back link left, heading centred over the cards, search on the row below.
+               Centred because that is what every other view heading here does. -->
           <div class="slot-picker-head">
-            <h2 class="slot-picker-title" id="slot-picker-title"></h2>
-            <button type="button" class="icon-btn" data-action="slot-picker-close" aria-label="Cancel">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            <!-- The one way back, in place of a close X: this replaced a view, so it
+                 reads as navigation rather than dismissing a tray. -->
+            <button type="button" class="slot-back" data-action="slot-picker-close">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+              Back to the day
             </button>
+            <h2 class="slot-picker-title" id="slot-picker-title"></h2>
           </div>
           <div class="search">
             <label class="sr-only" for="slot-search">Search recipes</label>

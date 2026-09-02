@@ -217,3 +217,37 @@ changed.
 **Not covered:** dark mode and narrow widths, for changes that apply to both; the rest of the
 keyboard pass — the week view, the slot picker and both dialogs; and the accent-on-accent focus
 ring, which was seen, discussed and deliberately left.
+
+### The picker takes the day (PR #11)
+
+**The round where the tooling changed.** The Chrome extension would not connect for a fifth time —
+but Chrome runs headless from the shell, and that turned out to be the more useful instrument
+anyway: it renders, and it also answers questions a picture cannot.
+
+- **The inline picker now replaces the day** instead of opening below it, where the recipes started
+  below the fold. Day title and meal cards hide, the panel draws in their place, **Back to the day**
+  is the way out, and the week bar, sidebar and summary column never move.
+- **The week bar dissolved onto the page** — no fill, no border, no radius — and was capped at
+  520px and centred, because seven chips sharing the full column had stopped reading as one week.
+  Both of its fills had to be re-picked as a consequence: chip hover to `--hover`, and the tint on
+  a planned day to an `--accent` **ring**, since no neutral fill is legal on the page.
+- **Three new pairs in `check.mjs` and not one new token.** Moving `--hover` and `--accent` onto the
+  page made three combinations nobody was measuring. 76 checks.
+- **The cards collapsed to 2px strips, and your screenshot is what showed it.** `flex: 1` gave
+  `.pick-grid` a definite height, and `auto` grid rows in a definite-height grid get the height
+  *divided among them* rather than sized to content. Reproduced headless, measured — `.card` 2.0px
+  with a 125px child — and fixed with `grid-auto-rows: min-content`.
+- **The page still scrolled, twice.** You spotted the scrollbar in two screenshots running. The
+  panel was measuring to the bottom of the *window*, but `.page` carries its own bottom padding
+  below it, which counts towards document height. Then sub-pixel rounding left 2px, so it now reads
+  `scrollHeight` back and corrects instead of trusting the arithmetic.
+- **Opening it no longer parks a caret in the search box** — your call, and the app's only
+  automatic focus into a field.
+- **Reviewing the branch's own diff found the bug the round caused.** Hiding the day left its
+  bookmark buttons in the DOM, earlier in document order than the picker's, so the save button's
+  focus restoration could aim at a hidden copy and drop to `<body>`. Confirmed both ways headless.
+
+**Not covered:** dark mode, and a real keyboard. Every look this round was a headless screenshot at
+1254 / 760 / 360px in light mode, plus your own eyes on the running app — the two defects that a
+screenshot could not have shown were both found by asking the live page for a number
+(`activeElement`, `scrollHeight`), which is a way of checking this project had not used before.

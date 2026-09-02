@@ -7,7 +7,7 @@ see [decisions.md](decisions.md).*
 
 | File | Contains |
 |---|---|
-| `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
+| `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker that replaces them, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
 | `style.css` | All styling. Custom properties for the palette, then the rules, then **every media query at the end of the file** — three `max-width` breakpoints (1000px, 620px, 400px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
@@ -85,9 +85,16 @@ no partial updates. With 50 recipes that is instant, and it removes a whole clas
 screen and the data disagree. Views are built as HTML strings, so any text runs through
 `escapeHtml` before it reaches `innerHTML`.
 
+**One thing measures the page rather than describing it.** `sizeSlotPicker()` reads the viewport,
+`.page`'s computed bottom padding and the panel's own top, sets a `max-height` in pixels, then
+reads `scrollHeight` back to correct whatever sub-pixel rounding left over. It is the only layout
+arithmetic in `app.js`, and it exists because the panel has to finish on the screen while what sits
+above it — a greeting that wraps, a bar that grows a **Today** button — has no fixed height. It
+re-runs on `resize`.
+
 **Events** go through a single click listener on `document`, dispatching on a `data-action`
 attribute. No inline `onclick` anywhere. Because of that, redrawing a view never needs listeners
-re-attached — but it *does* destroy focus, which is why five places put it back. See
+re-attached — but it *does* destroy focus, which is why six places put it back. See
 [decisions.md](decisions.md#accessibility-and-focus).
 
 ## How this gets tested
@@ -135,8 +142,11 @@ in [log.md](log.md).
 - **Keyboard-only and a screen reader — started, not finished.** PR #10 tabbed through the recipe
   grid and the sidebar in light mode on a wide screen, and immediately found a defect nothing else
   could see. **Still undriven: the week view, the inline slot picker and both dialogs** — which is
-  where the interesting part is, since focus restoration after a redraw is asserted in five places
-  and exercised in none. A screen reader has never been run at all. **Every accessibility defect
+  where the interesting part is, since focus restoration after a redraw is asserted in six places
+  and driven by a person in none. Two of the six are now exercised by a scripted headless check —
+  opening the picker, and bookmarking from inside it — which is how the hidden-copy bug below was
+  confirmed, but a script clicking `.click()` is not a keyboard. A screen reader has never been run
+  at all. **Every accessibility defect
   this project has shipped was in this category**, and it remains the largest gap.
 - **A real phone — closed once, and it reopens.** A dragged-narrow desktop window is not one:
   controls are compact on a fine pointer and only return to the 44px floor under
@@ -151,8 +161,14 @@ in [log.md](log.md).
   ancestor's `overflow: hidden` since it was 2px wide, and **no check this project runs looks at a
   page that has keyboard focus on it** — not the script, which reads source text, and not a
   screenshot, which is taken at rest.
+- **What a screenshot cannot see either.** The picker round produced two defects a picture could
+  not show and the script could not either: `.focus()` aimed at a button that was still in the DOM
+  but hidden, and a page 2px taller than the window. Both were found by asking the *live page* for
+  a number — `activeElement`, `scrollHeight` — from a headless browser driven by the shell. That is
+  a third kind of check this project now has and had not used before, and it is the one that suits
+  anything measured rather than drawn.
 
-**All 70 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 76 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the
@@ -166,8 +182,9 @@ two tokens holding the same shade means a tray inside a past card has no edge at
 
 The pair is now **absent from the script's list on purpose**, with a comment saying to put it back
 the moment a bare sunk fill lands on the page again. `--line-strong` against `--bg` was added in its
-place, since `.chip` and `.slot-picker` are the two sunk fills that can still reach the page and
-both carry that border (2.30, comfortable).
+place. That once covered two sunk fills that could reach the page; the slot picker's tray went when
+the picker took over the day, so `.chip` is the only one left carrying that border (2.30,
+comfortable).
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
@@ -177,8 +194,11 @@ edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-c
 `color-mix` is load-bearing for old browsers; `subgrid` no longer is.
 
 The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
-That is the rule in practice — a new colour token means adding its pairs by hand, in the same
-commit, or it ships unmeasured.
+It grew by three more when the week bar dissolved, without a single new token — `--ink-soft` and
+`--ink-faint` on `--hover`, because the day chip carries three inks where a nav item carries one,
+and `--accent` beside `--hover`, because the ring marking a planned day sits on that fill under a
+pointer. That is the rule in practice, and the second half of it is the part that gets missed: **a
+new pair does not need a new token.** Moving an existing token onto a new ground makes one.
 
 ## Deployment
 

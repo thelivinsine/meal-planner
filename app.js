@@ -589,6 +589,7 @@ const el = {
   pickerMeals: document.getElementById('picker-meals'),
   pickerNote: document.getElementById('picker-note'),
   pickerConfirm: document.getElementById('picker-confirm'),
+  page: document.querySelector('.page'),
   slotPicker: document.getElementById('slot-picker'),
   slotPickerTitle: document.getElementById('slot-picker-title'),
   slotPickerGrid: document.getElementById('slot-picker-grid'),
@@ -993,6 +994,11 @@ function openDetail(id, slot) {
 // ------------------------------------------------- inline slot picker (week view)
 // Opened from a slot's "+ Add": the day and meal are already chosen, so all that's
 // left is picking a recipe. One tap fills the slot and the panel closes again.
+//
+// It takes the *day's* place rather than sitting under it: the day title and the three
+// meal cards are hidden while it is open, and the week bar, the sidebar and the summary
+// column all stay exactly where they were. Nothing below the fold, so nothing to scroll
+// past to reach a recipe.
 
 // ponytail: only empty slots offer "+ Add", so the heading is always "Choose". Replacing
 // in place would need a swap button on filled slots — clear then add covers it for now.
@@ -1011,18 +1017,64 @@ function openSlotPicker(iso, meal, opener) {
     ' — ' + dayName + ' ' + fmtDayMonth.format(date);
 
   renderSlotPicker();
+  // The day goes, the picker arrives in its place. `hidden` rather than a class: it is
+  // the same swap the three views use, and it takes the meal cards' buttons out of the
+  // tab order along with them, which is what "replaced" has to mean for a keyboard.
+  el.dayTitle.hidden = true;
+  el.weekGrid.hidden = true;
   el.slotPicker.hidden = false;
-  el.slotPicker.scrollIntoView({ block: 'nearest' });
-  el.slotSearch.focus();
+  // Back to the top, so the greeting and the week bar are what sits above the picker —
+  // then measure from there. Both have to happen in this order or the height is taken
+  // from wherever the page happened to be scrolled to.
+  window.scrollTo(0, 0);
+  sizeSlotPicker();
+  // Focus the panel, not the search box. Typing is one way to use this and scanning the
+  // cards is the other, so opening it with a caret blinking in a field picks the wrong
+  // one — and on a phone it throws the keyboard up over the recipes. It still has to go
+  // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
+  // and focus left on a hidden element drops to <body>. The panel is the thing that
+  // replaced it, and from here Tab reaches the back link, then the search, then the
+  // cards, in the order they are read.
+  el.slotPicker.focus();
+}
+
+// The picker stops at the bottom of the screen instead of running the page on: its
+// max-height is the gap between where it starts and the floor, and .pick-grid scrolls
+// inside whatever that leaves. Measured rather than a vh figure, because what sits above
+// it (a greeting that wraps, a week bar with a "Today" button) is not a fixed height.
+// ponytail: the 260px floor gives up and lets the page scroll rather than draw a sliver
+// of a card — a phone in landscape has nowhere near enough room. Raise it if that shows.
+function sizeSlotPicker() {
+  if (!slotPick.iso) return;
+  // The floor is the page's own bottom padding, not the bottom of the window. That
+  // padding sits *below* the picker and counts towards the document height, so
+  // measuring to the window left the page 24px too tall at wide widths and about 50px
+  // too tall at narrow ones — a scrollbar for nothing, which is the whole thing this
+  // panel exists to avoid. It is also exactly the space reserved to clear the nav pill
+  // under 1000px, so one measurement covers both layouts.
+  const pad = parseFloat(getComputedStyle(el.page).paddingBottom) || 0;
+  const room = window.innerHeight - pad - el.slotPicker.getBoundingClientRect().top;
+  el.slotPicker.style.maxHeight = Math.max(260, room) + 'px';
+  // Then ask the page whether it worked, rather than trusting the arithmetic. Sub-pixel
+  // rounding left it 2px long at every width — invisible, and still a scrollbar, which
+  // is the one thing this is for. Measuring the overshoot fixes it without a magic
+  // number to keep in step with the CSS.
+  const over = document.documentElement.scrollHeight - window.innerHeight;
+  if (over > 0) el.slotPicker.style.maxHeight = Math.max(260, room - over) + 'px';
 }
 
 function closeSlotPicker() {
+  if (!slotPick.iso) return;          // already shut, and nothing here is idempotent
   const opener = slotPick.opener;
   slotPick.iso = null;
   slotPick.opener = null;
   el.slotPicker.hidden = true;
+  el.slotPicker.style.maxHeight = '';
+  el.dayTitle.hidden = false;
+  el.weekGrid.hidden = false;
   // Focus was inside the panel we just hid, so hand it back: to the slot that opened the
-  // picker if it's still there, otherwise to the week itself.
+  // picker if it's still there, otherwise to the week itself. Both targets are visible
+  // again by now — focusing a hidden element does nothing at all.
   if (!el.slotPicker.contains(document.activeElement) && document.activeElement !== document.body) return;
   if (opener && opener.isConnected) opener.focus();
   else el.weekGrid.focus();
@@ -1171,8 +1223,15 @@ document.addEventListener('click', function (event) {
     if (!el.slotPicker.hidden) renderSlotPicker();
     if (el.detail.open) openDetail(id, detailSlot);
     // Every one of those redraws replaced the button that was just pressed, dropping
-    // focus to <body>. Put it back on the replacement, preferring the open dialog.
-    const scope = el.detail.open ? el.detail : document.querySelector('.view:not([hidden])');
+    // focus to <body>. Put it back on the replacement, searching whatever is actually
+    // on screen: the open dialog first, then the open picker, then the view. The picker
+    // has to come before the view, because the day it replaced is still in the DOM with
+    // its own bookmark buttons — hidden ones, and .focus() on a hidden element does
+    // nothing at all. Bookmark a recipe from the picker while the same recipe is
+    // planned in another meal that day and the hidden copy is the one found first.
+    const scope = el.detail.open ? el.detail
+      : !el.slotPicker.hidden ? el.slotPicker
+      : document.querySelector('.view:not([hidden])');
     const again = scope && scope.querySelector('[data-action="bookmark"][data-id="' + id + '"]');
     if (again) again.focus();
     return;
@@ -1267,6 +1326,10 @@ el.slotSearch.addEventListener('input', function () {
   slotPick.search = el.slotSearch.value;
   renderSlotPicker();
 });
+
+// A rotated phone or a dragged window changes the room the picker was measured against.
+// No-op unless it is open.
+window.addEventListener('resize', sizeSlotPicker);
 
 // Escape closes the inline picker, matching what it does in the dialogs.
 document.addEventListener('keydown', function (event) {
