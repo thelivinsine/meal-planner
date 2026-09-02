@@ -61,6 +61,11 @@
 | **Tabbing found a ring clipped for months** | The recipe card's focus ring was cut on three sides by `.card`'s `overflow: hidden` and showed as a stray orange rule across the middle of the card. Present since it was 2px; 3px made it visible. The fix took two goes — a negative `outline-offset` to draw it inside, then the card's top radius, because **an outline follows its own element's `border-radius`** and `.card-open` has none, so it fell back to the 4px in the global `:focus-visible` rule. Neither the script (reads source text) nor a screenshot (taken at rest) can see a focus ring at all |
 | **A false alarm, resolved by arithmetic** | A second ring looked clipped at the sidebar's left edge across two screenshots. It was the crop of a zoomed snip: the sidebar has 14px of padding and the ring extends 5px, so nothing could cut it. Checked against the CSS before changing anything, and confirmed by you at 100% zoom. **Worth recording because the standing rule is to trust the look over the arithmetic** — here the arithmetic was specific enough to be worth one question first |
 | **Light round shipped** | PR [#10](https://github.com/thelivinsine/meal-planner/pull/10) squash-merged as `1dd7a52`, branch deleted, Pages `built`, 70 of 70 passing on `main`. Two pairs added to the script with the new token. Left open and seen: the focus ring on an accent-filled button is orange on orange, legible but blobby |
+| **The picker took the day's place** | Branch `day-takeover-picker`, PR [#11](https://github.com/thelivinsine/meal-planner/pull/11), squash-merged as `2339d05`. The inline picker stopped opening *below* the three meal cards — which put the recipes you were choosing from below the fold — and now hides `.day-title` and `.meals` and draws in their spot, with **Back to the day** as the one way out. `sizeSlotPicker()` measures the room rather than guessing a `vh` figure. Same branch: the week bar dissolved onto the page, capped at 520px and centred, so the meal cards are the only boxes on the week — which forced both of its fills to be re-picked, since `--surface-sunk` measures 1.08 against the page in both themes |
+| **The tooling changed, and it is the durable part** | The Chrome extension refused to connect for a fifth round, and headless Chrome from the shell turned out to be the better instrument anyway: `--screenshot` renders, `--dump-dom` answers questions a picture cannot. Two of that round's three defects were confirmed by asking the live page for a number — `activeElement`, `scrollHeight` — which is a third kind of check this project had never used |
+| **Spacing** | Branch `spacing-scale`, PR [#12](https://github.com/thelivinsine/meal-planner/pull/12), squash-merged as `c39fe70`. From your note that the vertical spacing "doesn't seem nice" — and the cause turned out to be arithmetic, not taste. **Eleven numbers were doing vertical-gap duty** (10, 14, 16, 20, 22, 24, 28, 30, 48, 104), each picked on its own, and the gap separating *sections* had come out the same size as the gap separating *siblings*: 24 above the week bar, 20 below it. Four `--space-*` tokens at 8/16/24/40 gave the four jobs four sizes. Padding *inside* components was deliberately left alone — the scale spaces things apart, it does not resize controls |
+| **The scale does not pick the step for you** | The heading shipped in the first commit at `--space-3`, and you looked at it at a real zoom level and said it was still cramped. It was: the heading is the largest thing on the page, so it wants the largest gap. **The step had been picked from the scale rather than from the page.** Fixed to `--space-4` in a second commit, with the week grid's row and column gaps split so the summary column beside it keeps the block gap. Worth keeping because every gap in that round measured exactly as designed and one of them was still wrong |
+| **A round with no token, no check and no defect** | 76 checks before and 76 after, none added, none moved — the first round in a while where the script had nothing to say, because spacing is the one thing it does not read. That is now written down as a gap rather than left implied: a rule writing `margin-bottom: 18px` is legal CSS and passes everything |
 
 ---
 
@@ -251,3 +256,32 @@ anyway: it renders, and it also answers questions a picture cannot.
 1254 / 760 / 360px in light mode, plus your own eyes on the running app — the two defects that a
 screenshot could not have shown were both found by asking the live page for a number
 (`activeElement`, `scrollHeight`), which is a way of checking this project had not used before.
+
+### The spacing round (PR #12)
+
+The first round whose subject `check.mjs` cannot read at all.
+
+- **Measured, both ends, on the live page.** Every figure in the before-and-after table in
+  [status.md](status.md#what-just-shipped) is `getBoundingClientRect()` from headless Chrome at
+  1254×900 — the old CSS measured before the change, the new CSS measured after — not arithmetic on
+  the stylesheet. That mattered once: the week-bar-to-day gap is 40px of margin plus the bar's own
+  4px of bottom padding, which reads as 44 and is what the page actually shows.
+- **`scrollHeight === innerHeight` re-checked on both states.** The slot picker measures its own
+  height, so growing its head by 4px was the one change that could have put the page back into
+  scroll. Confirmed on the day view and on the open picker.
+- **Looked at:** week view at 1254 and 760, recipes at 1254, the picker at 1254, and the week at
+  360px in an iframe — seven renders, all light mode, all discarded.
+- **76 checks, unchanged.** Nothing added and nothing to add: no token moved and no colour appeared.
+- **Two headless cautions, both new.** `--virtual-time-budget` does not reliably advance CSS
+  animations, so one screenshot came back mid-fade and one measurement came back 8px short — the
+  panel's `translateY(-8px)` entrance, caught before it settled. Neither was a defect and both would
+  read as one.
+
+**Not covered:** dark mode, a real keyboard, a real phone, and the 620px breakpoint from either
+side. No control changed size, so the 44px floor should be untouched — untested, and "should be" is
+the whole reason a phone stays on the list.
+
+**What the round is really about.** Every gap in it measured exactly as designed and one of them was
+still wrong, because a scale says which sizes exist and not which one a given gap wants. The
+headless renders answer *what is it*; they never answer *is it right*. That still took your eyes on
+the running page, at a zoom level no default screenshot uses.

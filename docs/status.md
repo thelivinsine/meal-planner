@@ -4,65 +4,73 @@
 
 | | |
 |---|---|
-| **Live** | Code at `2339d05` (PR [#11](https://github.com/thelivinsine/meal-planner/pull/11), squash-merged). Pages `built` at `2339d05`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. Three things parked by choice: the theme button's hover, the accent-on-accent focus ring, and the dark-mode token findings |
-| **Confirmed** | The picker replacing the day, the dissolved week bar and the ring on a planned day — **your eyes on the running app**, wide light layout, across four screenshots this round. Plus headless Chrome at 1254 / 760 / 360px in light mode, which is reproducible from the repo and is new. Earlier and still standing: the 3px focus ring and sidebar hover, the underline on all three grounds, **the live site on a phone** |
-| **Branches** | `design/bold-consumer` is merged and can be deleted whenever. Everything else has been deleted on merge, `day-takeover-picker` included |
+| **Live** | Code at `c39fe70` (PR [#12](https://github.com/thelivinsine/meal-planner/pull/12), squash-merged). Pages `built` at `c39fe70`. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **None.** No branch, no PR, no known defect. Four things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, and the dialogs being off the new spacing scale |
+| **Confirmed** | The new spacing at 1254 / 760px light — **headless renders, and your eyes on the running app** at a zoom level no default screenshot uses, which is what caught the heading gap being a step too small. Still standing from PR #11: the picker replacing the day, the dissolved week bar, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
+| **Branches** | `design/bold-consumer` is merged and can be deleted whenever. Everything else has been deleted on merge, `spacing-scale` included |
 
 ## What just shipped
 
-**PR #11: adding a meal takes over the day, and the week bar stops being a tile.**
+**PR #12: four spacing tokens instead of eleven ad-hoc vertical gaps.**
 
-**The picker replaces the day instead of sitting under it.** It used to open *below* the three meal
-cards, which put the recipes you were choosing from below the fold — you tapped **+ Add** and then
-scrolled past what you had just left. Now `.day-title` and `.meals` go `hidden`, the panel draws in
-their place, and **Back to the day** is the way out: navigation, not a close ×, because this
-replaced a view rather than covering one. The week bar, the sidebar and the summary column never
-move, so changing day is still one tap — and doing so closes the picker, since the slot it was
-filling is gone.
+**The complaint was "the spacing doesn't feel nice" and the cause was arithmetic.** Eleven numbers
+were doing vertical-gap duty — 10, 14, 16, 20, 22, 24, 28, 30, 48, 104 — each picked on its own at
+the moment it was needed. Nothing measured wrong. The week still read as one flat list, because
+**the gap that separates sections was the same size as the gap that separates siblings**: heading
+to week bar was 24, week bar to the day below it 20. Four pixels is not a signal, so nothing on the
+page said where one block ended and the next began.
 
-**It finishes on the screen.** `sizeSlotPicker()` measures the room rather than guessing a `vh`
-figure, because what sits above it is not a fixed height — a greeting that wraps, a bar that grows
-a **Today** button. `.pick-grid` scrolls inside what is left and the page itself does not scroll.
+`--space-1/2/3/4` at **8 / 16 / 24 / 40** give the four jobs four sizes — inside a group, between
+siblings, between blocks, between sections — and every vertical gap *between* components now names
+one. Measured headless at 1254×900 on the week view, before → after:
 
-**The week bar dissolved** — no fill, no border, no radius — so the meal cards are the only boxes
-on the week, and it is capped at 520px and centred, because seven chips sharing the full column had
-stopped reading as one week. **Both of its fills had to be re-picked as a consequence**:
-`--surface-sunk` measures 1.08 against the page in both themes, so the chip hover moved to
-`--hover` and the tint on a planned day became an `--accent` **ring**. One shape, three states —
-bare, ringed, filled.
+| Gap | Before | After |
+|---|---|---|
+| window top → heading | 68 | 56 |
+| heading → week bar | 24 | **40** |
+| week bar → day title | 20 | **40** |
+| day title → first meal card | 10 | 16 |
+| meal card → meal card | 14 | 16 |
+| last card → page bottom (desktop) | 48 | 40 |
 
-**Three new pairs in `check.mjs` and not one new token.** `--ink-soft` and `--ink-faint` on
-`--hover`, and `--accent` beside `--hover`. Moving existing tokens onto a new ground is enough to
-make a combination nobody was measuring — which is the half of that rule that gets missed. 76
-checks, all passing.
+The 68 → 56 is the desktop top bar, which over 1000px holds one small theme button and was spending
+22px of padding above it. That is where "a hole above the header and nothing below it" came from:
+the same pixels, in the wrong place.
 
-**Also:** back link left, heading centred over the cards, search on the row below; and opening the
-picker no longer parks a caret in the search box, which was the app's only automatic focus into a
-field.
+**Padding *inside* a component was deliberately not touched.** A meal card's `16px 18px 18px`, a
+chip's `5px 11px`, a search field's `8px 14px` are the shape of that control, tuned against its own
+type and its 44px floor. Snapping them to a four-step scale would have resized half the controls in
+the app to fix a rhythm problem that lives *between* them. The horizontal flex gaps (10, 12) stayed
+for the same reason — side by side, there is no vertical rhythm to break.
 
-### Three defects, and how each was found
+**Two numbers stay off the scale, named in the token comment and in
+[decisions](decisions.md#spacing-and-rhythm)**: `.page`'s 104px/100px bottom padding is clearance
+for the floating nav, governed by the nav's own `bottom`; and the dialogs are a separate surface
+with their own internal rhythm and no shared edge with the page.
 
-- **Every recipe card collapsed to a 2px strip** — two dozen blank white rows. `flex: 1` gave
-  `.pick-grid` a definite height, and `auto` grid rows in a definite-height grid have the height
-  *divided among them* rather than sized to content. **Your screenshot found it**; a headless
-  browser measured it (`.card` 2.0px with a 125px child inside, clipped by the card's own
-  `overflow`); `grid-auto-rows: min-content` fixed it.
-- **The page kept a scrollbar, through two rounds of you pointing at it.** The panel was measuring
-  to the bottom of the *window*, but `.page` carries its own bottom padding **below** it and that
-  counts towards document height — 24px wide, ~50px narrow. The floor is that padding now, which is
-  also exactly the space reserved to clear the nav pill under 1000px. Sub-pixel rounding still left
-  2px, so it reads `scrollHeight` back and corrects rather than trusting the arithmetic.
-- **The save button's focus restoration could aim at a hidden button.** Hiding the day left its
-  bookmark buttons in the DOM, *earlier* in document order than the picker's, so bookmarking from
-  the picker while the same recipe was planned in another meal that day dropped focus to `<body>`.
-  **Found by reviewing the branch's own diff**, not by using the app.
+### The heading gap was got wrong once, in the open
 
-## The tooling changed, and it matters
+It shipped in the first commit at `--space-3`, the same 24px the week bar gets above the day, and
+you looked at it at a real zoom level and said it was still cramped. It was: **the heading is the
+largest thing on the page — 34px display type — so it needs the largest gap**, not the middle one.
+It is `--space-4` now, and on the week view the grid carries it as a *row* gap while the column gap
+beside the summary panel stays `--space-3` — side by side is a block edge, under a heading is a
+section break.
 
-**The Chrome extension would not connect for a fifth round running — but Chrome runs headless from
-the shell.** `chrome --headless --screenshot` renders the app, and `--dump-dom` will hand back
-anything the page can compute. That covers both halves of the gap this project keeps hitting:
+Worth recording because the mistake is the interesting part: **the step was picked from the scale
+rather than from the page.** A scale tells you which sizes exist; it does not tell you which one a
+particular gap wants. That judgement still needs a look.
+
+**No token moved, no new colour, no check added.** 76 checks, all passing, unchanged in number —
+which is itself the finding below.
+
+## The tooling that changed last round did the work this round
+
+**The Chrome extension has never connected here; Chrome runs headless from the shell instead.**
+`chrome --headless --screenshot` renders the app, and `--dump-dom` will hand back anything the page
+can compute. This round was the first one it carried end to end: the before-and-after table above
+is `getBoundingClientRect()` on the live page at both ends, not arithmetic on the stylesheet, and
+every look was a headless render. That covers both halves of the gap this project keeps hitting:
 
 - **It renders**, so a layout change can be looked at without waiting for you. Three widths this
   round: 1254px, 760px and 360px. Windows will not open a real window under ~500px wide, so 360px
@@ -73,39 +81,59 @@ anything the page can compute. That covers both halves of the gap this project k
 
 Two cautions worth carrying forward. A script calling `.click()` is **not** a keyboard, so this
 does not close the keyboard pass. And measuring during an opening animation gives a wrong answer —
-the panel is 8px high for the first frame, so everything here is measured after it settles.
+the panel is 8px high for the first frame, so everything here is measured after it settles. A third
+one earned this round: `--virtual-time-budget` does not always advance CSS animations, so a
+screenshot can come back mid-fade and a measurement can come back 8px short. Both showed up, both
+were harmless once recognised, and both would have been read as defects by anyone who did not know.
+
+**And the thing it still cannot do is have an opinion.** Every gap in the table above was measured
+headless and every one of them passed; the heading gap was still wrong, and it took you looking at
+the page at a real zoom level to say so. The renders answer *what is it*, never *is it right*.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Look at this round in dark mode.** Nothing shipped this round was seen in it. No dark token
-   moved, but the ring on a planned day, the dissolved bar, the centred head and the measured
-   panel all apply in both themes — and the ring is the only thing now marking a planned day, so
-   if it reads weakly anywhere it will read weakly there. Cheapest job on the list and the one with
-   the most recent code behind it.
-2. **Finish the keyboard pass.** Unchanged in substance and now slightly larger: focus restoration
-   after a redraw is asserted in **six** places and driven by a person in none. Two are exercised
-   by a scripted headless check, which is not tabbing. Not covered: the week view, the slot picker
-   and either dialog end to end. The section this lives under says every defect this project has
-   shipped has been an accessibility defect, and this round added one and caught it in review.
-3. **A phone again.** `.slot-back` is new and sits in the `pointer: coarse` list; the floor is
-   arithmetic once more, and no desktop browser enters that block. The picker also fills the screen
-   on a phone now, where the keyboard used to cover it — which is exactly the case that changed.
-4. **Take a screenshot set.** Still none in the repo. This round finally makes it cheap: the
-   headless command produces them on demand, so the only open question is whether they are worth
-   committing. `*.png` is gitignored and would need a deliberate `!Screenshots/**` exception —
+1. **Look at the last two rounds in dark mode.** Still nothing shipped since PR #10 has been seen in
+   it, and this round added a reason to care that spacing alone would not: **space is now doing work
+   that a fill or a border would otherwise do.** The 40px above the day title is the *only* thing
+   separating the dissolved week bar from the meal cards, and the ring is the only thing marking a
+   planned day. Neither is a colour, but both are read against one. Cheapest job on the list, two
+   rounds overdue.
+2. **Finish the keyboard pass.** Unchanged: focus restoration after a redraw is asserted in six
+   places and driven by a person in none. Two are exercised by a scripted headless check, which is
+   not tabbing. Not covered: the week view, the slot picker and either dialog end to end. Nothing
+   focusable changed this round, which is exactly why it has been possible to keep deferring.
+3. **A phone again.** No control changed size this round — the scale spaces things apart rather than
+   resizing them, so the 44px floor should be untouched. "Should be" is doing real work in that
+   sentence, and only a thumb settles it. 360px was checked in a 360px `<iframe>`, which is a
+   viewport, not a device.
+4. **Decide whether the spacing scale gets a check.** A rule writing `margin-bottom: 18px` is legal
+   CSS and passes all 76 checks. The shape check that would catch it — a vertical `margin`/`gap`
+   with a raw pixel value instead of a `var(--space-*)` — is described in
+   [architecture](architecture.md#how-this-gets-tested) and deliberately not written yet, on the
+   standing rule that a CSS-shape check gets folded in the next time one bites. **The scale is held
+   by review, not by the script**, and that is a choice rather than an oversight.
+5. **Put the dialogs on the scale, or say why not.** They were left off because they are a separate
+   surface with their own rhythm and no shared edge with the page, and fixing the page first was the
+   smaller change. But `22px`, `20px`, `18px` and `14px` are still doing gap duty inside the sheets,
+   which is the exact condition this round existed to remove. It is a smaller version of the same
+   job and it should either happen or be written down as permanent.
+6. **Take a screenshot set.** Still none in the repo, and cheaper than ever: this round produced
+   seven renders on demand and threw all of them away. The only open question is whether they are
+   worth committing. `*.png` is gitignored and would need a deliberate `!Screenshots/**` exception —
    your call.
-5. **Act on the dark-mode findings, or decide not to.**
+7. **Act on the dark-mode findings, or decide not to.**
    [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens) names two:
    nothing sits above `--surface`, so hover and selected have nowhere to go; and `--surface-sunk`
-   is **1.08** from `--bg` in dark. **This round sharpened the second one again** — that 1.08 is
-   exactly why the day chips could not keep a neutral fill once the bar dissolved. Light's half is
-   fixed with `--hover`; dark is still deliberately untouched.
+   is **1.08** from `--bg` in dark. Light's half is fixed with `--hover`; dark is still deliberately
+   untouched.
 
 ## One judgement call left open
 
 **The week bar is centred while the day title and cards are left-aligned.** Navigation on one axis,
-content on another. It looks deliberate in every shot taken this round, but it is a taste question
-rather than a measurement, and you are the one who can say whether it reads as calm or as adrift.
+content on another. Still open, and this round changed what hangs on it: with 40px now separating
+the bar from the day, the two read as clearly separate things, which makes the mixed alignment
+either more deliberate or more obviously a mismatch. It is a taste question rather than a
+measurement, and you are the one who can say whether it reads as calm or as adrift.
 
 ## Three small things open, none urgent
 
@@ -126,9 +154,10 @@ These are trade-offs rather than bugs. The known-defect list is empty.
 is worse than none, so stale ones get deleted rather than captioned. The four supplied design
 concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
 
-What changed this round is that they are now **reproducible on demand** rather than dependent on
-you taking one — see the tooling note above. Wanted, if a set is ever committed: the wide layout,
-an empty day, the picker open, 360px, and dark mode.
+They are **reproducible on demand** rather than dependent on you taking one — see the tooling note
+above. This round produced seven and kept none, which is the policy working rather than a waste.
+Wanted, if a set is ever committed: the wide layout, an empty day, the picker open, 360px, and dark
+mode.
 
 `*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Light mode Mockups/*.png` excepted, because a
 camera-named file got committed twice. That exception once named a folder that had been renamed and

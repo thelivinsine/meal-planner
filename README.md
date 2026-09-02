@@ -133,7 +133,7 @@ the reasoning for each is in [docs/decisions.md](docs/decisions.md#deliberately-
 
 ## Five decisions worth reading
 
-The full set is in [docs/decisions.md](docs/decisions.md). These four cost the most to learn:
+The full set is in [docs/decisions.md](docs/decisions.md). These five cost the most to learn:
 
 - **The plan is keyed by real date, not by weekday.** `state.plan['2026-08-26|Dinner']`. It's what
   makes next week a genuinely separate plan rather than the same seven slots relabelled — and it's

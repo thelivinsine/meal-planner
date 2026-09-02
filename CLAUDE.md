@@ -16,7 +16,7 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only** — about 195 lines as it stands. The test is not the line count,
+- **Keep this file rules-only** — about 200 lines as it stands. The test is not the line count,
   it's "is this a rule or is it reasoning": reasoning goes in `docs/decisions.md`, which has no
   budget. If a rule needs a paragraph to be safe, put the paragraph there and the rule here. A
   line count is what this file kept failing when it was carrying both.
@@ -123,9 +123,11 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   dispatches on `data-action`.
 - **Vertical gaps come from four tokens** — `--space-1/2/3/4` (8/16/24/40): inside a group, between
   siblings, between blocks, between sections. A new vertical gap picks a step; it does not invent a
-  number. Two exceptions, both named in `docs/decisions.md`: `.page`'s bottom padding is nav
-  clearance, and the dialogs are not on the scale yet. **Padding inside a component stays put** —
-  the scale spaces things apart, it does not resize controls.
+  number. **A view heading is a section break, not a block break** — it is the largest thing on the
+  page, so `--space-3` under it reads cramped. Two exceptions, both named in `docs/decisions.md`:
+  `.page`'s bottom padding is nav clearance, and the dialogs are not on the scale yet. **Padding
+  inside a component stays put** — the scale spaces things apart, it does not resize controls, and
+  the horizontal flex gaps are not on it either. Nothing in `check.mjs` sees any of this.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 

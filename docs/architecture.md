@@ -8,7 +8,7 @@ see [decisions.md](decisions.md).*
 | File | Contains |
 |---|---|
 | `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker that replaces them, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
-| `style.css` | All styling. Custom properties for the palette, then the rules, then **every media query at the end of the file** — three `max-width` breakpoints (1000px, 620px, 400px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
+| `style.css` | All styling. Custom properties first — the palette, the radii, and `--space-1/2/3/4`, the four-step scale every vertical gap *between* components names — then the rules, then **every media query at the end of the file**: three `max-width` breakpoints (1000px, 620px, 400px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 `Light mode Mockups/` holds the four supplied design concepts the current layout was built
@@ -123,6 +123,13 @@ five times. What it covers:
 
 **The pair list is the part that rots.** A colour combination not in it is a combination nobody
 measures, so a new surface or ink token means adding its pairs by hand.
+
+**Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
+`--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
+CSS, passes all 76 checks, and puts the file straight back where it was before the scale existed.
+A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
+a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
+in the next time one bites. Until then the scale is held by review, not by the script.
 
 Still done by hand, not in the script:
 
