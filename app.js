@@ -589,7 +589,7 @@ const el = {
   pickerMeals: document.getElementById('picker-meals'),
   pickerNote: document.getElementById('picker-note'),
   pickerConfirm: document.getElementById('picker-confirm'),
-  navWrap: document.querySelector('.nav-wrap'),
+  page: document.querySelector('.page'),
   slotPicker: document.getElementById('slot-picker'),
   slotPickerTitle: document.getElementById('slot-picker-title'),
   slotPickerGrid: document.getElementById('slot-picker-grid'),
@@ -1046,12 +1046,21 @@ function openSlotPicker(iso, meal, opener) {
 // of a card — a phone in landscape has nowhere near enough room. Raise it if that shows.
 function sizeSlotPicker() {
   if (!slotPick.iso) return;
-  // Under 1000px the nav is a pill fixed over the bottom of the page and the picker has
-  // to stop above it; over 1000px it is a sidebar and the space is the viewport's.
-  const overNav = getComputedStyle(el.navWrap).position === 'fixed';
-  const floor = overNav ? el.navWrap.getBoundingClientRect().top - 12 : window.innerHeight - 24;
-  const room = floor - el.slotPicker.getBoundingClientRect().top;
+  // The floor is the page's own bottom padding, not the bottom of the window. That
+  // padding sits *below* the picker and counts towards the document height, so
+  // measuring to the window left the page 24px too tall at wide widths and about 50px
+  // too tall at narrow ones — a scrollbar for nothing, which is the whole thing this
+  // panel exists to avoid. It is also exactly the space reserved to clear the nav pill
+  // under 1000px, so one measurement covers both layouts.
+  const pad = parseFloat(getComputedStyle(el.page).paddingBottom) || 0;
+  const room = window.innerHeight - pad - el.slotPicker.getBoundingClientRect().top;
   el.slotPicker.style.maxHeight = Math.max(260, room) + 'px';
+  // Then ask the page whether it worked, rather than trusting the arithmetic. Sub-pixel
+  // rounding left it 2px long at every width — invisible, and still a scrollbar, which
+  // is the one thing this is for. Measuring the overshoot fixes it without a magic
+  // number to keep in step with the CSS.
+  const over = document.documentElement.scrollHeight - window.innerHeight;
+  if (over > 0) el.slotPicker.style.maxHeight = Math.max(260, room - over) + 'px';
 }
 
 function closeSlotPicker() {

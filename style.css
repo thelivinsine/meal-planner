@@ -616,7 +616,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    view exists to avoid. app.js sets max-height inline from the space actually left
    below it, and the grid below takes whatever that leaves. */
 .slot-picker {
-  margin-top: 14px;
+  margin-top: 28px;
   display: flex; flex-direction: column; min-height: 0;
   animation: tray-in var(--mid) var(--ease) both;
 }
@@ -626,20 +626,20 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .slot-picker .view-sub { color: var(--ink-soft); }
 
-/* One line: where you came from, where you are, and the search. Stacked, these three
-   short controls took three rows right under the week bar and the whole area read as
-   cramped — the cards are the content and this is a header, so it gets one row. The
-   search wraps to its own line under 620px, where 280px of field will not fit beside a
-   heading. */
+/* Back link on the left, heading centred over the cards it introduces, search on the
+   row below. Three columns, not a flex row: the heading centres on the *column* rather
+   than on whatever is left after the back link, which is what centring means here — and
+   the third column is empty on purpose, to balance the first. */
 .slot-picker-head {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 6px 16px; margin-bottom: 12px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  gap: 10px; margin-bottom: 14px;
 }
-/* The heading takes what it needs and the search takes the rest — the other way round
-   and a fixed-width field pushes itself onto a second row, because the content column
-   is only about 640px once the summary column has its share. */
-.slot-picker-title { flex: 0 1 auto; min-width: 0; font-size: 1.125rem; }
-.slot-picker .search { flex: 1 1 190px; min-width: 150px; margin-bottom: 0; }
+.slot-back { justify-self: start; }
+.slot-picker-title { grid-column: 2; text-align: center; min-width: 0; font-size: 1.125rem; }
+/* More room under the field than beside it: this is the last thing before the cards,
+   and the gap is what stops the head reading as part of the grid. */
+.slot-picker .search { margin: 0 0 22px; }
+.slot-picker .search input { display: block; margin: 0 auto; }
 /* The same "this is clickable" language as a meal name: accent-ink, underlined at rest
    because touch has no hover, full strength on hover. */
 .slot-back {
@@ -972,8 +972,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .nav-btn { padding: 6px 12px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; }
-  /* Its own line: 300px of search will not sit beside a heading at this width. */
-  .slot-picker .search { flex: 1 1 100%; }
+  /* One column: a centred heading and a back link do not share 360px. The back link
+     keeps the first row to itself, the heading centres under it. */
+  .slot-picker-head { grid-template-columns: 1fr; gap: 4px; }
+  .slot-picker-title { grid-column: 1; }
   .filters { padding: 14px; }
   .meal { padding: 13px 14px 15px; }
   .filter-bar { flex-wrap: wrap; }
