@@ -89,8 +89,12 @@ const TEXT_PAIRS = [
   ['--accent-ink', '--surface-past'], ['--accent-ink', '--accent-soft'],
   ['--on-accent', '--accent'],
   /* The sidebar nav hover sets --ink on --hover, so that pair is real text on a real
-     ground. --ink-soft is the label's rest colour on the page, already measured above. */
+     ground. */
   ['--ink', '--hover'],
+  /* The week bar dissolved onto the page, so its day chips hover on --hover too — and
+     unlike a nav item, a chip carries three colours: its weekday name, the date, and
+     the date again on a day gone by. */
+  ['--ink-soft', '--hover'], ['--ink-faint', '--hover'],
 ];
 
 /* `line` means: this pair is allowed under 1.10 because a hairline carries the
@@ -103,16 +107,21 @@ const SURFACE_PAIRS = [
      neighbour with it any more. The one hover that did — .nav-btn:hover in the sidebar,
      where the nav unwinds to no fill of its own — measured 1.08 and now uses --surface.
      (.theme-btn:hover looked like the same bug and is not: it sits on the button's own
-     --surface fill, so it is the pair above that governs it.) Everything else sunk fills
-     sits inside a card, and the two that can reach the page (.chip, .slot-picker) carry
-     a --line-strong border, measured below. Put the pair back the moment a bare sunk
-     fill lands on the page again. */
+     --surface fill, so it is the pair above that governs it.) The week bar dissolving
+     took away the last two: its chip hover moved to --hover, and the tint on a planned
+     day became an --accent ring. Everything sunk now fills something inside a card, and
+     .chip — which can reach the page — carries a --line-strong border, measured below.
+     Put the pair back the moment a bare sunk fill lands on the page again. */
   ['--line-strong', '--bg'],
   ['--surface-past', '--bg', { line: '--line' }],
   ['--accent-soft', '--surface'],      /* the 1.01 catastrophe lived here */
   ['--accent-soft', '--bg', { line: '--line' }],
   ['--accent', '--surface'],
   ['--accent', '--bg'],
+  /* The ring on a day that has meals. It sits on the page at rest and on the hover fill
+     under a pointer, and it is the only thing marking a planned day, so both grounds
+     have to hold it. */
+  ['--accent', '--hover'],
   /* The one hover fill that lands on the page rather than inside a card. Light spends
      state downward, so this sits *below* --bg; the check is the same either way. */
   ['--hover', '--bg'],

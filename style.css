@@ -344,12 +344,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* ---- week bar: the range, and the seven days it covers ---- */
 /* Compact on purpose. This panel is navigation, not content: it was taking almost as
    much height as the three meal cards it steers, which put the emphasis in the wrong
-   place. Every size in here came down a notch and the meal cards took the room. */
-.weekbar {
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 7px 10px 9px;
-}
+   place. Every size in here came down a notch and the meal cards took the room.
+   Dissolved onto the page — no fill, no border, no radius. It was a card holding
+   navigation while the meal cards below it held the content, so the page had two levels
+   of box competing; now the cards are the only boxes on the week. The consequence is
+   that its chips sit on --bg instead of on --surface, which is why both fills below had
+   to be re-picked: --surface-sunk measures 1.08 against the page in both themes. */
+.weekbar { padding: 2px 2px 4px; }
 .weekbar-top { display: flex; align-items: center; gap: 8px; }
 .weekbar-arrow { flex: none; width: 28px; height: 28px; color: var(--ink-soft); }
 .weekbar-range {
@@ -376,7 +377,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   border-radius: var(--radius-sm); color: var(--ink-soft);
   transition: background var(--fast) var(--ease);
 }
-.day-strip .day-chip:hover { background: var(--surface-sunk); }
+/* The chips sit on the page now that the bar has no fill, so the hover is --hover, the
+   token built for exactly that: a step *down* into grey in light, up in dark. Bare
+   --surface-sunk measured 1.08 here and the hover barely registered. */
+.day-strip .day-chip:hover { background: var(--hover); }
 .day-strip .day-chip-name { font-size: .6875rem; font-weight: 700; }
 .day-strip .day-chip-date {
   display: grid; place-items: center;
@@ -385,9 +389,14 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   color: var(--ink); font-variant-numeric: tabular-nums;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-/* A day with something in it is tinted, so the strip shows the shape of the week at a
-   glance — planned, today and selected each read differently. */
-.day-strip .day-chip.has-meals .day-chip-date { background: var(--surface-sunk); }
+/* A day with something in it is ringed rather than tinted, so the strip still shows the
+   shape of the week at a glance — planned, today and selected each read differently.
+   The tint was --surface-sunk, which needed the bar's own fill behind it to be visible
+   at all; on the page it measured 1.08. A ring answers it in the accent instead, and
+   gives one shape for one idea: empty circle, ringed when planned, filled when
+   selected. --accent measures 4.28 on the page in light and 6.75 in dark, and holds up
+   over the hover fill too, so nothing here depends on a fill that might vanish. */
+.day-strip .day-chip.has-meals .day-chip-date { border: 1.5px solid var(--accent); }
 /* A past day is quieter by colour, not by opacity — opacity would blend the text back
    towards the tile and undo the contrast the tokens were chosen for. */
 .day-strip .day-chip.is-past .day-chip-date { color: var(--ink-faint); font-weight: 700; }
@@ -596,37 +605,54 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* ---------- inline slot picker (week view) ---------- */
 .meals:focus { outline: none; }  /* programmatic focus target when the picker closes */
 
-/* A tray one step deeper than the tiles it holds, so the cards inside keep an edge. */
+/* Not a tray any more. It takes the day's place instead of sitting under it, so it *is*
+   the content column, and the cards inside sit on the page exactly like the meal cards
+   they replaced — a tray around the whole content area would be the nesting the week
+   view exists to avoid. app.js sets max-height inline from the space actually left
+   below it, and the grid below takes whatever that leaves. */
 .slot-picker {
-  margin-top: 22px; padding: 16px;
-  background: var(--surface-sunk); border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
+  margin-top: 14px;
+  display: flex; flex-direction: column; min-height: 0;
   animation: tray-in var(--mid) var(--ease) both;
 }
 @keyframes tray-in {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: none; }
 }
-.slot-picker .card { border-color: var(--line-strong); }
 .slot-picker .view-sub { color: var(--ink-soft); }
 
+/* Back link over the heading, breadcrumb order: where you came from, then where you
+   are. Both left-aligned with the cards below. */
 .slot-picker-head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin-bottom: 12px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 2px; margin-bottom: 12px;
 }
+/* The same "this is clickable" language as a meal name: accent-ink, underlined at rest
+   because touch has no hover, full strength on hover. */
+.slot-back {
+  cursor: pointer; background: none; border: 0; padding: 3px 0;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-body); font-size: .8125rem; font-weight: 600;
+  color: var(--accent-ink);
+  text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 45%, transparent);
+}
+.slot-back:hover { text-decoration-color: currentColor; }
+.slot-back svg { flex: none; }
 .slot-picker-title { font-size: 1.125rem; }
 .slot-picker .search { margin-bottom: 12px; }
 
 /* The picker shows the same cards as the Recipes view — same markup, same component —
-   in a scrolling area so the week stays on screen above it. */
-/* The scrollbar belongs against the tray's own edge, not squeezed between the cards
-   and it — hence the negative margin, which lets the track sit in the tray's padding.
-   The UA track is white by default; both properties below tint it to the tray. */
+   in a scrolling area, so the week bar stays on screen above it and the page itself
+   never scrolls. The height is whatever the panel has left after its own head and
+   search: flex, not a vh figure, because the panel's max-height is measured. */
+/* The scrollbar sits just outside the cards rather than squeezed between them and the
+   column edge — hence the negative margin, which lets the track hang in the gutter. */
 .pick-grid {
-  max-height: 50vh; overflow-y: auto;
+  flex: 1; min-height: 0; overflow-y: auto;
   padding: 2px 12px 4px 2px;
   margin-right: -13px;
-  display: grid; gap: 12px;
+  display: grid; gap: 12px; align-content: start;
   grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
 }
 
@@ -829,7 +855,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    quietly breaks the floor — .weekbar-arrow and .meal-clear are exactly that case. */
 @media (pointer: coarse) {
   .btn, .btn-sm, .btn-icon, .nav-btn, .chip, .segmented .chip,
-  .meal-open, .meal-add, .day-strip .day-chip {
+  .meal-open, .meal-add, .day-strip .day-chip, .slot-back {
     min-height: var(--tap);
   }
   .btn-icon { width: var(--tap); }
@@ -922,7 +948,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .toast { bottom: 76px; }
   .nav-btn { padding: 6px 12px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
-  .pick-grid { grid-template-columns: 1fr; max-height: 58vh; }
+  .pick-grid { grid-template-columns: 1fr; }
   .filters { padding: 14px; }
   .meal { padding: 13px 14px 15px; }
   .filter-bar { flex-wrap: wrap; }
