@@ -449,9 +449,9 @@ const FILTER_GROUPS = (function () {
 // may come back and re-deriving it from the git log is worse than a dead constant.
 //
 // One of these was the Week heading. Picked once per load rather than per render, so it
-// stays put while you are using the app and is a different line when you come back —
-// which is the whole point of it: a fixed "Your week" is a label, this is a greeting.
-// One line, no subtitle under it; the week bar below says which week it means.
+// stayed put while you were using the app and was a different line when you came back —
+// which was the whole point of it: a fixed "Your week" is a label, that was a greeting.
+// One line, no subtitle under it; the week bar below said which week it meant.
 const WEEK_GREETINGS = [
   'Let’s plan your week',
   'What’s cooking this week?',
