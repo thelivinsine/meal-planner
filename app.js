@@ -444,7 +444,11 @@ const FILTER_GROUPS = (function () {
   return groups;
 })();
 
-// One of these is the Week heading. Picked once per load rather than per render, so it
+// PARKED, along with the markup it filled — see the comment where .view-head used to be
+// in index.html. Nothing reads these two now; they are kept whole because the greeting
+// may come back and re-deriving it from the git log is worse than a dead constant.
+//
+// One of these was the Week heading. Picked once per load rather than per render, so it
 // stays put while you are using the app and is a different line when you come back —
 // which is the whole point of it: a fixed "Your week" is a label, this is a greeting.
 // One line, no subtitle under it; the week bar below says which week it means.
@@ -595,7 +599,6 @@ const el = {
     recipes: document.getElementById('view-recipes'),
     saved: document.getElementById('view-saved')
   },
-  weekHeading: document.getElementById('week-heading'),
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
   weekRange: document.getElementById('week-range'),
@@ -671,6 +674,15 @@ function toast(message) {
 function slotLabel(iso, meal) {
   const date = dateOf(iso);
   return DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3) + ' ' + meal.toLowerCase();
+}
+
+// What a card shows, which is not everything a recipe carries. Three at most — a fourth
+// row of tags outweighed the recipe's own name — and never `quick`, because the minutes
+// beside the name already say so. Still filterable: this trims the display, not the tag.
+// The detail sheet gets the full set; it has the room and you opened it to read.
+const CARD_TAG_LIMIT = 3;
+function cardTags(recipe) {
+  return recipe.tags.filter(function (t) { return t !== 'quick'; }).slice(0, CARD_TAG_LIMIT);
 }
 
 function tagsHtml(tags) {
@@ -895,7 +907,7 @@ function cardHtml(recipe, slot) {
           '<h2 class="card-name">' + escapeHtml(recipe.name) + '</h2>' +
           '<span class="card-time">' + recipe.minutes + ' min</span>' +
         '</div>' +
-        '<div class="card-tags">' + tagsHtml(recipe.tags) + '</div>' +
+        '<div class="card-tags">' + tagsHtml(cardTags(recipe)) + '</div>' +
       '</button>' +
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
@@ -1521,7 +1533,6 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 
 loadState();
 applyTheme();
-el.weekHeading.textContent = WEEK_GREETING;
 Object.keys(el.tools).forEach(function (name) {
   el.tools[name].innerHTML = toolsHtml(name);
 });

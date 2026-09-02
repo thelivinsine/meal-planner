@@ -704,7 +704,14 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   gap: 10px; margin-bottom: var(--space-2);
 }
-.slot-picker-title { grid-column: 2; text-align: center; min-width: 0; font-size: 1.125rem; }
+/* Not bold, and not the display face: this names the slot you are filling, which is a
+   label for the cards under it rather than a headline over a view. The h2 rule above
+   hands every heading 800 weight — undone here on purpose, and the size stays. */
+.slot-picker-title {
+  grid-column: 2; text-align: center; min-width: 0;
+  font-family: var(--font-body); font-size: 1.0625rem; font-weight: 500;
+  letter-spacing: normal; color: var(--ink);
+}
 /* More room under the field than beside it: this is the last thing before the cards,
    and the gap is what stops the head reading as part of the grid. */
 /* The same "this is clickable" language as a meal name: accent-ink, underlined at rest
@@ -762,8 +769,19 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   display: flex; align-items: center; gap: var(--space-2);
   padding: 12px 15px; min-width: 0;
 }
-.is-list .card-top { flex: 1; min-width: 0; }
-.is-list .card-tags { margin-top: 0; flex: none; }
+/* A column, not a share of what is left: with `flex: 1` and space-between, the minutes
+   landed wherever each name happened to end — 469px, 429px, 535px down one list — and
+   sat at the *top* of a name that wrapped to two lines while the tags beside it centred.
+   A fixed basis right-aligns them into a column, and centring the row puts them on the
+   same line as the tags. */
+/* 40% of the row, but never less than the width a recipe name needs to read in two
+   lines: in the slot picker the content column is ~400px wide and a plain percentage
+   squeezed "Overnight Oats with Berries" into three. */
+.is-list .card-top { flex: 0 1 40%; min-width: 178px; align-items: center; }
+/* It has to be allowed to shrink and wrap. `flex: none` refused both, so in a narrow
+   column — the slot picker beside the summary panel — three tags ran under the foot of
+   buttons and the card's own `overflow: hidden` sliced the last one in half. */
+.is-list .card-tags { margin-top: 0; flex: 1 1 auto; min-width: 0; }
 .is-list .card-actions { border-top: 0; border-left: 1px solid var(--line); }
 /* Same trap as the tile ring below, other two corners: the outline follows its own
    element's radius and .card-open now runs down the card's left edge. */
@@ -795,23 +813,27 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    keeps the outward ring. */
 .card-open:focus-visible { outline-offset: -4px; border-radius: var(--radius) var(--radius) 0 0; }
 
-.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+/* Baseline, not flex-start: the minutes are 11px type beside a 15px name, so aligning
+   their boxes left the number floating above the name it belongs to. First baselines
+   line up whether the name wraps or not. */
+.card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .card-name {
-  font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700;
-  letter-spacing: -0.025em; line-height: 1.15;
+  font-family: var(--font-display); font-size: .9375rem; font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.2;
   transition: color var(--fast) var(--ease);
 }
+/* Bare text, no tile. It sat in a --surface-sunk pill exactly like a tag, so a fact
+   about the recipe was dressed as one of its labels — and it is the one thing on the
+   card that is a number. One box per level: the card is the box. */
 .card-time {
   flex: none; color: var(--ink-soft); font-size: .6875rem; font-weight: 700;
   font-variant-numeric: tabular-nums;
-  background: var(--surface-sunk); border-radius: var(--radius-pill);
-  padding: 3px 9px;
 }
-.card-tags { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 5px; }
+.card-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
 .tag {
-  font-size: .5625rem; letter-spacing: .1em; text-transform: uppercase;
+  font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
   font-weight: 700; color: var(--ink-soft);
-  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 9px;
+  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 8px;
 }
 
 .card-actions {
@@ -1037,12 +1059,14 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .toast { bottom: 28px; }
 
   .view-week { grid-template-columns: minmax(0, 1fr) 292px; }
-  /* The head takes the content column only, so it centres on the week bar and the meal
-     cards. All three items are placed by hand: leave the two lower ones to auto-flow and
-     the aside slides up beside the head instead of starting level with the week bar. */
-  .view-week > .view-head { grid-column: 1; grid-row: 1; }
-  .week-main { grid-column: 1; grid-row: 2; }
-  .week-side { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; gap: var(--space-2); }
+  /* Both items placed by hand, and both in row 1 now the greeting has gone. Leaving them
+     in row 2 keeps an empty first row, and the grid's --space-4 row gap is charged for it
+     — 40px of nothing above the week bar. Restoring the greeting means putting these back
+     to row 2 and bringing back the rule that gave it row 1 and the content column only,
+     so it centred on the week bar and the cards rather than on the whole two-column span:
+        .view-week > .view-head { grid-column: 1; grid-row: 1; } */
+  .week-main { grid-column: 1; grid-row: 1; }
+  .week-side { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: var(--space-2); }
 }
 
 @media (max-width: 620px) {

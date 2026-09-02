@@ -57,15 +57,25 @@
   <main class="page">
     <!-- WEEK -->
     <section id="view-week" class="view view-week" aria-label="Week plan">
-      <!-- Outside .week-main so the grid can put it in its own row: the summary column
-           then starts level with the week bar rather than level with the heading.
-           One line and no subtitle - app.js swaps the text for a different greeting on
-           every load, and the week bar under it already says which week this is. The
-           markup keeps a greeting rather than "Your week" so the same thing shows if the
-           script never runs. -->
+      <!-- PARKED: the rotating week greeting. Removed from the page, kept here whole
+           because it may come back. To restore: uncomment the div below, put
+           `weekHeading: document.getElementById('week-heading'),` back in `el`, and
+           `el.weekHeading.textContent = WEEK_GREETING;` back in the start section of
+           app.js — WEEK_GREETINGS and WEEK_GREETING are still there, unused. Also send
+           .week-main and .week-side back to grid-row 2 in the wide block of style.css
+           and restore the .view-week > .view-head rule above it, or the greeting lands
+           in the same row as the week bar.
+
+           It sat outside .week-main so the grid could give it a row of its own: the
+           summary column then started level with the week bar rather than level with
+           the heading. One line, no subtitle — app.js swapped the text for a different
+           greeting on every load, and the markup carried one rather than "Your week" so
+           the same thing showed if the script never ran.
+
       <div class="view-head">
         <h1 id="week-heading">Let&rsquo;s plan your week</h1>
       </div>
+      -->
 
       <div class="week-main">
         <!-- Week and day navigation, sitting straight on the page: the range with an
