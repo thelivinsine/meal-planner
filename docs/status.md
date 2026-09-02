@@ -4,147 +4,136 @@
 
 | | |
 |---|---|
-| **Live** | Code at `1dd7a52` (PR [#10](https://github.com/thelivinsine/meal-planner/pull/10), squash-merged). Pages `built` at `1dd7a52`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **None.** No branch, no PR, no known defect. Two things parked by choice, both below: the theme button's hover, and the accent-on-accent focus ring |
-| **Confirmed** | The new sidebar hover, the 3px focus ring on a chip, a bookmark, a primary button and a recipe card, and the dialog scrim — **your eyes on the running app**, wide light layout only. Earlier and still standing: the underline on all three grounds, the longest recipe name wrapping, **the live site on a phone**. None of it reproducible from the repo |
-| **Branches** | `design/bold-consumer` and `feat/slot-picker-and-indian-recipes` are merged and can be deleted whenever. Everything else has been deleted on merge, `light-mode-states` included |
+| **Live** | Code at `2339d05` (PR [#11](https://github.com/thelivinsine/meal-planner/pull/11), squash-merged). Pages `built` at `2339d05`. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **None.** No branch, no PR, no known defect. Three things parked by choice: the theme button's hover, the accent-on-accent focus ring, and the dark-mode token findings |
+| **Confirmed** | The picker replacing the day, the dissolved week bar and the ring on a planned day — **your eyes on the running app**, wide light layout, across four screenshots this round. Plus headless Chrome at 1254 / 760 / 360px in light mode, which is reproducible from the repo and is new. Earlier and still standing: the 3px focus ring and sidebar hover, the underline on all three grounds, **the live site on a phone** |
+| **Branches** | `design/bold-consumer` is merged and can be deleted whenever. Everything else has been deleted on merge, `day-takeover-picker` included |
 
 ## What just shipped
 
-**PR #10: the light-mode reference report, acted on.**
+**PR #11: adding a meal takes over the day, and the week bar stops being a tile.**
 
-[light-mode-reference.md](light-mode-reference.md#9-against-mises-current-light-tokens) §9 says the
-light palette is **structurally right** — every direction correct, all three text tiers clear. So
-this was polish, not a repaint, and **no surface token moved.** Three changes and one bug.
+**The picker replaces the day instead of sitting under it.** It used to open *below* the three meal
+cards, which put the recipes you were choosing from below the fold — you tapped **+ Add** and then
+scrolled past what you had just left. Now `.day-title` and `.meals` go `hidden`, the panel draws in
+their place, and **Back to the day** is the way out: navigation, not a close ×, because this
+replaced a view rather than covering one. The week bar, the sidebar and the summary column never
+move, so changing day is still one tap — and doing so closes the picker, since the slot it was
+filling is gone.
 
-**`--hover`, a hover fill that points down.** The report's one named gap was that no hover or
-selected token existed in either theme. The sidebar nav hover was going *up* to `--surface`, which
-is the dark-mode direction: a light theme has almost nothing above its surfaces, so state is spent
-downward into grey. `#eae4da`, **1.14** on `--bg`, mid-band for the 1.10–1.25 the reference apps
-measure at. It also retires the workaround from PR #9 — bare `--surface-sunk` measured 1.08 on the
-page, and the fix at the time was to jump over the page to white rather than find a proper step
-below it. Controls sitting on a *card* are untouched: `--surface-sunk` is already a correct
-downward step at 1.20.
+**It finishes on the screen.** `sizeSlotPicker()` measures the room rather than guessing a `vh`
+figure, because what sits above it is not a fixed height — a greeting that wraps, a bar that grows
+a **Today** button. `.pick-grid` scrolls inside what is left and the page itself does not scroll.
 
-**No `--selected` token, because nothing would use one.** Every selected state in this app is an
-accent fill — the pressed chip, the day circle, the current nav item. A neutral selected shade
-would have had no consumer.
+**The week bar dissolved** — no fill, no border, no radius — so the meal cards are the only boxes
+on the week, and it is capped at 520px and centred, because seven chips sharing the full column had
+stopped reading as one week. **Both of its fills had to be re-picked as a consequence**:
+`--surface-sunk` measures 1.08 against the page in both themes, so the chip hover moved to
+`--hover` and the tint on a planned day became an `--accent` **ring**. One shape, three states —
+bare, ringed, filled.
 
-**Dark is deliberately unchanged.** `--hover` there is `#2b2b2b`, exactly the value the dark sidebar
-hover already used. Dark spends state *upward* and has nothing above `--surface` to spend, which is
-the open dark-mode finding below — it needs your eye on whether dark mode feels flat, not a hex
-picked to close a ticket. Your call was light-only, and that is what shipped.
+**Three new pairs in `check.mjs` and not one new token.** `--ink-soft` and `--ink-faint` on
+`--hover`, and `--accent` beside `--hover`. Moving existing tokens onto a new ground is enough to
+make a combination nobody was measuring — which is the half of that rule that gets missed. 76
+checks, all passing.
 
-**The focus ring: 4px, looked at, then 3px.** The reference draws 4px with a gap. It was built that
-way, you looked, and it was too loud on this palette — a thick orange band around the search field
-rather than a ring. 3px keeps the intent at a weight the accent can carry. **This is the round's
-clearest argument for looking:** the number came from a measured reference document and was still
-wrong for this app.
+**Also:** back link left, heading centred over the cards, search on the row below; and opening the
+picker no longer parks a caret in the search box, which was the app's only automatic focus into a
+field.
 
-**`--scrim`, and the light one drops .50 → .42.** Composites to `#9a9591`, **2.97** over white
-against the reference's 2.93. Worth recording honestly: the old value was *not* the "heavy black"
-the report warns against — it measured 3.7 — so this was a smaller correction than it sounded, and
-it was checked against a screenshot before being kept. Dark keeps .50: darkening a dark page does
-nothing.
+### Three defects, and how each was found
 
-### The bug a keyboard found
+- **Every recipe card collapsed to a 2px strip** — two dozen blank white rows. `flex: 1` gave
+  `.pick-grid` a definite height, and `auto` grid rows in a definite-height grid have the height
+  *divided among them* rather than sized to content. **Your screenshot found it**; a headless
+  browser measured it (`.card` 2.0px with a 125px child inside, clipped by the card's own
+  `overflow`); `grid-auto-rows: min-content` fixed it.
+- **The page kept a scrollbar, through two rounds of you pointing at it.** The panel was measuring
+  to the bottom of the *window*, but `.page` carries its own bottom padding **below** it and that
+  counts towards document height — 24px wide, ~50px narrow. The floor is that padding now, which is
+  also exactly the space reserved to clear the nav pill under 1000px. Sub-pixel rounding still left
+  2px, so it reads `scrollHeight` back and corrects rather than trusting the arithmetic.
+- **The save button's focus restoration could aim at a hidden button.** Hiding the day left its
+  bookmark buttons in the DOM, *earlier* in document order than the picker's, so bookmarking from
+  the picker while the same recipe was planned in another meal that day dropped focus to `<body>`.
+  **Found by reviewing the branch's own diff**, not by using the app.
 
-**The focus ring on a recipe card was clipped, and had been all along.** `.card-open` is flush with
-the card's edges and `.card` clips its overflow — it has to, or the accent button in the foot would
-square off the rounded corner — so the ring was cut on three sides and showed only as a stray orange
-rule across the middle of the card. At 2px nobody had noticed; 3px made it obvious.
+## The tooling changed, and it matters
 
-It took two attempts, and the second is the part worth keeping. A negative `outline-offset` drew the
-ring inside, and the top corners were *still* square against the card's 13px curve: **an outline
-follows its element's own `border-radius`**, and `.card-open` has none, so it fell back to the 4px in
-the global `:focus-visible` rule. It now carries the card's top radius too.
+**The Chrome extension would not connect for a fifth round running — but Chrome runs headless from
+the shell.** `chrome --headless --screenshot` renders the app, and `--dump-dom` will hand back
+anything the page can compute. That covers both halves of the gap this project keeps hitting:
 
-**Neither the contrast script nor a screenshot of a resting page could have found this.** It took
-pressing Tab — which is job 2 on the list below, still only a quarter done.
+- **It renders**, so a layout change can be looked at without waiting for you. Three widths this
+  round: 1254px, 760px and 360px. Windows will not open a real window under ~500px wide, so 360px
+  is tested by loading the app in a 360px `<iframe>`, which gets its own viewport for media queries.
+- **It answers questions a picture cannot.** `activeElement`, `scrollHeight`, a computed height.
+  Two of the three defects above were confirmed that way — one of them by running the *old* code's
+  expression and watching it resolve to a hidden button.
 
-### Two things looked at and left
-
-- **The ring on an accent-filled button is orange-on-orange**, separated only by the 2px gap. It is
-  legible — 4.74 against the white card behind it, and the offset gap is exactly what the reference
-  relies on — but it reads as a blob rather than a ring. Raised, seen, not answered.
-- **The theme button's hover** from PR #9 is still unlooked-at. Unchanged this round.
-
-## The phone gap is closed
-
-**You opened the live site on a phone and it works well.** That was the top job here for four
-rounds and the one thing a desktop could not do: every control is compact on a fine pointer and
-only returns to the 44px floor inside `@media (pointer: coarse)`, a block a desktop browser never
-enters. The week round had shrunk several of them — day chips 58→48px, arrows 32→28px, the recipe
-button losing its 46px minimum — and the merge check was arithmetic: the coarse block still lifts
-all three, nothing after it overrides them. Now a thumb agrees with the arithmetic.
-
-**Your eyes, not a screenshot**, and no device or browser was named, so this is one phone rather
-than a matrix. It does not need re-doing per round — but a change to any control's size puts it
-back on the list.
+Two cautions worth carrying forward. A script calling `.click()` is **not** a keyboard, so this
+does not close the keyboard pass. And measuring during an opening animation gives a wrong answer —
+the panel is 8px high for the first frame, so everything here is measured after it settles.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Finish the keyboard pass.** PR #10 started one and it immediately paid: tabbing found the
-   clipped card ring, which no script and no screenshot of a resting page could see. What was
-   covered is the recipe grid and the sidebar, in light mode, on a wide screen. **Not covered: the
-   week view, the inline slot picker, and either dialog end to end** — which is where the
-   interesting part is, because focus restoration after a redraw is asserted in five places and
-   driven in none of them. This is still the biggest untested thing left, and the section it lives
-   under says every defect this project has shipped has been an accessibility defect.
-2. **Look at the round's changes in dark mode and at narrow widths.** No dark value changed in #10,
-   but the 3px ring and the `.card-open` radius apply in both themes and at every width, and have
-   only been seen in light on a wide screen. Outlines do not affect layout, so the 44px floor is
-   safe by arithmetic — which is the kind of claim this project has learned to distrust on its own.
-3. **Take a screenshot set.** There are still none in the repo, so nothing here shows the current
-   app. `*.png` is gitignored, so this needs either a `!Screenshots/**` exception or keeping them
-   outside the repo — your call which. Wanted: the wide layout, an empty day, the narrow layout at
-   360px, and dark mode.
-4. **Act on the dark-mode findings, or decide not to.** [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens)
-   names two: there is no token above `--surface`, so hover and selected states have nowhere to go
-   and the nesting ladder ends one level up from the page; and `--surface-sunk` sits **1.08** from
-   `--bg` in dark, the same token that is correct in light. Both are measured, neither is a defect,
-   and moving a surface token means new pairs in `check.mjs` **and** a browser. **#10 sharpened
-   this rather than closing it:** light's half of the same gap is now fixed with `--hover`, and dark
-   was left alone on purpose, so the two themes are deliberately asymmetric until you look.
+1. **Look at this round in dark mode.** Nothing shipped this round was seen in it. No dark token
+   moved, but the ring on a planned day, the dissolved bar, the centred head and the measured
+   panel all apply in both themes — and the ring is the only thing now marking a planned day, so
+   if it reads weakly anywhere it will read weakly there. Cheapest job on the list and the one with
+   the most recent code behind it.
+2. **Finish the keyboard pass.** Unchanged in substance and now slightly larger: focus restoration
+   after a redraw is asserted in **six** places and driven by a person in none. Two are exercised
+   by a scripted headless check, which is not tabbing. Not covered: the week view, the slot picker
+   and either dialog end to end. The section this lives under says every defect this project has
+   shipped has been an accessibility defect, and this round added one and caught it in review.
+3. **A phone again.** `.slot-back` is new and sits in the `pointer: coarse` list; the floor is
+   arithmetic once more, and no desktop browser enters that block. The picker also fills the screen
+   on a phone now, where the keyboard used to cover it — which is exactly the case that changed.
+4. **Take a screenshot set.** Still none in the repo. This round finally makes it cheap: the
+   headless command produces them on demand, so the only open question is whether they are worth
+   committing. `*.png` is gitignored and would need a deliberate `!Screenshots/**` exception —
+   your call.
+5. **Act on the dark-mode findings, or decide not to.**
+   [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens) names two:
+   nothing sits above `--surface`, so hover and selected have nowhere to go; and `--surface-sunk`
+   is **1.08** from `--bg` in dark. **This round sharpened the second one again** — that 1.08 is
+   exactly why the day chips could not keep a neutral fill once the bar dissolved. Light's half is
+   fixed with `--hover`; dark is still deliberately untouched.
+
+## One judgement call left open
+
+**The week bar is centred while the day title and cards are left-aligned.** Navigation on one axis,
+content on another. It looks deliberate in every shot taken this round, but it is a taste question
+rather than a measurement, and you are the one who can say whether it reads as calm or as adrift.
 
 ## Three small things open, none urgent
 
-- Google Fonts is the app's first external request; blocked or offline, you get the fallback
-  stack. The one place the "static files only" constraint bends.
+- Google Fonts is the app's first external request; blocked or offline, you get the fallback stack.
+  The one place the "static files only" constraint bends.
 - `applyTheme()` always stamps `data-theme`, so a dark-OS user gets a light app on first visit
   despite `<meta name="color-scheme" content="light dark">`.
-- **Three values are written twice** — the storage key `p5:mealplanner`, the `theme-color` fallback
-  hex and the bookmark icon path, each in both `app.js`/`style.css` and `index.html`. They cannot be
-  de-duplicated without a build step, which this project does not have. **`check.mjs` now compares
-  all three**, so the duplication stays but drifting apart no longer goes unnoticed — which is what
-  happened to the `theme-color` hex once. Listed in [architecture](architecture.md#storage).
+- **Three values are written twice** — the storage key, the `theme-color` fallback hex and the
+  bookmark icon path. They cannot be de-duplicated without a build step, which this project does not
+  have. `check.mjs` compares all three, so the duplication stays but drifting apart no longer goes
+  unnoticed. Listed in [architecture](architecture.md#storage).
 
 These are trade-offs rather than bugs. The known-defect list is empty.
 
 ## Screenshots
 
-**None of the app in the repo.** The four supplied design concepts *are* tracked, under
-`Light mode Mockups/`; shots of the running app are not, and neither are the reference UIs.
+**None of the app in the repo**, and the standing policy is unchanged: a shot of the wrong version
+is worse than none, so stale ones get deleted rather than captioned. The four supplied design
+concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
 
-**The reference gap is now mostly closed.** PR #7's reasoning cited dark-mode reference images
-nobody else could see. Those images, and a light-mode set added since, have been decoded and
-written up as [dark-mode-reference.md](dark-mode-reference.md) and
-[light-mode-reference.md](light-mode-reference.md): every hex read out of the pixels, every ratio
-computed. Someone can now check the palette reasoning without the pictures. Shots of *this app*
-remain the real gap.
-
-The standing policy is unchanged and has been applied four times: a shot of the wrong version is
-worse than none, so stale ones get deleted rather than captioned. Old ones are recoverable from git
-history if a before-and-after is ever wanted.
+What changed this round is that they are now **reproducible on demand** rather than dependent on
+you taking one — see the tooling note above. Wanted, if a set is ever committed: the wide layout,
+an empty day, the picker open, 360px, and dark mode.
 
 `*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Light mode Mockups/*.png` excepted, because a
-camera-named file got committed twice. **That exception used to name `Mockups/` and silently
-stopped protecting anything** when the folder was renamed on disk — the four concepts were deleted
-from the repo by a routine docs commit and nobody noticed for two commits. Restored from
-`f58bf0f`, and the exception now names the folder that exists. It is `*.png` rather than `**` so
-the `Other references/` shots inside it stay out. Side effect: a real set now needs a deliberate exception rather than a
-`git add`. Descriptive filenames either way — `Screenshot 2026-08-31 155034.png` says nothing about
-which version it shows, which is exactly how stale shots survive.
+camera-named file got committed twice. That exception once named a folder that had been renamed and
+silently stopped protecting anything — the four concepts were deleted by a routine docs commit and
+nobody noticed for two commits. It now names the folder that exists.
 
 ---
 
