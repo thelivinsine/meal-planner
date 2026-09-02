@@ -109,10 +109,11 @@
             </button>
             <h2 class="slot-picker-title" id="slot-picker-title"></h2>
           </div>
-          <div class="search">
-            <label class="sr-only" for="slot-search">Search recipes</label>
-            <input type="search" id="slot-search" placeholder="Search by name or ingredient…" autocomplete="off">
-          </div>
+          <!-- Search, layout toggle and filters, drawn by app.js from one component so
+               all three lists carry the same row. Opened from a meal, the Meal filter
+               arrives already set to that meal — the day and meal are known, so the
+               list starts as the recipes for it rather than all fifty. -->
+          <div class="filters" id="tools-slot"></div>
           <div class="pick-grid" id="slot-picker-grid"></div>
           <p class="empty" id="slot-picker-empty" hidden>No recipes match that search.</p>
         </div>
@@ -153,22 +154,10 @@
         <p class="view-sub" id="recipes-count"></p>
       </div>
 
-      <div class="filters">
-        <div class="filter-bar">
-          <div class="search">
-            <label class="sr-only" for="search">Search recipes</label>
-            <input type="search" id="search" placeholder="Search by name or ingredient…" autocomplete="off">
-          </div>
-          <button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle"
-                  id="filter-toggle" aria-expanded="true" aria-controls="tag-filters">Filters</button>
-        </div>
-        <!-- Chips grouped by what they mean, so 16 tags read as four short lists. -->
-        <div class="filter-groups" id="tag-filters"></div>
-        <div class="filter-active" id="filter-active" hidden>
-          <p class="filter-count" id="filter-count"></p>
-          <button type="button" class="btn btn-quiet btn-sm" data-action="clear-tags">Clear all</button>
-        </div>
-      </div>
+      <!-- Search, layout toggle and filters. Empty in the markup: app.js draws the
+           same component here, on Saved and in the week's slot picker, so the three
+           lists cannot drift apart. -->
+      <div class="filters" id="tools-recipes"></div>
 
       <div class="card-grid" id="recipe-grid"></div>
       <p class="empty" id="recipes-empty" hidden>No recipes match that search.</p>
@@ -180,8 +169,11 @@
         <h1 id="saved-heading">Saved</h1>
         <p class="view-sub" id="saved-count"></p>
       </div>
+      <div class="filters" id="tools-saved"></div>
       <div class="card-grid" id="saved-grid"></div>
-      <p class="empty" id="saved-empty" hidden>Nothing saved yet. Tap the bookmark on any recipe to keep it here.</p>
+      <!-- Text set by app.js: "nothing saved" and "nothing here matches" are two
+           different dead ends and only one of them is your fault. -->
+      <p class="empty" id="saved-empty" hidden></p>
     </section>
   </main>
 
