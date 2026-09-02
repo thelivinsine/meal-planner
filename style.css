@@ -429,8 +429,16 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    over the hover fill too, so nothing here depends on a fill that might vanish. */
 .day-strip .day-chip.has-meals .day-chip-date { border: 1.5px solid var(--accent); }
 /* A past day is quieter by colour, not by opacity — opacity would blend the text back
-   towards the tile and undo the contrast the tokens were chosen for. */
-.day-strip .day-chip.is-past .day-chip-date { color: var(--ink-faint); font-weight: 700; }
+   towards the tile and undo the contrast the tokens were chosen for. Name and date both,
+   so the whole chip recedes rather than half of it.
+   And no ring, even with meals in it: the ring is an accent mark about what is *planned*,
+   and on a day gone by it read as decoration on the two days you cannot act on — the
+   loudest thing on the bar drawing the eye backwards. Placed after the rule above and
+   carrying one more class, so it wins on both source order and specificity. */
+.day-strip .day-chip.is-past { color: var(--ink-faint); }
+.day-strip .day-chip.is-past .day-chip-date {
+  color: var(--ink-faint); font-weight: 700; border: 0;
+}
 .day-strip .day-chip.is-today .day-chip-name,
 .day-strip .day-chip[aria-pressed="true"] .day-chip-name { color: var(--accent-ink); }
 .day-strip .day-chip[aria-pressed="true"] .day-chip-date {
@@ -441,11 +449,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .day-strip .day-dot { width: 5px; height: 5px; margin: 0; }
 .day-strip .day-chip[aria-pressed="true"] .day-dot { background: var(--accent); }
 
-/* --space-4 above, because this is where one section ends and the next begins: the bar
-   is navigation and the cards below are the content. It was 16px, four less than the gap
-   above the bar, so the two read as one undivided run. --space-2 below, because the title
-   and the cards it names are siblings — at 10px it was glued to the first card. */
-.day-title { margin: var(--space-4) 0 var(--space-2); font-size: 1.0625rem; }
+/* The day title is .sr-only now, so it holds no space and its margins do nothing — the
+   gap it used to carry moves onto the cards themselves. --space-4, because this is where
+   one section ends and the next begins: the bar is navigation and the cards below are the
+   content. At 16px, four less than the gap above the bar, the two read as one undivided
+   run. (The picker that replaces these cards already carries the same step.) */
+.meals { margin-top: var(--space-4); }
 
 /* ---- the day itself: one card per meal ---- */
 /* No day card around them. The heading above already names the day, and a card holding

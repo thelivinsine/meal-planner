@@ -95,7 +95,12 @@
           <div class="day-strip" id="day-strip" role="group" aria-label="Choose a day"></div>
         </div>
 
-        <h2 class="day-title" id="day-title"></h2>
+        <!-- Off the screen, not out of the page: the week bar above already says which
+             day you are on, so the line was repeating a selection you just made. It
+             stays in the markup as the name of the three cards under it — .sr-only
+             rather than display:none, because a screen reader gets no week bar to look
+             at, and app.js still writes and hides it with the picker. -->
+        <h2 class="day-title sr-only" id="day-title"></h2>
         <!-- One card per meal for the selected day. tabindex so focus has somewhere to
              land when the control that was pressed gets re-rendered away. -->
         <div class="meals" id="week-grid" tabindex="-1"></div>
