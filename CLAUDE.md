@@ -121,6 +121,11 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **Rendering:** change state, redraw the whole view — no diffing. Views are HTML strings, so run
   any text through `escapeHtml` before `innerHTML`. No inline `onclick`: one delegated listener
   dispatches on `data-action`.
+- **Vertical gaps come from four tokens** — `--space-1/2/3/4` (8/16/24/40): inside a group, between
+  siblings, between blocks, between sections. A new vertical gap picks a step; it does not invent a
+  number. Two exceptions, both named in `docs/decisions.md`: `.page`'s bottom padding is nav
+  clearance, and the dialogs are not on the scale yet. **Padding inside a component stays put** —
+  the scale spaces things apart, it does not resize controls.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 
