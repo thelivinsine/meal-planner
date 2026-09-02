@@ -1223,8 +1223,15 @@ document.addEventListener('click', function (event) {
     if (!el.slotPicker.hidden) renderSlotPicker();
     if (el.detail.open) openDetail(id, detailSlot);
     // Every one of those redraws replaced the button that was just pressed, dropping
-    // focus to <body>. Put it back on the replacement, preferring the open dialog.
-    const scope = el.detail.open ? el.detail : document.querySelector('.view:not([hidden])');
+    // focus to <body>. Put it back on the replacement, searching whatever is actually
+    // on screen: the open dialog first, then the open picker, then the view. The picker
+    // has to come before the view, because the day it replaced is still in the DOM with
+    // its own bookmark buttons — hidden ones, and .focus() on a hidden element does
+    // nothing at all. Bookmark a recipe from the picker while the same recipe is
+    // planned in another meal that day and the hidden copy is the one found first.
+    const scope = el.detail.open ? el.detail
+      : !el.slotPicker.hidden ? el.slotPicker
+      : document.querySelector('.view:not([hidden])');
     const again = scope && scope.querySelector('[data-action="bookmark"][data-id="' + id + '"]');
     if (again) again.focus();
     return;

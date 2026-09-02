@@ -349,12 +349,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    navigation while the meal cards below it held the content, so the page had two levels
    of box competing; now the cards are the only boxes on the week. The consequence is
    that its chips sit on --bg instead of on --surface, which is why both fills below had
-   to be re-picked: --surface-sunk measures 1.08 against the page in both themes. */
-/* Capped and centred rather than spread across the column. Seven chips sharing 1180px
-   put Mon and Sun a hand's width apart and the week stopped reading as one object; at
-   520px they sit as close as their own labels allow. It centres under the heading,
-   which is also centred on the content column, and the cap is a no-op below 520px so
-   the narrow layout is untouched. */
+   to be re-picked: --surface-sunk measures 1.08 against the page in both themes.
+   Capped and centred too, rather than spread across the column. Seven chips sharing
+   1180px put Mon and Sun a hand's width apart and the week stopped reading as one
+   object; at 520px they sit as close as their own labels allow. It centres under the
+   heading, which is also centred on the content column, and the cap is a no-op below
+   520px so the narrow layout is untouched. */
 .weekbar { max-width: 520px; margin: 0 auto; padding: 2px 2px 4px; }
 .weekbar-top { display: flex; align-items: center; gap: 8px; }
 .weekbar-arrow { flex: none; width: 28px; height: 28px; color: var(--ink-soft); }
@@ -634,7 +634,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   gap: 10px; margin-bottom: 14px;
 }
-.slot-back { justify-self: start; }
 .slot-picker-title { grid-column: 2; text-align: center; min-width: 0; font-size: 1.125rem; }
 /* More room under the field than beside it: this is the last thing before the cards,
    and the gap is what stops the head reading as part of the grid. */
@@ -643,6 +642,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* The same "this is clickable" language as a meal name: accent-ink, underlined at rest
    because touch has no hover, full strength on hover. */
 .slot-back {
+  justify-self: start;
   cursor: pointer; background: none; border: 0; padding: 3px 0;
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--font-body); font-size: .8125rem; font-weight: 600;
