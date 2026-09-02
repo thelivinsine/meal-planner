@@ -423,10 +423,35 @@ const TAG_GROUPS = [
   { label: 'Cuisine & style', tags: ['indian', 'pasta', 'salad', 'soup', 'quick', 'batch-cook'] },
   { label: 'Main protein', tags: ['chicken', 'beef', 'fish'] }
 ];
-// One of these is the Week heading. Picked once per load rather than per render, so it
-// stays put while you are using the app and is a different line when you come back —
-// which is the whole point of it: a fixed "Your week" is a label, this is a greeting.
-// One line, no subtitle under it; the week bar below says which week it means.
+
+// The groups as they are actually drawn: TAG_GROUPS in order with any tag no recipe
+// carries dropped, plus a "More" group holding whatever TAG_GROUPS forgot. Resolved once,
+// because three toolbars and the matcher all need the same answer — and the matcher needs
+// the *grouping*, not just the tags: ticking two boxes in one group widens the list, one
+// box in each narrows it.
+const FILTER_GROUPS = (function () {
+  const all = [];
+  RECIPES.forEach(function (r) {
+    r.tags.forEach(function (t) { if (all.indexOf(t) === -1) all.push(t); });
+  });
+  const named = [];
+  const groups = TAG_GROUPS.map(function (g) {
+    const tags = g.tags.filter(function (t) { named.push(t); return all.indexOf(t) !== -1; });
+    return { label: g.label, tags: tags };
+  }).filter(function (g) { return g.tags.length > 0; });
+  const rest = all.filter(function (t) { return named.indexOf(t) === -1; }).sort();
+  if (rest.length) groups.push({ label: 'More', tags: rest });
+  return groups;
+})();
+
+// PARKED, along with the markup it filled — see the comment where .view-head used to be
+// in index.html. Nothing reads these two now; they are kept whole because the greeting
+// may come back and re-deriving it from the git log is worse than a dead constant.
+//
+// One of these was the Week heading. Picked once per load rather than per render, so it
+// stayed put while you were using the app and was a different line when you came back —
+// which was the whole point of it: a fixed "Your week" is a label, that was a greeting.
+// One line, no subtitle under it; the week bar below said which week it meant.
 const WEEK_GREETINGS = [
   'Let’s plan your week',
   'What’s cooking this week?',
@@ -491,11 +516,21 @@ const state = {
   plan: {},
   bookmarks: [],
   // Persisted alongside the plan. View, week, search and filters stay per-session on
-  // purpose, but a theme the user picked and then lost on reload is just a bug.
+  // purpose, but a theme the user picked and then lost on reload is just a bug — and so
+  // is a layout they chose. 'tile' or 'list', shared by all three lists: it is a
+  // preference about how a recipe card is drawn, not about any one view.
   theme: 'light',
-  search: '',
-  tags: [],
-  filtersOpen: true
+  cardView: 'tile'
+};
+
+// Search text and ticked filters, one set per list. Deliberately not shared: a search
+// typed on Recipes has nothing to do with what you are looking for in Saved, and the
+// slot picker's set arrives pre-filled with the meal it was opened for. Per-session,
+// like the view and the week — none of it is worth restoring next visit.
+const surface = {
+  recipes: { search: '', tags: [], filtersOpen: true },
+  saved: { search: '', tags: [], filtersOpen: true },
+  slot: { search: '', tags: [], filtersOpen: true }
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -536,6 +571,7 @@ function loadState() {
     state.bookmarks = saved.bookmarks.filter(function (id) { return RECIPE_BY_ID.has(id); });
   }
   if (saved.theme === 'dark' || saved.theme === 'light') state.theme = saved.theme;
+  if (saved.cardView === 'tile' || saved.cardView === 'list') state.cardView = saved.cardView;
 }
 
 function saveState() {
@@ -543,7 +579,8 @@ function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       plan: state.plan,
       bookmarks: state.bookmarks,
-      theme: state.theme
+      theme: state.theme,
+      cardView: state.cardView
     }));
   } catch (err) {
     console.warn('Could not save — changes will be lost on refresh.', err);
@@ -562,18 +599,18 @@ const el = {
     recipes: document.getElementById('view-recipes'),
     saved: document.getElementById('view-saved')
   },
-  weekHeading: document.getElementById('week-heading'),
   dayStrip: document.getElementById('day-strip'),
   weekGrid: document.getElementById('week-grid'),
   weekRange: document.getElementById('week-range'),
   dayTitle: document.getElementById('day-title'),
   glanceBody: document.getElementById('glance-body'),
   tipBody: document.getElementById('tip-body'),
-  search: document.getElementById('search'),
-  tagFilters: document.getElementById('tag-filters'),
-  filterToggle: document.getElementById('filter-toggle'),
-  filterActive: document.getElementById('filter-active'),
-  filterCount: document.getElementById('filter-count'),
+  // One toolbar component, three places to put it. Keyed by the same names as `surface`.
+  tools: {
+    recipes: document.getElementById('tools-recipes'),
+    saved: document.getElementById('tools-saved'),
+    slot: document.getElementById('tools-slot')
+  },
   recipeGrid: document.getElementById('recipe-grid'),
   recipesEmpty: document.getElementById('recipes-empty'),
   recipesCount: document.getElementById('recipes-count'),
@@ -594,7 +631,6 @@ const el = {
   slotPickerTitle: document.getElementById('slot-picker-title'),
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
-  slotSearch: document.getElementById('slot-search'),
   themeToggle: document.getElementById('theme-toggle'),
   themeColor: document.querySelector('meta[name="theme-color"]'),
   toast: document.getElementById('toast')
@@ -638,6 +674,15 @@ function toast(message) {
 function slotLabel(iso, meal) {
   const date = dateOf(iso);
   return DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3) + ' ' + meal.toLowerCase();
+}
+
+// What a card shows, which is not everything a recipe carries. Three at most — a fourth
+// row of tags outweighed the recipe's own name — and never `quick`, because the minutes
+// beside the name already say so. Still filterable: this trims the display, not the tag.
+// The detail sheet gets the full set; it has the room and you opened it to read.
+const CARD_TAG_LIMIT = 3;
+function cardTags(recipe) {
+  return recipe.tags.filter(function (t) { return t !== 'quick'; }).slice(0, CARD_TAG_LIMIT);
 }
 
 function tagsHtml(tags) {
@@ -686,6 +731,7 @@ const MEAL_ICON = {
 function setView(view) {
   state.view = view;
   closeSlotPicker();
+  closeDrops(document);
   Object.keys(el.views).forEach(function (name) {
     el.views[name].hidden = name !== view;
   });
@@ -861,7 +907,7 @@ function cardHtml(recipe, slot) {
           '<h2 class="card-name">' + escapeHtml(recipe.name) + '</h2>' +
           '<span class="card-time">' + recipe.minutes + ' min</span>' +
         '</div>' +
-        '<div class="card-tags">' + tagsHtml(recipe.tags) + '</div>' +
+        '<div class="card-tags">' + tagsHtml(cardTags(recipe)) + '</div>' +
       '</button>' +
       '<div class="card-actions">' + addBtn +
         '<button type="button" class="icon-btn bookmark" data-action="bookmark" data-id="' + recipe.id + '" ' +
@@ -871,11 +917,22 @@ function cardHtml(recipe, slot) {
     '</article>';
 }
 
-// search: free text; tags: array of tags to require any of (empty = all recipes).
-function matchingRecipes(search, tags) {
+// list: what to search through — the whole catalogue on Recipes, your bookmarks on Saved.
+// search: free text. tags: OR *within* a filter group, AND *across* groups — "breakfast"
+// and "vegan" together means a vegan breakfast, and two macro boxes means either macro.
+// It used to be one flat OR over every ticked tag, which made the slot picker's meal
+// preset meaningless the moment a second box was ticked: asking for a vegan breakfast
+// returned every vegan dinner too.
+function matchingRecipes(list, search, tags) {
   const q = search.trim().toLowerCase();
-  return RECIPES.filter(function (r) {
-    const tagsOk = tags.length === 0 || tags.some(function (t) { return r.tags.indexOf(t) !== -1; });
+  const wanted = FILTER_GROUPS.map(function (g) {
+    return g.tags.filter(function (t) { return tags.indexOf(t) !== -1; });
+  }).filter(function (g) { return g.length > 0; });
+
+  return list.filter(function (r) {
+    const tagsOk = wanted.every(function (group) {
+      return group.some(function (t) { return r.tags.indexOf(t) !== -1; });
+    });
     if (!tagsOk) return false;
     if (!q) return true;
     return r.name.toLowerCase().indexOf(q) !== -1 ||
@@ -884,69 +941,152 @@ function matchingRecipes(search, tags) {
   });
 }
 
-function chipHtml(tag) {
-  return '<button type="button" class="chip" data-action="tag" data-tag="' + tag + '" ' +
-    'aria-pressed="' + (state.tags.indexOf(tag) !== -1) + '">' + escapeHtml(tag) + '</button>';
+// ---------------------------------------------------------------- tools row
+
+// Search, layout and filters, in that order, on one row — and one component draws it for
+// Recipes, Saved and the week's slot picker, the same way cardHtml() draws every card.
+// Three copies of a filter row is three places for a new tag to go missing.
+//
+// Drawn once at startup and then left alone: syncTools() writes the ticked boxes, the
+// badges and the pressed layout button in place. A redraw would close whichever dropdown
+// was open and take the caret out of the search field on every keystroke.
+const VIEW_MODES = [
+  { mode: 'tile', label: 'Tile view',
+    icon: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="3.6" y="3.6" width="7.4" height="7.4" rx="1.7"></rect>' +
+      '<rect x="13" y="3.6" width="7.4" height="7.4" rx="1.7"></rect>' +
+      '<rect x="3.6" y="13" width="7.4" height="7.4" rx="1.7"></rect>' +
+      '<rect x="13" y="13" width="7.4" height="7.4" rx="1.7"></rect></svg>' },
+  { mode: 'list', label: 'List view',
+    icon: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="3.6" y="4.4" width="16.8" height="5.6" rx="1.7"></rect>' +
+      '<rect x="3.6" y="14" width="16.8" height="5.6" rx="1.7"></rect></svg>' }
+];
+
+// A native <details>, not a hand-rolled menu: it opens on click and on Enter or Space,
+// it is announced as a disclosure, and it costs no script at all. `name` makes the group
+// mutually exclusive, so opening one closes the last. What it does not do is close on a
+// click elsewhere or on Escape — those two are wired by hand in the events section.
+function dropHtml(name, group) {
+  return '<details class="filter-drop" name="filters-' + name + '">' +
+      '<summary class="filter-summary">' + escapeHtml(group.label) +
+        '<span class="filter-badge" hidden></span></summary>' +
+      '<div class="filter-menu" role="group" aria-label="' + escapeHtml(group.label) + '">' +
+        group.tags.map(function (t) {
+          return '<label class="filter-opt">' +
+            '<input type="checkbox" data-action="tag" data-surface="' + name + '" ' +
+              'data-tag="' + t + '">' + escapeHtml(t) + '</label>';
+        }).join('') +
+      '</div>' +
+    '</details>';
 }
 
-function renderTagFilters() {
-  const all = [];
-  RECIPES.forEach(function (r) {
-    r.tags.forEach(function (t) { if (all.indexOf(t) === -1) all.push(t); });
-  });
-  const grouped = [];
-  const groups = TAG_GROUPS.map(function (g) {
-    const tags = g.tags.filter(function (t) { grouped.push(t); return all.indexOf(t) !== -1; });
-    return { label: g.label, tags: tags };
-  }).filter(function (g) { return g.tags.length > 0; });
-
-  const rest = all.filter(function (t) { return grouped.indexOf(t) === -1; }).sort();
-  if (rest.length) groups.push({ label: 'More', tags: rest });
-
-  el.tagFilters.innerHTML = groups.map(function (g, i) {
-    const labelId = 'filter-group-' + i;
-    // A bare wrapper, no class: it is the grid item that keeps a label with its chips,
-    // and it carries no styling of its own. The inner .chips has the group role.
-    return '<div>' +
-        '<p class="filter-group-label" id="' + labelId + '">' + escapeHtml(g.label) + '</p>' +
-        '<div class="chips" role="group" aria-labelledby="' + labelId + '">' +
-          g.tags.map(chipHtml).join('') +
-        '</div>' +
-      '</div>';
-  }).join('');
+function toolsHtml(name) {
+  return '<div class="tool-bar">' +
+      '<div class="search">' +
+        '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
+        '<input type="search" class="tool-search" id="search-' + name + '" ' +
+          'data-surface="' + name + '" placeholder="Search by name or ingredient…" ' +
+          'autocomplete="off">' +
+      '</div>' +
+      '<div class="view-toggle" role="group" aria-label="Card layout">' +
+        VIEW_MODES.map(function (v) {
+          return '<button type="button" class="icon-btn" data-action="card-view" ' +
+            'data-mode="' + v.mode + '" aria-pressed="false" ' +
+            'aria-label="' + v.label + '" title="' + v.label + '">' + v.icon + '</button>';
+        }).join('') +
+      '</div>' +
+      '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
+        'data-surface="' + name + '" aria-expanded="true" aria-controls="filter-row-' + name + '">' +
+        'Filters<span class="filter-badge" hidden></span></button>' +
+    '</div>' +
+    // One row of dropdowns rather than five stacks of chips: sixteen tags in the open
+    // used a third of the screen before a single recipe. The Clear button is never
+    // hidden, even with nothing ticked — hiding it the moment it did its job would
+    // delete the control just pressed and drop focus to <body>.
+    '<div class="filter-row" id="filter-row-' + name + '">' +
+      FILTER_GROUPS.map(function (g) { return dropHtml(name, g); }).join('') +
+      '<button type="button" class="btn btn-quiet btn-sm filter-clear" ' +
+        'data-action="clear-tags" data-surface="' + name + '">Clear</button>' +
+    '</div>';
 }
 
-function renderFilterState() {
-  const active = state.tags.length;
-  el.tagFilters.hidden = !state.filtersOpen;
-  el.filterToggle.setAttribute('aria-expanded', String(state.filtersOpen));
-  el.filterToggle.innerHTML = 'Filters' +
-    (active ? '<span class="filter-badge">' + active + '</span>' : '');
-  el.filterActive.hidden = active === 0;
-  el.filterCount.textContent = active
-    ? 'Showing recipes tagged ' + state.tags.join(', ')
-    : '';
-  el.tagFilters.querySelectorAll('.chip').forEach(function (chip) {
-    chip.setAttribute('aria-pressed', String(state.tags.indexOf(chip.dataset.tag) !== -1));
+function setBadge(node, count) {
+  node.textContent = count;
+  node.hidden = count === 0;
+}
+
+// Everything about the row that depends on state, written in place.
+function syncTools(name) {
+  const root = el.tools[name];
+  const s = surface[name];
+
+  const row = root.querySelector('.filter-row');
+  const toggle = root.querySelector('.filter-toggle');
+  row.hidden = !s.filtersOpen;
+  toggle.setAttribute('aria-expanded', String(s.filtersOpen));
+  setBadge(toggle.querySelector('.filter-badge'), s.tags.length);
+
+  root.querySelectorAll('.filter-drop').forEach(function (drop) {
+    let ticked = 0;
+    drop.querySelectorAll('input[type="checkbox"]').forEach(function (box) {
+      box.checked = s.tags.indexOf(box.dataset.tag) !== -1;
+      if (box.checked) ticked++;
+    });
+    setBadge(drop.querySelector('.filter-badge'), ticked);
   });
+
+  root.querySelectorAll('[data-action="card-view"]').forEach(function (btn) {
+    btn.setAttribute('aria-pressed', String(btn.dataset.mode === state.cardView));
+  });
+
+  // Only when it disagrees: writing .value on every keystroke moves the caret to the end.
+  const input = root.querySelector('.tool-search');
+  if (input.value !== s.search) input.value = s.search;
+}
+
+// Which list a toolbar steers. Every branch that changes a search or a filter ends here.
+function renderFor(name) {
+  if (name === 'slot') renderSlotPicker();
+  else if (name === 'saved') renderSaved();
+  else renderRecipes();
+}
+
+// A dropdown left open where it can no longer be seen is a summary .focus() cannot reach
+// and a menu that comes back already open. Shut them on the way out.
+function closeDrops(root) {
+  root.querySelectorAll('.filter-drop[open]').forEach(function (drop) { drop.open = false; });
 }
 
 function renderRecipes() {
-  const list = matchingRecipes(state.search, state.tags);
+  const list = matchingRecipes(RECIPES, surface.recipes.search, surface.recipes.tags);
   // not list.map(cardHtml): map would pass the index as cardHtml's slot argument.
   el.recipeGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
+  el.recipeGrid.classList.toggle('is-list', state.cardView === 'list');
   el.recipesEmpty.hidden = list.length > 0;
   el.recipesCount.textContent = list.length === RECIPES.length
     ? RECIPES.length + ' recipes'
     : list.length + ' of ' + RECIPES.length + ' recipes';
-  renderFilterState();
+  syncTools('recipes');
 }
 
 function renderSaved() {
-  const list = state.bookmarks.map(function (id) { return RECIPE_BY_ID.get(id); }).filter(Boolean);
+  const shelf = state.bookmarks.map(function (id) { return RECIPE_BY_ID.get(id); }).filter(Boolean);
+  const list = matchingRecipes(shelf, surface.saved.search, surface.saved.tags);
   el.savedGrid.innerHTML = list.map(function (r) { return cardHtml(r); }).join('');
+  el.savedGrid.classList.toggle('is-list', state.cardView === 'list');
   el.savedEmpty.hidden = list.length > 0;
-  el.savedCount.textContent = list.length === 1 ? '1 recipe' : list.length + ' recipes';
+  // An empty shelf and a shelf nothing matches are two different dead ends, and only one
+  // of them is answered by clearing a filter.
+  el.savedEmpty.textContent = shelf.length === 0
+    ? 'Nothing saved yet. Tap the bookmark on any recipe to keep it here.'
+    : 'None of your saved recipes match. Try clearing a filter.';
+  el.savedCount.textContent = list.length === shelf.length
+    ? (shelf.length === 1 ? '1 recipe' : shelf.length + ' recipes')
+    : list.length + ' of ' + shelf.length + ' recipes';
+  syncTools('saved');
 }
 
 // ---------------------------------------------------------------- detail dialog
@@ -1002,14 +1142,21 @@ function openDetail(id, slot) {
 
 // ponytail: only empty slots offer "+ Add", so the heading is always "Choose". Replacing
 // in place would need a swap button on filled slots — clear then add covers it for now.
-const slotPick = { iso: null, meal: null, search: '', opener: null };
+const slotPick = { iso: null, meal: null, opener: null };
 
 function openSlotPicker(iso, meal, opener) {
   slotPick.iso = iso;
   slotPick.meal = meal;
-  slotPick.search = '';
   slotPick.opener = opener;
-  el.slotSearch.value = '';
+  // The slot already knows which meal it is, so the list starts as the recipes for that
+  // meal rather than all fifty — every recipe carries exactly one of the three tags. It
+  // is a ticked box in the Meal group, not a hidden rule: the filter row opens with it
+  // showing, so it explains the short list and can be turned off for a breakfast at
+  // dinner. Reset on every open; last time's search is not this time's question.
+  surface.slot.search = '';
+  surface.slot.tags = [meal.toLowerCase()];
+  surface.slot.filtersOpen = true;
+  closeDrops(el.slotPicker);
 
   const date = dateOf(iso);
   const dayName = DAY_NAMES[(date.getDay() + 6) % 7].slice(0, 3);
@@ -1070,6 +1217,7 @@ function closeSlotPicker() {
   slotPick.opener = null;
   el.slotPicker.hidden = true;
   el.slotPicker.style.maxHeight = '';
+  closeDrops(el.slotPicker);
   el.dayTitle.hidden = false;
   el.weekGrid.hidden = false;
   // Focus was inside the panel we just hid, so hand it back: to the slot that opened the
@@ -1082,12 +1230,14 @@ function closeSlotPicker() {
 
 function renderSlotPicker() {
   if (!slotPick.iso) return;   // nothing to fill, so nothing to draw
-  const list = matchingRecipes(slotPick.search, []);
+  const list = matchingRecipes(RECIPES, surface.slot.search, surface.slot.tags);
   const slot = { iso: slotPick.iso, meal: slotPick.meal };
   el.slotPickerGrid.innerHTML = list.map(function (r) {
     return cardHtml(r, slot);
   }).join('');
+  el.slotPickerGrid.classList.toggle('is-list', state.cardView === 'list');
   el.slotPickerEmpty.hidden = list.length > 0;
+  syncTools('slot');
 }
 
 // ---------------------------------------------------------------- add-to-week dialog
@@ -1156,6 +1306,12 @@ function confirmPicker() {
 // ---------------------------------------------------------------- events
 
 document.addEventListener('click', function (event) {
+  // The one thing a native <details> will not do: shut when you click past it. Before
+  // any action, so a click on another dropdown's summary still opens that one.
+  document.querySelectorAll('.filter-drop[open]').forEach(function (drop) {
+    if (!drop.contains(event.target)) drop.open = false;
+  });
+
   const target = event.target.closest('[data-action]');
   if (!target) return;
   const action = target.dataset.action;
@@ -1295,46 +1451,72 @@ document.addEventListener('click', function (event) {
 
   if (action === 'picker-confirm') { confirmPicker(); return; }
   if (action === 'picker-cancel') { el.picker.close(); return; }
+  // A checkbox, so the click that lands here is the one the browser fires on the input
+  // itself — clicking the label's text or pressing Space both arrive the same way. The
+  // toolbar is not redrawn, so the box keeps focus and the open menu stays open.
   if (action === 'tag') {
+    const picked = surface[target.dataset.surface];
     const tag = target.dataset.tag;
-    const at = state.tags.indexOf(tag);
-    if (at === -1) state.tags.push(tag);
-    else state.tags.splice(at, 1);
-    renderRecipes();
+    const at = picked.tags.indexOf(tag);
+    if (at === -1) picked.tags.push(tag);
+    else picked.tags.splice(at, 1);
+    renderFor(target.dataset.surface);
     return;
   }
 
   if (action === 'clear-tags') {
-    state.tags = [];
-    renderRecipes();
+    surface[target.dataset.surface].tags = [];
+    renderFor(target.dataset.surface);
     return;
   }
 
   if (action === 'filters-toggle') {
-    state.filtersOpen = !state.filtersOpen;
-    renderFilterState();
+    const owner = surface[target.dataset.surface];
+    owner.filtersOpen = !owner.filtersOpen;
+    if (!owner.filtersOpen) closeDrops(el.tools[target.dataset.surface]);
+    syncTools(target.dataset.surface);
+    return;
+  }
+
+  // One preference, all three lists — and the buttons themselves are never redrawn, so
+  // the one just pressed keeps focus.
+  if (action === 'card-view') {
+    state.cardView = target.dataset.mode;
+    saveState();
+    render();
+    if (!el.slotPicker.hidden) renderSlotPicker();
     return;
   }
 });
 
-el.search.addEventListener('input', function () {
-  state.search = el.search.value;
-  renderRecipes();
-});
-
-el.slotSearch.addEventListener('input', function () {
-  slotPick.search = el.slotSearch.value;
-  renderSlotPicker();
+// One listener for all three search fields: the toolbars are drawn by app.js, so there
+// is nothing to bind to at load time and nothing to rebind if one is ever redrawn.
+document.addEventListener('input', function (event) {
+  const input = event.target.closest('.tool-search');
+  if (!input) return;
+  surface[input.dataset.surface].search = input.value;
+  renderFor(input.dataset.surface);
 });
 
 // A rotated phone or a dragged window changes the room the picker was measured against.
 // No-op unless it is open.
 window.addEventListener('resize', sizeSlotPicker);
 
-// Escape closes the inline picker, matching what it does in the dialogs.
+// Escape closes the inline picker, matching what it does in the dialogs — but an open
+// filter dropdown gets it first, or picking a filter inside the picker and pressing
+// Escape would take the whole panel down with the menu. Nothing can be open behind a
+// hidden view: setView() and closeSlotPicker() shut them, so the summary this focuses
+// is always on screen.
 document.addEventListener('keydown', function (event) {
-  if (event.key !== 'Escape' || el.slotPicker.hidden) return;
+  if (event.key !== 'Escape') return;
   if (el.detail.open || el.picker.open) return;  // that Escape belongs to the dialog
+  const drop = document.querySelector('.filter-drop[open]');
+  if (drop) {
+    drop.open = false;
+    drop.querySelector('summary').focus();
+    return;
+  }
+  if (el.slotPicker.hidden) return;
   closeSlotPicker();
 });
 
@@ -1351,7 +1533,7 @@ el.detail.addEventListener('close', function () { detailSlot = null; });
 
 loadState();
 applyTheme();
-el.weekHeading.textContent = WEEK_GREETING;
-renderTagFilters();
-renderFilterState();
+Object.keys(el.tools).forEach(function (name) {
+  el.tools[name].innerHTML = toolsHtml(name);
+});
 setView('week');
