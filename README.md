@@ -32,6 +32,7 @@ Eight documents, each with one job:
 | [docs/log.md](docs/log.md) | What happened in what order, and what each round of testing covered |
 | [docs/dark-mode-reference.md](docs/dark-mode-reference.md) | How ChatGPT and PowerToys build their dark greys — the nesting ladder (deeper means lighter), measured hexes, hover deltas, edge and shadow treatment, and where Mise's dark tokens differ |
 | [docs/light-mode-reference.md](docs/light-mode-reference.md) | The companion for light — why the ladder runs out at white, why hovers point the other way, and why light mode has shadows and dark mode has none |
+| [docs/claude-md-starter.md](docs/claude-md-starter.md) | Not about Mise: the portable `CLAUDE.md` skeleton for starting a new project, and the four structural moves worth copying |
 | `CLAUDE.md` | Rules for the AI assistant working in this repo |
 
 ## What it does
