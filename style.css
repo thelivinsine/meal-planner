@@ -313,7 +313,7 @@ button, input, select { font: inherit; color: inherit; }
    The other two views are a single column, so centring is centring. */
 .view-head {
   display: flex; flex-direction: column; align-items: center;
-  gap: var(--space-1); margin-bottom: var(--space-3); text-align: center;
+  gap: var(--space-1); margin-bottom: var(--space-4); text-align: center;
 }
 h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .view-sub { color: var(--ink-faint); font-size: .875rem; font-weight: 500; }
@@ -356,10 +356,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    below — there is nothing in it you cannot read off the meals themselves. */
 /* The heading is a direct child rather than part of .week-main, so the grid can give it
    a row of its own and the summary column starts level with the week bar instead of
-   level with the heading. The grid gap replaces its own margin, so it is --space-3, the
-   same block gap `.view-head` carries on every other view. It is also the *column* gap
-   beside the summary panel over 1000px, which is why the wide block no longer sets one. */
-.view-week { display: grid; gap: var(--space-3); align-items: start; }
+   level with the heading. The grid gap replaces its own margin, so the *row* gap is
+   --space-4, the same section break `.view-head` carries on every other view — the
+   heading is the largest thing on the page and 24px under it read as cramped against it.
+   The *column* gap beside the summary panel stays --space-3: that is two things sitting
+   side by side, which is a block edge, not a section break. Two values, one declaration,
+   which is why the wide block no longer sets a gap of its own. */
+.view-week { display: grid; gap: var(--space-4) var(--space-3); align-items: start; }
 .view-week > .view-head { margin-bottom: 0; }
 .week-main { min-width: 0; }
 .week-side { display: none; }
