@@ -4,12 +4,19 @@
 
 | | |
 |---|---|
-| **Live** | Code at `12ce708` (PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged). Pages `built` at `12ce708`. https://thelivinsine.github.io/meal-planner/ |
+| **Live** | Code at `12ce708` (PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged). Pages `built` at `46e34f3`, the docs commit on top of it — same three files, so the live app is `12ce708`. https://thelivinsine.github.io/meal-planner/ |
 | **Open work** | **None.** No branch, no PR, no known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
 | **Confirmed** | The tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
-| **Branches** | `search-filter-view-toolbar` deleted on merge. `design/bold-consumer` is merged and can be deleted whenever; everything else has gone on merge |
+| **Branches** | `search-filter-view-toolbar` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
 
 ## What just shipped
+
+**Since PR #13, one docs-only round and no code.** Every figure in the nine markdown files was
+re-derived from `app.js` rather than trusted, three stale facts in this file were corrected (the
+Pages commit, the branch row, a heading that counted three bugs over a list of six), and
+`CLAUDE.md` came back from 229 lines to 200 with all 55 rules intact — the reasoning moved to
+[decisions.md](decisions.md), which is where it was already written. Details in
+[log.md](log.md#the-docs-maintenance-round-no-pr).
 
 **PR #13: one tools row — search, layout, filters — on Recipes, on Saved, and in the week's slot
 picker.** Four commits and a review pass.
@@ -83,7 +90,7 @@ layout button is the `--accent-soft` wash with `--accent-ink` on it, the badge i
 `.filter-summary` sits on the tools card. It stays in the list as the guard for the next thing that
 lands on the page.
 
-### Three bugs this round caused and this round found
+### The bugs this round caused and this round found
 
 - **`.card-tags` carried `flex: none` in list layout**, so in the slot picker's narrow column three
   tags ran under the foot of buttons and the card's own `overflow: hidden` sliced the last one in
@@ -123,25 +130,20 @@ the kind of thing that reads differently on a phone.
    Tab through the week, the picker with a dropdown open, both dialogs, and one filter menu end to
    end.
 2. **A phone.** Same list, and the 44px floor is genuinely untested on the new controls.
-3. **Decide whether `CLAUDE.md` is over budget or the budget moved.** It is 229 lines against a
-   stated "about 200", and the growth is eight new rules for a subsystem that did not exist last
-   round — rules, not reasoning, with the reasoning in
-   [decisions.md](decisions.md#search-filters-and-layout). Either the number moves or something
-   older comes out; drifting past it silently is the one option that isn't available.
-4. **Decide whether the spacing scale gets a check.** Unchanged from last round: a rule writing
+3. **Decide whether the spacing scale gets a check.** Unchanged from last round: a rule writing
    `margin-bottom: 18px` is legal CSS and passes all 76 checks. Described in
    [architecture](architecture.md#how-this-gets-tested), deliberately not written, held by review.
-5. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
+4. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
-6. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
+5. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
    about fifteen renders and kept none. `*.png` is gitignored and would need a deliberate
    `!Screenshots/**` exception. Your call.
-7. **Act on the dark-mode findings, or decide not to.**
+6. **Act on the dark-mode findings, or decide not to.**
    [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens) names two:
    nothing sits above `--surface`, so hover and selected have nowhere to go; and `--surface-sunk`
    is **1.08** from `--bg` in dark. One of its examples has quietly gone away — the time pill is
    bare text now, which sidesteps that question rather than answering it.
-8. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
+7. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
    good deal quieter without it. Worth looking at the week view fresh in a week and deciding on
    purpose rather than by neglect.
 

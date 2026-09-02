@@ -14,7 +14,9 @@ noise the next session has to read past.
 Four structural moves, not the rules themselves:
 
 1. **Rules here, reasoning in `docs/decisions.md`.** The one file stays scannable only if the
-   paragraphs live somewhere with no budget. Mise's kept failing this by carrying both.
+   paragraphs live somewhere with no budget. Mise's kept failing this by carrying both — and the
+   test alone did not hold it, so Mise's now carries a stated line count as well. The count is not
+   the point; it is the only part of the test that anyone actually checks.
 2. **A session starts at `docs/status.md`.** One doc allowed to go stale, holding the live
    commit, open work and what isn't verified. Everything else stays true.
 3. **The PR says what was *not* verified.** That half is what gets read before merging, and
@@ -44,8 +46,9 @@ purpose: read `docs/decisions.md` before proposing changes.
 - State the decisions you made and why, one or two lines each.
 - Explain things simply — assume I'm not a specialist in this stack.
 - **"Update the docs"** means sweep *every* markdown file against the current state.
-- **Keep this file rules-only.** The test isn't line count, it's "is this a rule or is it
-  reasoning". Reasoning goes in `docs/decisions.md`, which has no budget.
+- **Keep this file rules-only, and under <N> lines.** The test is "is this a rule or is it
+  reasoning"; the line count is what catches you failing it. Reasoning goes in
+  `docs/decisions.md`, which has no budget.
 
 ## Hard constraints
 - **Never commit to `main` directly.** Code changes go on a branch and come back via PR.

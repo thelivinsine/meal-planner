@@ -16,13 +16,9 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only** — 229 lines as it stands, up from 200 before the tools row brought
-  eight new rules with it. That growth is recorded rather than hidden, and
-  [status](docs/status.md#next-jobs-in-the-order-theyd-earn-their-place) asks you to decide whether
-  the number moves or something older comes out. The test is not the line count,
-  it's "is this a rule or is it reasoning": reasoning goes in `docs/decisions.md`, which has no
-  budget. If a rule needs a paragraph to be safe, put the paragraph there and the rule here. A
-  line count is what this file kept failing when it was carrying both.
+- **Keep this file rules-only, and at 200 lines or fewer.** It reached 229 by keeping the *reasoning*
+  beside the rules and came back by moving it to `docs/decisions.md`, which has no budget. The test
+  is "is this a rule or is it reasoning"; the line count is what catches you failing it.
 
 ## Hard constraints
 - **Never commit code to `main` directly.** Any change to `index.html`, `style.css` or `app.js`
@@ -59,10 +55,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   draws both — `cardHtml(recipe, slot)`, the slot argument swapping the primary button.
 - **The picker takes the day's place, and fits on the screen.** Opening it hides `.day-title` and
   `.meals` and draws in their spot; one way out, a **back link**, not a close ×. The week bar,
-  sidebar and summary column never move. `sizeSlotPicker()` **measures** its height — viewport,
-  less `.page`'s own bottom padding (which sits *below* it and counts towards document height),
-  less its own top, then the leftover overshoot — and `.pick-grid` scrolls inside it, so the page
-  never does. Not a `vh` figure: above it are a bar that grows a button and a filter row that opens.
+  sidebar and summary column never move. `sizeSlotPicker()` **measures** its height rather than
+  naming a `vh` figure, and `.pick-grid` scrolls inside it so the page itself never does.
 - **One day at a time, at every width.** Week bar, seven day buttons, then that day as three meal
   cards (`state.focusDay`). **Never bring back a second week markup** — accordion, rails,
   `expandAll`, `--week-cols` and `subgrid` sharing all went when the mockups settled on one day.
@@ -72,25 +66,22 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **The summary column is derived, so it may be dropped.** Anything that can only be read there
   doesn't belong there.
 - **One box per level:** the card gets the border, and nothing inside it gets a second one — no
-  filled tile around the recipe, no bordered icon button. A meal card holds a label, a name and
-  a meta line, and the *name* is what shows it is clickable: `--accent-ink`, **underlined at rest**
-  (the accent at 45%), the line going full strength on hover. Not hover-only — touch has no hover.
+  filled tile around the recipe, no bordered icon button. The recipe *name* is what shows a meal
+  card is clickable: `--accent-ink`, **underlined at rest** (the accent at 45%), full strength on
+  hover — never hover-only.
 - **The week bar is navigation, so it stays compact — and it has no tile.** No fill, no border, no
-  radius: the meal cards are the content and the only boxes on the week. Capped at 520px and
-  centred, because seven chips sharing the full column stop reading as one week. If a change makes
-  the bar taller, it needs a reason better than fitting.
-- **A planned day is an accent *ring*, never a fill.** The chips sit on the page, so a neutral tint
-  has nowhere to go — `--surface-sunk` measures 1.08 on `--bg` in both themes. One shape, three
-  states: bare circle, ringed when planned, filled when selected. Chip hover is `--hover`. **Never
-  on a day gone by** — the ring is about what is still ahead of you.
+  radius; capped at 520px and centred. If a change makes the bar taller, it needs a reason better
+  than fitting.
+- **A planned day is an accent *ring*, never a fill.** One shape, three states: bare circle, ringed
+  when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by** — the
+  ring is about what is still ahead of you.
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
-  tags, pills, chips, inputs use `--surface-sunk`. In dark mode the page shade is the darkest thing
-  on screen, so a pill filled with it reads as a hole punched through the tile.
+  tags, pills, chips, inputs use `--surface-sunk`.
 - **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
   the shade the control already has is a no-op, and no contrast script can see one.
-- **One shape for one idea.** Saving a recipe is a **bookmark**, the same path as the sidebar's
-  *Saved* icon (`BOOKMARK_PATH` in `app.js`, and inline in `index.html` — change one, change the
-  other). Not a star: a star says rate, not keep.
+- **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the same path as the
+  sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, and inline in `index.html` — change one,
+  change the other).
 - **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
   near-white for cards, `--surface-sunk` deeper for trays and tiles, `--surface-past` back
   *towards* the page — towards it, never past it.
@@ -99,36 +90,29 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   carries the edge — and then it's the **line** you measure, against both sides.
 - **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
   go darker than the page in *both* themes, but hover and selected go **up** in dark and **down** in
-  light. Measured hexes and state deltas: `docs/dark-mode-reference.md`, `docs/light-mode-reference.md`.
-  Read them before moving a surface token or inventing a state colour. **A measured reference is
-  evidence, not a spec** — its 4px focus ring was built here and was too loud; it ships at 3px.
+  light. Read `docs/dark-mode-reference.md` and `docs/light-mode-reference.md` before moving a
+  surface token or inventing a state colour — **as evidence, not as a spec**.
 - **A hover fill goes down in light, up in dark.** `--hover` is the fill for a control sitting on
-  the *page*; a control on a card uses `--surface-sunk`, already a step down. There is no
-  `--selected` token, because every selected state here is an accent fill — don't add one without a
-  consumer.
+  the *page*; one on a card uses `--surface-sunk`. No `--selected` token — every selected state
+  here is an accent fill; don't add one without a consumer.
 - **`--accent` fills, `--accent-ink` writes.** Every accent-coloured *word* uses `--accent-ink`;
   borders, dots, chips and fills use `--accent`. Backwards breaks the floor quietly.
-- **Anything keyed to the *theme* reads the theme, not the OS.** It's a stored choice, so
-  `prefers-color-scheme` is the wrong signal. Set it from the live `--bg`, in the `<head>` script
-  too or it flashes.
+- **Anything keyed to the *theme* reads the theme, not the OS** — it is a stored choice. Set it
+  from the live `--bg`, in the `<head>` script too or it flashes.
 - **A past day is quieter by colour, never by opacity, and it carries no ring.** Name *and* date
-  at `--ink-faint`, so the whole chip recedes rather than half of it. Opacity blends text back
-  towards its tile and undoes the tokens.
+  at `--ink-faint`, so the whole chip recedes rather than half of it.
 - **Subject gets the weight:** the recipe takes the large type in the add dialog, "Add to week" a
   small eyebrow over it. Views get no eyebrow — a heading and at most one subtitle, centred over
   the content it introduces. The week has no head at all now, and its **two** grid items are both
-  placed in **row 1** by hand: left to auto-flow in row 2 they are charged a `--space-4` row gap
-  for an empty row above them.
+  placed in **row 1** by hand: auto-flowed into row 2 they are charged a `--space-4` gap above.
 - **The week view has no visible heading.** The rotating greeting is parked in a comment in
-  `index.html` (with `WEEK_GREETINGS` still in `app.js`, unread) and the day title is `.sr-only`.
-  Both repeated what the week bar already says. Don't put either back without asking — and if the
-  greeting returns, the restore notes are in that comment.
+  `index.html` (`WEEK_GREETINGS` still in `app.js`, unread) and the day title is `.sr-only`. Don't
+  put either back without asking; if the greeting returns, the restore notes are in that comment.
 - **One tools row, three lists.** Search, a tile/list toggle and the filter dropdowns are one
   component — `toolsHtml(name)` into `#tools-recipes`, `#tools-saved`, `#tools-slot`. Drawn once at
   startup and **never redrawn**; `syncTools(name)` writes boxes, badges and the pressed layout
-  button in place. A redraw closes an open dropdown and moves the caret. **Search text and ticked
-  tags are per list** (`surface.recipes` / `.saved` / `.slot`), never shared; the layout is the
-  opposite — one `state.cardView`, all three lists, persisted.
+  button in place. **Search text and ticked tags are per list** (`surface.recipes` / `.saved` /
+  `.slot`), never shared; the layout is one `state.cardView` for all three, persisted.
 - **The slot picker opens filtered to its meal** — a ticked box in the *Meal* group with the filter
   row open, not a hidden rule. Reset on every open.
 - **Filters mean OR *within* a group, AND *across* groups.** Groups are `FILTER_GROUPS`:
@@ -145,11 +129,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   dispatches on `data-action`.
 - **Vertical gaps come from four tokens** — `--space-1/2/3/4` (8/16/24/40): inside a group, between
   siblings, between blocks, between sections. A new vertical gap picks a step; it does not invent a
-  number. **A view heading is a section break, not a block break** — it is the largest thing on the
-  page, so `--space-3` under it reads cramped. Two exceptions, both named in `docs/decisions.md`:
-  `.page`'s bottom padding is nav clearance, and the dialogs are not on the scale yet. **Padding
-  inside a component stays put** — the scale spaces things apart, it does not resize controls, and
-  the horizontal flex gaps are not on it either. Nothing in `check.mjs` sees any of this.
+  number. **A view heading is a section break, not a block break.** **Padding inside a component
+  stays put**, and the horizontal flex gaps are not on the scale either. Two exceptions, both named
+  in `docs/decisions.md`. Nothing in `check.mjs` sees any of this.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 
@@ -158,9 +140,7 @@ Mechanism only — the stories are in `docs/decisions.md`.
 
 - **`grid-auto-rows: auto` is content-sized only while the grid's own height is indefinite.** Give
   a grid a definite height — `flex: 1` inside a `max-height` panel does exactly that — and the
-  height is divided among the rows instead. `.pick-grid` needs its `min-content`, or every card
-  collapses to its two borders with its content clipped away by the card's own `overflow`.
-
+  height is divided among the rows instead. `.pick-grid` needs its `min-content`.
 - **Media queries add no specificity**, so a base rule *below* one beats it. All of them live at
   the end of `style.css`, and an id selector outranks the lot — hence the rule above.
 - **`.page` needs its explicit `width: 100%`.** Over 1000px it's a grid item, and one with auto
@@ -184,18 +164,14 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
   that gets missed**; both focus bugs here were one.
 - **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
   `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,
-  then open picker, then the view. The hidden day still holds bookmark buttons, earlier in the
-  document than the picker's.
+  then open picker, then the view.
 - **Never open a panel with focus in a search field** — reading the list is as likely as typing,
   and on a phone the keyboard covers it. Focus the panel (`tabindex="-1"`).
 - **A landmark's name must not change between loads**, so never point `aria-labelledby` at
-  something that rotates — the week greeting did. A fixed `aria-label` on the section, greeting
-  untouched. (The greeting has since left the page; the rule is what stopped it taking the
-  landmark's name with it.)
+  something that rotates — the week greeting did. A fixed `aria-label` on the section instead.
 - **Never leave a card unnamed, never hide a focusable control.** If a heading must vanish on
   screen, `.sr-only` — never `display: none` — and only on something not focusable. `.day-title`
-  is the live example: off the screen, still the accessible name for the three meal cards, because
-  a screen reader gets no week bar to look at.
+  is the live example: off the screen, still the accessible name for the three meal cards.
 - **Tab through anything you change.** The focus ring is the one control state neither the script
   nor a screenshot can see, and it has hidden a defect here for months.
 - **Touch targets at least 44px**, width as well as height, measured at 360px. Controls are compact
@@ -204,26 +180,21 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
 
 ## Scope
 Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag-and-drop,
-sharing/syncing, recipe photography. Don't add these unless asked;
-`docs/decisions.md#deliberately-not-built` has the reasoning. Photography is the trap — the
-mockups show one per meal and fetching any would break "no API calls".
+sharing/syncing, recipe photography. Don't add these unless asked; reasoning in
+`docs/decisions.md#deliberately-not-built`. Photography is the trap — fetching one breaks "no API calls".
 
 ## Testing
 No test framework unless asked. **`node check.mjs`** is the one saved check — contrast both
 directions, action and id wiring, and the three values written twice. Run it after touching
 `style.css` tokens, and **add the new pairs to its list** when a colour token appears: a pair
-missing from that list is a pair nobody measures. Approach and the standing gaps:
+missing from that list is a pair nobody measures. Approach and standing gaps:
 `docs/architecture.md#how-this-gets-tested`.
 
-**Read, look and measure — each catches what the other two miss, and this project has been bitten
-skipping each in turn** (reading missed a week at a third of its width that one screenshot caught;
-a script caught six things no screenshot could). So a rendered look is the check for anything
-touching layout, never an optional extra. **I check the app in a browser as we iterate**, so never
-write that it has never been looked at. Name what a change has *not* been seen against, and hand
-over an unlooked-at layout change rather than calling it done.
+**Read, look and measure — each catches what the other two miss.** A rendered look is the check for
+anything touching layout, never an optional extra. **I check the app in a browser as we iterate**,
+so never write that it has never been looked at. Name what a change has *not* been seen against,
+and hand over an unlooked-at layout change rather than calling it done.
 
-**Screenshots:** none in the repo, and `*.png`/`*.jpg` are gitignored so a camera-named file can't
-be committed by accident (`!Light mode Mockups/*.png` excepted, and it must name a folder that
-actually exists — a rename once untracked all four silently; a real set needs its own exception).
-Stale ones get
-deleted, not captioned. Descriptive filenames, hard-refresh first.
+**Screenshots:** none in the repo, and `*.png`/`*.jpg` are gitignored (`!Light mode Mockups/*.png`
+excepted, and that exception must name a folder that actually exists; a real set needs its own).
+Stale ones get deleted, not captioned. Descriptive filenames, hard-refresh first.

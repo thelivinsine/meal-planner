@@ -342,3 +342,21 @@ ordering and the never-redraw rule were both written *for* the keyboard and neit
 by one — every interaction in this round was `.click()` from a script. Dark mode *was* looked at,
 twice, which closes a gap that had been open since PR #10.
 
+### The docs-maintenance round (no PR)
+
+A sweep of all nine markdown files against the code, with nothing shipping in `index.html`,
+`style.css` or `app.js` on the same day. Every figure in the docs was re-derived from `app.js`
+rather than trusted — 50 recipes, 27 `indian`, 38 `high-protein`, 14 / 17 / 19 by meal, 16 tags in
+five groups — and `node check.mjs` was re-run: 76 pass.
+
+- **Three things had drifted in `status.md`.** Pages was `built` at `46e34f3`, the docs commit on
+  top of the live code, not at `12ce708`; the branch row said everything but one branch had gone on
+  merge, while `feat/slot-picker-and-indian-recipes` is still on the remote and fully contained in
+  `main`; and a heading counted "three bugs" over a list that added up to six.
+- **`CLAUDE.md` came back to 200 lines from 229**, which had been an open question for four rounds.
+  All 55 rules survive; what came out was the *justification* beside them, which `decisions.md`
+  already carried in every case — the picker's height arithmetic, why `--bg` reads as a hole in
+  dark mode, why the ring is not a fill, the 4px focus ring that shipped at 3px. The file now
+  states the budget as a rule rather than as a remark, because "is this a rule or is it reasoning"
+  is the test the file failed quietly for four rounds while nothing counted the lines.
+
