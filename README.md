@@ -21,7 +21,7 @@ request; blocked or offline, you get the fallback stack.
 
 ## Where to read what
 
-Eight documents, each with one job:
+Nine documents, each with one job:
 
 | | |
 |---|---|
@@ -42,28 +42,37 @@ Eight documents, each with one job:
   and roughly three quarters high-protein; the rest are tagged `balanced`. Both are ordinary tags,
   so the `indian` and `high-protein` chips filter on them
 - Search matches names, tags **and** ingredients — so "chickpea" finds the curry
-- Filters in one panel: search, then tag chips grouped under *Macros*, *Meal*, *Diet*,
-  *Cuisine & style* and *Main protein* — five short lists instead of one wrap of sixteen.
-  **Filters** collapses them and carries a count badge; an active row underneath names what you're
-  filtering by, with **Clear all** beside it
-- Pick several chips and a recipe matching any of them shows
-- Tapping a card opens a detail panel; close it with the ×, Escape, or a tap outside
+- **One row of tools**: the search field, a **tile / list** toggle, and **Filters**, which carries a
+  count badge and opens a single row of dropdowns — *Macros*, *Meal*, *Diet*, *Cuisine & style*,
+  *Main protein*. Each is a short list of checkboxes with its own count badge, and **Clear** empties
+  the lot. Sixteen tags, one line
+- **Two boxes in the same group widen the list; one in each narrows it.** *high-protein* and
+  *balanced* means either; *breakfast* and *vegan* means a vegan breakfast
+- The same row appears on **Saved** and inside the week's recipe picker. Each list keeps its own
+  search and filters — what you typed on Recipes has nothing to do with what you want in Saved —
+  while the tile / list choice is one preference for all three, remembered between visits
+- A card shows the name, the minutes, and **at most three tags**. `quick` is never one of them: the
+  minutes beside the name already say so
+- Tapping a card opens a detail panel with the full tag set; close it with the ×, Escape, or a tap
+  outside
 
 **Week** — your plan, one day at a time.
-- The heading is a different line every time you load the app — *Seven days, twenty-one meals*,
-  *Right then — what are we eating?* — one line, no subtitle, centred over the week. It is a
-  greeting, not a label; the week bar under it says which week this is
+- **No heading at all.** There was a rotating greeting, and under it the day's name; both said
+  what the week bar already says, so the week bar is now the first thing on the page and the meal
+  cards sit straight under it. The day's name is still there for a screen reader, which has no
+  week bar to look at
 - The week sits straight on the page — no tile around it: the date range with ← / → either side,
   and the seven days under it, weekday over date, the date in a circle. It is capped and centred
   rather than spread across the column, because seven chips a hand's width apart stop reading as
   one week. **Today** appears beside the range only once you've paged off the current week, which
   is the only time it has work to do
-- **The selected day's circle fills with the accent.** Today is marked with a dot, a day with
-  something planned is **ringed** in the accent, and a day gone by is quieter — one shape with
-  three states, since a neutral tint has nowhere to go once the chips sit on the page. So the row is the overview:
-  where you are, what day it is, and the shape of the week
-- Below it, the day's name and then **one card per meal** — the biggest thing on the screen, which
-  is the point of them. A filled one shows the recipe name in accent ink and underlined — tapping it
+- **The selected day's circle fills with the accent.** Today is marked with a dot, and a day still
+  ahead of you with something planned is **ringed** in the accent — one shape with three states,
+  since a neutral tint has nowhere to go once the chips sit on the page. A day gone by is quieter
+  in both its name and its date, and gets **no ring even when it has meals on it**: the ring is
+  about what is still to come, and on a day you cannot act on it was the loudest mark on the row.
+  So the row is the overview: where you are, what day it is, and the shape of the week ahead
+- Under it, **one card per meal** — the biggest thing on the screen, which is the point of them. A filled one shows the recipe name in accent ink and underlined — tapping it
   opens the recipe, and the line is there at rest rather than only on hover because a phone has no
   hover — then its time and what it is (*10 min · Balanced ·
   Vegetarian*), with a save bookmark and a × to clear it. Nothing inside the card gets a box of its
@@ -91,8 +100,11 @@ Eight documents, each with one job:
 three meal cards step aside, the week bar above them stays put, and **Back to the day** is the way
 out. It is sized to finish on the screen, so the recipes scroll inside their own area and the page
 itself never scrolls. The day and meal are already known from the slot you tapped, so it never asks
-again: the recipes appear as the same cards you get on the Recipes page, except the button reads
-**Add to Thu breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
+again — and **the list arrives filtered to that meal**: tap *Add a breakfast* and you get the
+fourteen breakfasts, not all fifty. That is a ticked box in the *Meal* dropdown with the filter row
+open, so you can see why the list is short and untick it if you want a breakfast at dinner. The
+recipes appear as the same cards you get on the Recipes page, in whichever layout you last chose,
+except the button reads **Add to Thu breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
 recipe — the sheet's calendar icon adds it straight to the slot you came from, because the day and
 meal are already settled and this app never asks twice. This route is for empty slots only.
 
@@ -103,9 +115,10 @@ small dialog. The recipe name is the headline; "Add to week" sits above it as a 
   button is drawn with a dashed border
 - If the slot is taken, the dialog names what's there and the button reads **Replace**
 
-**Saved** — exactly the recipes you've bookmarked, from either the card or the detail panel. The
-save control is the same bookmark shape as the *Saved* item in the sidebar, so the button that keeps
-a recipe and the place it goes look like one idea.
+**Saved** — exactly the recipes you've bookmarked, from either the card or the detail panel, with
+the same search, filters and layout toggle as Recipes over the top of them. The save control is the
+same bookmark shape as the *Saved* item in the sidebar, so the button that keeps a recipe and the
+place it goes look like one idea.
 Removing a bookmark drops it from Saved immediately but leaves it in your week: unsaving a recipe
 isn't the same as cancelling dinner.
 
@@ -123,9 +136,14 @@ and no server to run.
 
 **One day at a time.** *Week* shows the seven days as a row of buttons and then the one day you
 picked, as three meal cards. That's true on a laptop and on a phone — the same screen, not two
-designs. A date drawn in a circle outline is a day you've already planned something for, so the row
-still shows the shape of your week at a glance. On a wide screen there's a column down the right with the day's
-numbers in it: how many meals you've planned, roughly how long they'll take, and one suggestion.
+designs. A date drawn in a circle outline is a day still to come that you've already planned
+something for, so the row shows the shape of your week at a glance; days that have already passed
+just go pale. On a wide screen there's a column down the right with the day's numbers in it: how
+many meals you've planned, roughly how long they'll take, and one suggestion.
+
+**Two ways to look at a list.** The two small buttons beside every search box switch between cards
+in a grid and a single column of rows. It's the same recipes either way — the rows just fit more of
+them on the screen at once. The app remembers which you picked.
 
 **What it deliberately doesn't do yet.** No shopping list, no month calendar, no adding your own
 recipes, no sharing a plan with anyone else. Those are sensible next steps rather than oversights —

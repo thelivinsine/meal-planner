@@ -12,7 +12,7 @@
 | **Published** | Merged to `main` and pushed to GitHub as a public repo |
 | **Second round** | Branch `feat/slot-picker-and-indian-recipes`: the slot's **+ Add** now opens the recipe list inline under the week instead of asking for the day and meal a second time, and the catalogue grew to 50 with 27 Indian and 38 high-protein recipes |
 | **Deployed** | Second round merged to `main`; GitHub Pages serving `main` at the root |
-| **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible, the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
+| **UI round** | Branch `feat/ui-polish`, from your notes on the v1 screenshots: week rows aligned with `subgrid`, nested boxes removed, filters grouped and collapsible (chips then, dropdowns since PR #13), the add sheet re-weighted around the recipe name, and a view-the-recipe route out of the week picker |
 | **Card unified** | Same branch, at your request: the week's slot picker dropped its own row design and now draws the Recipes card, with only the primary button differing |
 | **Contrast** | One wrong turn, recorded in full under [decisions](decisions.md#one-wrong-turn-worth-recording): a local figure/ground problem got a global palette fix, which was wrong and was reverted |
 | **Review** | PR #2 read back against its own description before merging. Four small things: past days had lost their accent-free hover when an override was deleted, and three figures in the docs were stale. Two flagged and deliberately kept — the app-wide `[hidden]` rule, and 38px week rows on a fine pointer |
@@ -285,3 +285,60 @@ the whole reason a phone stays on the list.
 still wrong, because a scale says which sizes exist and not which one a given gap wants. The
 headless renders answer *what is it*; they never answer *is it right*. That still took your eyes on
 the running page, at a zoom level no default screenshot uses.
+
+### The tools round (PR #13)
+
+Four commits on `search-filter-view-toolbar`, one review pass, squash-merged as `12ce708`. The
+round started from a defect and ended up rebuilding how three views are steered.
+
+- **The defect:** tap **+ Add** on a breakfast slot and all fifty recipes appeared. The slot knows
+  which meal it is, so the list now arrives filtered to it — 14 breakfasts, 17 lunches, 19 dinners
+  — as a **ticked box in the *Meal* dropdown with the filter row open**, not a hidden rule.
+- **Fixing it forced the matcher's semantics.** With one flat OR over every ticked tag, a vegan
+  breakfast returned every vegan dinner too, and the preset stopped meaning anything the moment a
+  second box was ticked. It is OR *within* a group and AND *across* groups now. The one behaviour
+  change in this round that a user of the old Recipes page would notice.
+- **One tools row, drawn by one function into three views.** Search, a tile/list toggle and the
+  five filter groups as dropdowns of checkboxes — on Recipes, on Saved, and in the slot picker.
+  Five labelled stacks of chips became one row 30px tall.
+- **It is the one component that is never redrawn.** `syncTools()` writes ticked boxes, badges, the
+  pressed layout button and the field's value in place. A redraw would shut the open `<details>`
+  under your finger and move the caret to the end of the search box on every keystroke — neither
+  visible to any check this project runs, both certain.
+- **Native `<details name>` for the dropdowns.** Keyboard, exclusivity and disclosure semantics for
+  no script; closing on an outside click and on Escape written by hand, with Escape taking the menu
+  before the picker it sits inside.
+- **Then the cards got quieter, on your notes:** three tags at most and never `quick`, the minutes
+  as bare text instead of a pill identical to the tags beside them, type down a step. Cards went
+  186 → 136px in tile and 85 → 62px in list.
+- **The alignment bug had two causes and one symptom.** `align-items: flex-start` floated 11px
+  minutes above the top of a 15px name that had wrapped; and in list layout `flex: 1` with
+  `space-between` put the number wherever each name happened to end — measured at 469, 429 and
+  535px down one list. Baseline alignment and a fixed 40% name column, with a 178px floor under it
+  for the slot picker's narrow column.
+- **Two headings left the page.** The rotating week greeting is parked in a comment with its
+  restore notes; the day title is `.sr-only`, because it repeated the week bar for anyone who could
+  see it and is the only name those three cards have for anyone who cannot. Both grid items in
+  `.view-week` had to be moved to row 1 — left in row 2 the grid charges a `--space-4` gap for the
+  empty row above them.
+- **A past day lost its ring.** With meals logged on Monday and Tuesday, the two loudest marks on
+  the week bar were the two days you cannot act on.
+- **Two bugs this round caused and this round found.** `.card-tags` carried `flex: none` in list
+  layout, so in the slot picker's narrow column three tags ran under the foot of buttons and the
+  card's own `overflow: hidden` sliced the last one in half — caught in a render, not in the code.
+  And the dropdown menu ran 2px off the right edge at 360px — caught by asking the live page for
+  `getBoundingClientRect().right` on all five menus at three widths.
+- **Reviewing the diff before merging found four things, all of them written by this branch**, none
+  behavioural: both empty states still blamed "that search" when there are filters now, a comment
+  described two rules the branch had deleted, another said "six groups" where there are five, and
+  the parked greeting comment still spoke in the present tense.
+- **76 checks, unchanged again — and this time that is the finding.** A search field, a layout
+  toggle, five dropdowns and a menu of checkboxes went into three views without one new colour
+  pair, because every ground was already measured. Reusing a ground costs nothing; moving a token
+  onto a new one is what makes a pair.
+
+**Not covered:** a real keyboard, a real phone, and anything between 400 and 620px. The Escape
+ordering and the never-redraw rule were both written *for* the keyboard and neither has been driven
+by one — every interaction in this round was `.click()` from a script. Dark mode *was* looked at,
+twice, which closes a gap that had been open since PR #10.
+

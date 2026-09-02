@@ -29,11 +29,14 @@ looks unrelated:
 - **The view switch sits at body level**, not inside `.topbar`: a `backdrop-filter` ancestor becomes
   the containing block for anything `position: fixed` inside it. That same element is what becomes
   the sidebar over 1000px.
-- **The week view's `.view-head` is a direct child of `.view-week`**, not part of `.week-main`, so
-  the grid can give it a row of its own and the summary column can start level with the week bar.
-  Consequence: all three items in that grid are placed by hand — heading in column 1 row 1,
-  `.week-main` in column 1 row 2, `.week-side` in column 2 row 2. Leave the lower two to auto-flow
-  and the aside slides up beside the heading, undoing the thing the arrangement exists for.
+- **The week view's grid items are placed by hand, both of them in row 1.** There used to be a
+  third — `.view-head`, holding the rotating greeting, given a row of its own so the summary column
+  started level with the week bar rather than level with the heading. The greeting is parked now
+  (in a comment where it stood, with restore notes), and the two survivors have to be told they are
+  in **row 1**: left in row 2 they keep an empty first row above them and the grid charges its
+  `--space-4` row gap for it — 40px of nothing over the week bar. The `.view-head` rule that placed
+  the heading in the content column only is written out in the same comment, because restoring the
+  greeting means restoring all three placements together.
 
 ## The data model
 
@@ -43,7 +46,12 @@ Two things exist:
   runtime. Each carries exactly one macro tag (`high-protein` or `balanced`); 27 are `indian` and
   38 `high-protein`, and both ratios are meant to hold as recipes are added.
 - **`state`** — everything about *you*: which view, which week, which day (`focusDay`), your plan,
-  your bookmarks, your theme, your search and filters, and whether the filter panel is open.
+  your bookmarks, your theme, and the card layout (`cardView`, `'tile'` or `'list'`).
+- **`surface`** — the third object, and the newest. Search text, ticked tags and whether the filter
+  row is open, **one set per list**: `recipes`, `saved`, `slot`. It is separate from `state`
+  because it is three of the same thing rather than one of anything, and per-list because a search
+  typed on Recipes has nothing to do with what you want in Saved. The slot picker's set is rewritten
+  on every open, with the meal it was opened for already ticked.
 
 The plan is one flat object keyed by real date and meal:
 
@@ -57,7 +65,8 @@ no nested structures to walk.
 
 ## Storage
 
-One key, `p5:mealplanner`, holding one JSON blob of the plan, the bookmarks and the theme.
+One key, `p5:mealplanner`, holding one JSON blob of the plan, the bookmarks, the theme and the
+card layout.
 `index.html` reads that same key inline in `<head>` to paint the theme before first paint, **so
 the key name is written in two places** — change one and you must change the other.
 
@@ -75,8 +84,9 @@ needs a real date, a real meal name and a recipe that still exists, or it is dro
 storage produces an empty plan, never a crash. Entries older than four weeks are dropped too, so
 the blob cannot grow forever.
 
-The plan, bookmarks and theme persist; view, week, search, filters and `focusDay` are per-session
-on purpose. Theme is the deliberate exception — one you picked and lost on reload is a bug.
+The plan, bookmarks, theme and card layout persist; view, week, `focusDay` and everything in
+`surface` are per-session on purpose. Theme and layout are the deliberate exceptions — a look you
+picked and lost on reload is a bug, not a fresh start.
 
 ## Rendering and events
 
@@ -89,8 +99,15 @@ screen and the data disagree. Views are built as HTML strings, so any text runs 
 `.page`'s computed bottom padding and the panel's own top, sets a `max-height` in pixels, then
 reads `scrollHeight` back to correct whatever sub-pixel rounding left over. It is the only layout
 arithmetic in `app.js`, and it exists because the panel has to finish on the screen while what sits
-above it — a greeting that wraps, a bar that grows a **Today** button — has no fixed height. It
-re-runs on `resize`.
+above it — a bar that grows a **Today** button, a tools row whose filter line opens and closes —
+has no fixed height. It re-runs on `resize`.
+
+**One component is the exception to "redraw the whole view".** The tools row — search, the
+tile/list toggle, the filter dropdowns — is drawn once at startup by `toolsHtml(name)` into three
+containers and never redrawn. `syncTools(name)` writes the ticked boxes, the badges, the pressed
+layout button and (only when it disagrees) the search value **in place**. Redrawing it would close
+whichever dropdown was open and move the caret to the end of the field on every keystroke, which is
+exactly what dumb rendering is fine with everywhere else and not here.
 
 **Events** go through a single click listener on `document`, dispatching on a `data-action`
 attribute. No inline `onclick` anywhere. Because of that, redrawing a view never needs listeners
@@ -190,8 +207,10 @@ two tokens holding the same shade means a tray inside a past card has no edge at
 The pair is now **absent from the script's list on purpose**, with a comment saying to put it back
 the moment a bare sunk fill lands on the page again. `--line-strong` against `--bg` was added in its
 place. That once covered two sunk fills that could reach the page; the slot picker's tray went when
-the picker took over the day, so `.chip` is the only one left carrying that border (2.30,
-comfortable).
+the picker took over the day, and the filter row that replaced the loose chips sits inside the tools
+card — so `.chip` (in the dialogs) and `.filter-summary` (in the tools row) both carry that border
+and neither now lands on the page. The pair stays measured (2.30, comfortable) as the guard for the
+next thing that does.
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
@@ -199,6 +218,15 @@ under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, l
 Since the light page went near-white there is also less room between surfaces than there was, so two
 edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-contrast). And
 `color-mix` is load-bearing for old browsers; `subgrid` no longer is.
+
+**PR #13 added a search field, a layout toggle, five dropdowns and a menu of checkboxes to three
+views, and the pair list did not grow at all.** Every ground in it was already measured: the
+dropdown menu is `--surface` inside a `--surface` card with a `--line-strong` hairline; a summary
+chip is `--surface-sunk` with `--ink-soft`; a ticked option hovers to `--surface-sunk` with `--ink`;
+the pressed layout button is the `--accent-soft` wash with `--accent-ink` on it; the count badge is
+`--on-accent` on `--accent`; the checkbox's `accent-color` is `--accent` on a card. That is the
+happy version of the rule below — reusing a ground costs nothing, and it is why the count is still
+76.
 
 The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
 It grew by three more when the week bar dissolved, without a single new token — `--ink-soft` and

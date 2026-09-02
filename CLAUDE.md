@@ -16,7 +16,10 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only** — about 200 lines as it stands. The test is not the line count,
+- **Keep this file rules-only** — 229 lines as it stands, up from 200 before the tools row brought
+  eight new rules with it. That growth is recorded rather than hidden, and
+  [status](docs/status.md#next-jobs-in-the-order-theyd-earn-their-place) asks you to decide whether
+  the number moves or something older comes out. The test is not the line count,
   it's "is this a rule or is it reasoning": reasoning goes in `docs/decisions.md`, which has no
   budget. If a rule needs a paragraph to be safe, put the paragraph there and the rule here. A
   line count is what this file kept failing when it was carrying both.
@@ -59,7 +62,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   sidebar and summary column never move. `sizeSlotPicker()` **measures** its height — viewport,
   less `.page`'s own bottom padding (which sits *below* it and counts towards document height),
   less its own top, then the leftover overshoot — and `.pick-grid` scrolls inside it, so the page
-  never does. Not a `vh` figure: above it are a greeting that wraps and a bar that grows a button.
+  never does. Not a `vh` figure: above it are a bar that grows a button and a filter row that opens.
 - **One day at a time, at every width.** Week bar, seven day buttons, then that day as three meal
   cards (`state.focusDay`). **Never bring back a second week markup** — accordion, rails,
   `expandAll`, `--week-cols` and `subgrid` sharing all went when the mockups settled on one day.
@@ -78,7 +81,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   the bar taller, it needs a reason better than fitting.
 - **A planned day is an accent *ring*, never a fill.** The chips sit on the page, so a neutral tint
   has nowhere to go — `--surface-sunk` measures 1.08 on `--bg` in both themes. One shape, three
-  states: bare circle, ringed when planned, filled when selected. Chip hover is `--hover`.
+  states: bare circle, ringed when planned, filled when selected. Chip hover is `--hover`. **Never
+  on a day gone by** — the ring is about what is still ahead of you.
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
   tags, pills, chips, inputs use `--surface-sunk`. In dark mode the page shade is the darkest thing
   on screen, so a pill filled with it reads as a hole punched through the tile.
@@ -107,17 +111,35 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **Anything keyed to the *theme* reads the theme, not the OS.** It's a stored choice, so
   `prefers-color-scheme` is the wrong signal. Set it from the live `--bg`, in the `<head>` script
   too or it flashes.
-- **A past day is quieter by colour, never by opacity.** Opacity blends text back towards its tile
-  and undoes the tokens.
+- **A past day is quieter by colour, never by opacity, and it carries no ring.** Name *and* date
+  at `--ink-faint`, so the whole chip recedes rather than half of it. Opacity blends text back
+  towards its tile and undoes the tokens.
 - **Subject gets the weight:** the recipe takes the large type in the add dialog, "Add to week" a
   small eyebrow over it. Views get no eyebrow — a heading and at most one subtitle, centred over
-  the content it introduces. On the week view that means the *content column*, not the two-column
-  span, so all three grid items are placed by hand.
-- **The Week heading is one line and it changes.** `WEEK_GREETINGS` in `app.js`, picked once per
-  load, no subtitle under it. Never replace it with a fixed label — a greeting is the point, and
-  the week bar below already says which week this is.
-- **Filter chips** are grouped by `TAG_GROUPS` in `app.js`. A tag missing from that list still
-  renders under *More*, so adding a recipe tag can never make a chip disappear.
+  the content it introduces. The week has no head at all now, and its **two** grid items are both
+  placed in **row 1** by hand: left to auto-flow in row 2 they are charged a `--space-4` row gap
+  for an empty row above them.
+- **The week view has no visible heading.** The rotating greeting is parked in a comment in
+  `index.html` (with `WEEK_GREETINGS` still in `app.js`, unread) and the day title is `.sr-only`.
+  Both repeated what the week bar already says. Don't put either back without asking — and if the
+  greeting returns, the restore notes are in that comment.
+- **One tools row, three lists.** Search, a tile/list toggle and the filter dropdowns are one
+  component — `toolsHtml(name)` into `#tools-recipes`, `#tools-saved`, `#tools-slot`. Drawn once at
+  startup and **never redrawn**; `syncTools(name)` writes boxes, badges and the pressed layout
+  button in place. A redraw closes an open dropdown and moves the caret. **Search text and ticked
+  tags are per list** (`surface.recipes` / `.saved` / `.slot`), never shared; the layout is the
+  opposite — one `state.cardView`, all three lists, persisted.
+- **The slot picker opens filtered to its meal** — a ticked box in the *Meal* group with the filter
+  row open, not a hidden rule. Reset on every open.
+- **Filters mean OR *within* a group, AND *across* groups.** Groups are `FILTER_GROUPS`:
+  `TAG_GROUPS` in order, minus tags no recipe carries, plus *More* for anything it forgot — so a
+  new recipe tag can never become unfilterable. The matcher needs the *grouping*, not just the tags.
+- **Filter groups are dropdowns of checkboxes on one row.** Native `<details name>`; closing on an
+  outside click and on Escape are wired by hand, and Escape takes the menu before the picker. The
+  row **wraps** on a phone — a scroll container clips an absolutely positioned menu.
+- **A card is a card in both layouts.** `.is-list` on the grid turns the same `cardHtml` on its
+  side; no second component. **Three tags at most, never `quick`** (`cardTags()`), and the minutes
+  are **bare text, not a pill**.
 - **Rendering:** change state, redraw the whole view — no diffing. Views are HTML strings, so run
   any text through `escapeHtml` before `innerHTML`. No inline `onclick`: one delegated listener
   dispatches on `data-action`.
@@ -168,9 +190,12 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
   and on a phone the keyboard covers it. Focus the panel (`tabindex="-1"`).
 - **A landmark's name must not change between loads**, so never point `aria-labelledby` at
   something that rotates — the week greeting did. A fixed `aria-label` on the section, greeting
-  untouched.
+  untouched. (The greeting has since left the page; the rule is what stopped it taking the
+  landmark's name with it.)
 - **Never leave a card unnamed, never hide a focusable control.** If a heading must vanish on
-  screen, `.sr-only` — never `display: none` — and only on something not focusable.
+  screen, `.sr-only` — never `display: none` — and only on something not focusable. `.day-title`
+  is the live example: off the screen, still the accessible name for the three meal cards, because
+  a screen reader gets no week bar to look at.
 - **Tab through anything you change.** The focus ring is the one control state neither the script
   nor a screenshot can see, and it has hidden a defect here for months.
 - **Touch targets at least 44px**, width as well as height, measured at 360px. Controls are compact

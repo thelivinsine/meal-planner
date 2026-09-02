@@ -368,8 +368,10 @@ away from being the same "hole punched through the tile" bug `CLAUDE.md` already
 `--bg`. Both references put small inner elements — chips, tags, pills, icon buttons — *above*
 their card, not below — that is the section 3 ladder, and `--surface-sunk` is the one token in
 Mise that runs against it. Section 3's exception does not rescue it: the exception is for large
-multi-line entry wells, and Mise has none. The tags, time pills, filter chips and search field
-that use this token are all in the "small and pressable, therefore up" row.
+multi-line entry wells, and Mise has none. The tags, filter summary chips and search fields that
+use this token are all in the "small and pressable, therefore up" row. (The time pill was one of
+them until PR #13 took its fill away — it is bare text now, which sidesteps the question rather
+than answering it.)
 
 **c) `--accent-soft` at 1.12 on a card is scraping the floor.** It clears 1.10 by 0.02.
 PowerToys never uses a dark tinted accent fill at all — it uses the *bright* accent as the
