@@ -88,6 +88,22 @@ The plan, bookmarks, theme and card layout persist; view, week, `focusDay` and e
 `surface` are per-session on purpose. Theme and layout are the deliberate exceptions — a look you
 picked and lost on reload is a bug, not a fresh start.
 
+**Two tabs stay in step.** Each tab holds its own `state`, and `saveState()` writes the *whole*
+blob, so before PR #15 the tab that saved second replaced whatever the first had added — plan a
+meal in one tab, bookmark a recipe in the other, and the meal was gone. A `storage` listener now
+re-reads on any write from another tab, so every copy stays current and the next save is built on
+the newest data. `loadState()` **replaces** the plan and bookmarks rather than merging into them,
+which is what makes a *deletion* in one tab reach the other; the reset sits past every early
+return, so a read that failed or a blob that never parsed still leaves a good state alone.
+
+The listener does no focus restoration, though a redraw destroys focus everywhere else in this
+app. It does not need to: the event only ever arrives in a tab the user is *not* in — they are in
+the tab that did the saving — so there is no live focus to put back. The tools row is never
+redrawn either way, so a half-typed search survives regardless. What is left is a real but narrow
+race: two tabs saving inside the few milliseconds before the event lands can still drop one
+change. A version counter and a per-field merge would close it, and that is a lot of machinery for
+a single-user planner.
+
 ## Rendering and events
 
 **Rendering is deliberately dumb:** change state, then redraw the whole view from it. No diffing,
@@ -160,6 +176,26 @@ Still done by hand, not in the script:
 
 `README.md` links the per-round record of what each of these actually found; the running history is
 in [log.md](log.md).
+
+**Two things `check.mjs` cannot reach, and what PR #15 used instead.** It reads the three files as
+text, so it can see neither what `loadState()` does with a corrupt blob nor what two tabs do to
+each other. That round wrote a throwaway for each, and both are recorded in
+[log.md](log.md#the-storage-round-pr-15) rather than committed:
+
+- **The real `loadState`/`saveState` in a Node `vm`.** Lines 1–597 of `app.js` are DOM-free, so
+  they load into a context with a fake `localStorage` and nothing stubbed. 26 cases — a
+  round-trip, sixteen kinds of corrupt blob, the `KEEP_WEEKS` prune, a full quota, storage blocked
+  outright.
+- **Two real Chrome tabs over CDP.** The `storage` event does not exist in Node, so the bug that
+  round fixed is invisible there. Both tabs served over HTTP onto one origin and driven through
+  the DevTools protocol on Node's built-in `WebSocket`, no dependency. `app.js` is a classic
+  script, so its top-level `const state` is a global lexical binding that `Runtime.evaluate` reads
+  directly — which is what makes driving this app from outside cheap.
+
+Both were run against the unfixed code first and both fail there. **Neither is committed:**
+`check.mjs` is the one saved check by rule, and a second one that launches Chrome and binds a port
+is a change to how this project tests rather than a test. The offer stands if the storage code
+moves again.
 
 ### The gaps
 
@@ -234,6 +270,10 @@ It grew by three more when the week bar dissolved, without a single new token �
 and `--accent` beside `--hover`, because the ring marking a planned day sits on that fill under a
 pointer. That is the rule in practice, and the second half of it is the part that gets missed: **a
 new pair does not need a new token.** Moving an existing token onto a new ground makes one.
+
+Which is why adding the pair is a rule in `CLAUDE.md` rather than a habit: **a pair missing from
+that list is a pair nobody measures.** The script cannot tell the difference between a combination
+that is safe and one it was never handed, and both print the same silence.
 
 ## Deployment
 

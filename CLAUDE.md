@@ -48,8 +48,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   high-protein, so adding recipes means re-checking both ratios.
 - **Plan shape:** flat, keyed by real date and meal — `state.plan['2026-08-26|Dinner'] = id`.
 - **Storage:** one JSON blob under one key, `p5:mealplanner`. try/catch every read *and* write;
-  validate on load, dropping anything unrecognised. The key lives in `app.js` **and** inline in
-  `index.html` — change one, change the other.
+  validate on load, dropping anything unrecognised. `loadState()` **replaces** plan and bookmarks,
+  past every early return; a `storage` listener re-reads so two tabs can't overwrite each other.
+  The key lives in `app.js` **and** inline in `index.html` — change one, change the other.
 - **Two ways to add a meal, never merged:** from an *empty* week slot the inline picker (day and
   meal already known, so never ask again); from a recipe card the `#picker` dialog. One component
   draws both — `cardHtml(recipe, slot)`, the slot argument swapping the primary button.
@@ -186,9 +187,8 @@ sharing/syncing, recipe photography. Don't add these unless asked; reasoning in
 ## Testing
 No test framework unless asked. **`node check.mjs`** is the one saved check — contrast both
 directions, action and id wiring, and the three values written twice. Run it after touching
-`style.css` tokens, and **add the new pairs to its list** when a colour token appears: a pair
-missing from that list is a pair nobody measures. Approach and standing gaps:
-`docs/architecture.md#how-this-gets-tested`.
+`style.css` tokens, and **add the new pairs to its list** when a colour token appears. Approach,
+standing gaps and why: `docs/architecture.md#how-this-gets-tested`.
 
 **Read, look and measure — each catches what the other two miss.** A rendered look is the check for
 anything touching layout, never an optional extra. **I check the app in a browser as we iterate**,

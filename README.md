@@ -134,6 +134,9 @@ that it's per-browser and per-device: your plan on your laptop is not the same p
 phone, and clearing your browsing data clears it. That's the honest trade for having no accounts
 and no server to run.
 
+Open in **two tabs at once** and they stay in step — plan a meal in one and the other picks it up,
+rather than the two of them overwriting each other's work, which is what used to happen.
+
 **One day at a time.** *Week* shows the seven days as a row of buttons and then the one day you
 picked, as three meal cards. That's true on a laptop and on a phone — the same screen, not two
 designs. A date drawn in a circle outline is a day still to come that you've already planned
