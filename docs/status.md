@@ -4,14 +4,50 @@
 
 | | |
 |---|---|
-| **Live** | Code at `12ce708` (PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged). Pages `built` at `46e34f3`, the docs commit on top of it — same three files, so the live app is `12ce708`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **PR [#14](https://github.com/thelivinsine/meal-planner/pull/14) is open on `week-grid-comment-parked`** — a week-grid comment that still described the parked heading in the present tense, and `.view-week > .view-head`, a rule matching nothing. Reviewed and rendered; **not merged**, because the merge command was blocked here. Squash-merge it and delete the branch. Otherwise no known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
-| **Confirmed** | The tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
-| **Branches** | `search-filter-view-toolbar` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
+| **Live** | Code at `12ce708` (PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged). Pages `built` at `72f798b`, three docs commits on top of it — none of them touched the three files, so the live app is still `12ce708`. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **Two PRs open, neither merged.** **PR [#15](https://github.com/thelivinsine/meal-planner/pull/15) on `cross-tab-sync`** — two open tabs used to overwrite each other's saved data; a `storage` listener and a `loadState()` that replaces rather than merges. Eight lines of code, verified in two real Chrome tabs, **not looked at by eye** (nothing visual changed). **PR [#14](https://github.com/thelivinsine/meal-planner/pull/14) on `week-grid-comment-parked`** — a week-grid comment that still described the parked heading in the present tense, and `.view-week > .view-head`, a rule matching nothing. Reviewed and rendered; **not merged**, because the merge command was blocked here. Squash-merge it and delete the branch. Beyond those two, no known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
+| **Confirmed** | **Storage, hard**: the real `loadState`/`saveState` against 26 cases in a Node VM (sixteen kinds of corrupt blob, the four-week prune, a full quota, storage blocked outright), and cross-tab behaviour in **two real Chrome tabs over CDP** — nine assertions, and both probes fail against the unfixed code. Before that: the tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
+| **Branches** | `cross-tab-sync` and `week-grid-comment-parked` are live, both with an open PR. `search-filter-view-toolbar` deleted on merge. Two more on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
 
 ## What just shipped
 
-**Since PR #13, one docs-only round and no code.** Every figure in the nine markdown files was
+**Nothing, since PR #13.** Two rounds have happened since and both are sitting in open PRs — #14
+and #15 below. The live app is still `12ce708`.
+
+### The storage round (PR #15, open)
+
+**The question was "does `localStorage` work well?" and the answer was yes — which is why the
+round is worth recording.** The saving code was already sound: try/catch on both the read *and*
+the write, `JSON.parse` guarded separately, every value re-validated on load against the recipe
+catalogue and a date pattern, a four-week prune, a toast on a full quota, and all six mutation
+sites paired with a `saveState()`. Twenty-six cases against the real functions confirmed it,
+including sixteen kinds of corrupt blob. Nothing inside it needed changing.
+
+**The hole was one level up, between tabs.** Each tab holds its own `state` and `saveState()`
+writes the *whole* blob, so with two tabs open the one that saved second replaced whatever the
+first had added — plan a Monday dinner in tab A, bookmark a recipe in tab B, and the dinner was
+gone. Silently, and with tab A still showing it until you reloaded.
+
+A `storage` listener now re-reads on any write from another tab. **That is what stops the loss,
+not just the divergence:** once tab B's copy is current, tab B's next save carries tab A's meal
+along with it. `loadState()` also replaces the plan and bookmarks instead of merging into them,
+which is what lets a *deletion* reach the other tab — with the reset placed past every early
+return, so a corrupt blob still cannot wipe a plan that is on screen.
+
+**Eight lines of code, and the rest of the round was proving it.** Two throwaway probes, neither
+committed: the real `loadState`/`saveState` in a Node `vm`, and two real Chrome tabs driven over
+CDP, which is the only way to see a `storage` event at all. Both were run against the unfixed code
+first and both fail there — the browser one on four assertions including the clobber itself.
+Covered in [log.md](log.md#the-storage-round-pr-15).
+
+**No focus restoration in the listener, deliberately.** A redraw destroys focus and six places here
+put it back, so its absence looks like the defect this project keeps shipping. It is not: the event
+only ever arrives in a tab the user is *not* in — they are in the tab that did the saving. Asserted,
+not assumed: a half-typed search in the other tab survives with the caret still in it.
+
+### The docs-maintenance round (no PR)
+
+**One docs-only round and no code.** Every figure in the nine markdown files was
 re-derived from `app.js` rather than trusted, three stale facts in this file were corrected (the
 Pages commit, the branch row, a heading that counted three bugs over a list of six), and
 `CLAUDE.md` came back from 229 lines to 200 with all 55 rules intact — the reasoning moved to
@@ -125,31 +161,42 @@ still the thing a thumb has to hit, and 360px was an `<iframe>` — a viewport, 
 **Anything between 400 and 620px**, where the tools row has already wrapped but the cards have not
 gone single-column.
 
+**The storage round was never looked at.** No CSS, no markup, no layout — the only visual
+consequence is a background tab redrawing itself, and that is asserted in the DOM rather than seen.
+Worth thirty seconds with two windows side by side before merging #15. Nor was it tabbed through,
+though it adds no focusable control.
+
+**Three or more tabs.** Nothing in the mechanism cares how many there are, but only two were driven.
+
 **The week view now has no visible heading at all.** Deliberate, seen in two headless renders, and
 the kind of thing that reads differently on a phone.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Finish the keyboard pass.** It has been next on this list for four rounds and the reason to do
+1. **Merge the two open PRs, or say why not.** #14 is a two-line comment-and-dead-rule fix that
+   has been reviewed and rendered; #15 is the storage fix, verified but unseen. Both are blocking
+   nothing except each other's tidiness, and an open PR that sits is how a branch grows into a
+   different change than the one reviewed.
+2. **Finish the keyboard pass.** It has been next on this list for four rounds and the reason to do
    it is now three times what it was: focus restoration is asserted in six places and driven by a
    person in none, and the tools row adds an Escape ordering and a "don't redraw" claim on top.
    Tab through the week, the picker with a dropdown open, both dialogs, and one filter menu end to
    end.
-2. **A phone.** Same list, and the 44px floor is genuinely untested on the new controls.
-3. **Decide whether the spacing scale gets a check.** Unchanged from last round: a rule writing
+3. **A phone.** Same list, and the 44px floor is genuinely untested on the new controls.
+4. **Decide whether the spacing scale gets a check.** Unchanged from last round: a rule writing
    `margin-bottom: 18px` is legal CSS and passes all 76 checks. Described in
    [architecture](architecture.md#how-this-gets-tested), deliberately not written, held by review.
-4. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
+5. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
-5. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
+6. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
    about fifteen renders and kept none. `*.png` is gitignored and would need a deliberate
    `!Screenshots/**` exception. Your call.
-6. **Act on the dark-mode findings, or decide not to.**
+7. **Act on the dark-mode findings, or decide not to.**
    [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens) names two:
    nothing sits above `--surface`, so hover and selected have nowhere to go; and `--surface-sunk`
    is **1.08** from `--bg` in dark. One of its examples has quietly gone away — the time pill is
    bare text now, which sidesteps that question rather than answering it.
-7. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
+8. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
    good deal quieter without it. Worth looking at the week view fresh in a week and deciding on
    purpose rather than by neglect.
 
@@ -176,7 +223,8 @@ wrong trade.
   not have. `check.mjs` compares all three, so the duplication stays but drifting apart no longer
   goes unnoticed. Listed in [architecture](architecture.md#storage).
 
-These are trade-offs rather than bugs. The known-defect list is empty.
+These are trade-offs rather than bugs. The known-defect list is empty **on `main`** — the two
+defects found since are both fixed in the open PRs above, not in the live app.
 
 ## Screenshots
 

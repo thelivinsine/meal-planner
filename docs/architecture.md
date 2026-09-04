@@ -177,6 +177,26 @@ Still done by hand, not in the script:
 `README.md` links the per-round record of what each of these actually found; the running history is
 in [log.md](log.md).
 
+**Two things `check.mjs` cannot reach, and what PR #15 used instead.** It reads the three files as
+text, so it can see neither what `loadState()` does with a corrupt blob nor what two tabs do to
+each other. That round wrote a throwaway for each, and both are recorded in
+[log.md](log.md#the-storage-round-pr-15) rather than committed:
+
+- **The real `loadState`/`saveState` in a Node `vm`.** Lines 1–597 of `app.js` are DOM-free, so
+  they load into a context with a fake `localStorage` and nothing stubbed. 26 cases — a
+  round-trip, sixteen kinds of corrupt blob, the `KEEP_WEEKS` prune, a full quota, storage blocked
+  outright.
+- **Two real Chrome tabs over CDP.** The `storage` event does not exist in Node, so the bug that
+  round fixed is invisible there. Both tabs served over HTTP onto one origin and driven through
+  the DevTools protocol on Node's built-in `WebSocket`, no dependency. `app.js` is a classic
+  script, so its top-level `const state` is a global lexical binding that `Runtime.evaluate` reads
+  directly — which is what makes driving this app from outside cheap.
+
+Both were run against the unfixed code first and both fail there. **Neither is committed:**
+`check.mjs` is the one saved check by rule, and a second one that launches Chrome and binds a port
+is a change to how this project tests rather than a test. The offer stands if the storage code
+moves again.
+
 ### The gaps
 
 - **Keyboard-only and a screen reader — started, not finished.** PR #10 tabbed through the recipe
@@ -250,6 +270,10 @@ It grew by three more when the week bar dissolved, without a single new token �
 and `--accent` beside `--hover`, because the ring marking a planned day sits on that fill under a
 pointer. That is the rule in practice, and the second half of it is the part that gets missed: **a
 new pair does not need a new token.** Moving an existing token onto a new ground makes one.
+
+Which is why adding the pair is a rule in `CLAUDE.md` rather than a habit: **a pair missing from
+that list is a pair nobody measures.** The script cannot tell the difference between a combination
+that is safe and one it was never handed, and both print the same silence.
 
 ## Deployment
 

@@ -66,6 +66,9 @@
 | **Spacing** | Branch `spacing-scale`, PR [#12](https://github.com/thelivinsine/meal-planner/pull/12), squash-merged as `c39fe70`. From your note that the vertical spacing "doesn't seem nice" — and the cause turned out to be arithmetic, not taste. **Eleven numbers were doing vertical-gap duty** (10, 14, 16, 20, 22, 24, 28, 30, 48, 104), each picked on its own, and the gap separating *sections* had come out the same size as the gap separating *siblings*: 24 above the week bar, 20 below it. Four `--space-*` tokens at 8/16/24/40 gave the four jobs four sizes. Padding *inside* components was deliberately left alone — the scale spaces things apart, it does not resize controls |
 | **The scale does not pick the step for you** | The heading shipped in the first commit at `--space-3`, and you looked at it at a real zoom level and said it was still cramped. It was: the heading is the largest thing on the page, so it wants the largest gap. **The step had been picked from the scale rather than from the page.** Fixed to `--space-4` in a second commit, with the week grid's row and column gaps split so the summary column beside it keeps the block gap. Worth keeping because every gap in that round measured exactly as designed and one of them was still wrong |
 | **A round with no token, no check and no defect** | 76 checks before and 76 after, none added, none moved — the first round in a while where the script had nothing to say, because spacing is the one thing it does not read. That is now written down as a gap rather than left implied: a rule writing `margin-bottom: 18px` is legal CSS and passes everything |
+| **The tools round** | Branch `search-filter-view-toolbar`, PR [#13](https://github.com/thelivinsine/meal-planner/pull/13), squash-merged as `12ce708`. One tools row — search, a tile/list toggle, five filter dropdowns — into Recipes, Saved and the slot picker, and the filter matcher went from a flat OR to OR-within-a-group, AND-across-groups. Detailed under the testing sections below |
+| **A docs round, then a comment that outlived its feature** | The sweep after #13 found something that was not documentation: `style.css` still described the parked week heading in the present tense and still carried `.view-week > .view-head`, matching nothing. That is PR [#14](https://github.com/thelivinsine/meal-planner/pull/14), still open. **A parked feature leaves its story in more than one file, and the sweep after it only swept one of them** |
+| **Two tabs stopped eating each other's work** | Branch `cross-tab-sync`, PR [#15](https://github.com/thelivinsine/meal-planner/pull/15), open. Asked to check that `localStorage` was sound; it was — try/catch both directions, validation on load, a four-week prune — and the hole was one level up. Each tab holds its own `state` and `saveState()` writes the *whole* blob, so the tab that saved second replaced whatever the first had added, silently, with the losing tab still showing the meal. A `storage` listener re-reads on another tab's write, and `loadState()` now replaces rather than merges. **Eight lines of code; the rest of the round was proving it** |
 
 ---
 
@@ -359,4 +362,39 @@ five groups — and `node check.mjs` was re-run: 76 pass.
   dark mode, why the ring is not a fill, the 4px focus ring that shipped at 3px. The file now
   states the budget as a rule rather than as a remark, because "is this a rule or is it reasoning"
   is the test the file failed quietly for four rounds while nothing counted the lines.
+
+### The storage round (PR #15)
+
+The round started as a verification request — *make sure `localStorage` works well* — and the
+honest answer to that turned out to need two instruments, neither of them the one already in the
+repo.
+
+**The real `loadState`/`saveState`, in a Node VM.** Lines 1–597 of `app.js` are DOM-free, so they
+load into a `vm` context with a fake `localStorage` and no stubbing of the functions under test.
+26 cases: a full round-trip, **sixteen** kinds of corrupt blob (bad JSON, a bare string, `null`, an
+array, wrong types on every field, dead recipe ids, garbage dates and meal names, `__proto__`), the
+`KEEP_WEEKS` prune keeping future entries, a full quota, storage blocked outright, and the two-tab
+scenario. All 26 pass. This is what established that the existing storage code was already sound
+and that nothing needed fixing *inside* it.
+
+**Two real Chrome tabs over CDP.** The `storage` event does not exist in Node, so the actual bug
+could not be seen there — a fake `localStorage` in one context cannot notify another. Both tabs
+served over HTTP from `python -m http.server` onto one origin, driven through the DevTools protocol
+with Node's built-in `WebSocket` and no dependency. `app.js` is a classic script, so its top-level
+`const state` is a global lexical binding and `Runtime.evaluate` can read it directly. Nine
+assertions, all passing: tab B seeing tab A's meal, tab B's later save keeping it, a deletion
+propagating, the week chip losing `has-meals`, theme and layout following across, no console
+errors, and a half-typed search surviving another tab's write with focus still in the box.
+
+**Both probes were run against the unfixed code first, and both fail there** — the browser one on
+four assertions including the clobber itself, the Node one on a deliberate negative control that
+asserts the old behaviour still loses the meal. A check that has never failed has not been checked.
+
+**Neither is committed.** `check.mjs` is the one saved check by rule, and a second one — especially
+one that launches Chrome and binds a port — is a change to how this project tests rather than a
+test. Offered, not taken; the coverage is recorded here, which is what this section is for.
+
+**What the round did not do:** nobody looked at it. No CSS, no markup, no layout — the only visual
+consequence is a background tab redrawing, and that is asserted in the DOM rather than seen. The
+keyboard pass is still owed, and this round did not pay it down.
 
