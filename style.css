@@ -354,16 +354,14 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 /* The day column, and the summary column beside it. Everything in the aside is derived
    from the day showing on the left, so under 1000px it is dropped rather than stacked
    below — there is nothing in it you cannot read off the meals themselves. */
-/* The heading is a direct child rather than part of .week-main, so the grid can give it
-   a row of its own and the summary column starts level with the week bar instead of
-   level with the heading. The grid gap replaces its own margin, so the *row* gap is
-   --space-4, the same section break `.view-head` carries on every other view — the
-   heading is the largest thing on the page and 24px under it read as cramped against it.
-   The *column* gap beside the summary panel stays --space-3: that is two things sitting
-   side by side, which is a block edge, not a section break. Two values, one declaration,
-   which is why the wide block no longer sets a gap of its own. */
+/* Two values in one declaration: the *row* gap is --space-4, the same section break
+   `.view-head` carries on every other view; the *column* gap beside the summary panel
+   stays --space-3, because side by side is a block edge, not a section break. That is
+   why the wide block sets no gap of its own.
+   The week's own heading is parked — see the comment in index.html. Restoring it means
+   restoring `.view-week > .view-head { margin-bottom: 0; }` here, so the row gap replaces
+   its margin, along with the two placements in the wide block at the end of this file. */
 .view-week { display: grid; gap: var(--space-4) var(--space-3); align-items: start; }
-.view-week > .view-head { margin-bottom: 0; }
 .week-main { min-width: 0; }
 .week-side { display: none; }
 
