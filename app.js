@@ -554,6 +554,14 @@ function loadState() {
   }
   if (!saved || typeof saved !== 'object') return;
 
+  // Everything below *replaces* what is in memory rather than adding to it. The reset
+  // sits here, past every early return above, so a read that failed or a blob that never
+  // parsed leaves a good state alone. At startup both are already empty and this does
+  // nothing; on a storage event it is the difference between picking up another tab's
+  // deletion and quietly resurrecting the meal it just removed.
+  state.plan = {};
+  state.bookmarks = [];
+
   // Only accept entries that still make sense: a real date, a real meal, a recipe we still have.
   const cutoff = isoOf(addDays(dateOf(state.weekStart), -7 * KEEP_WEEKS));
   if (saved.plan && typeof saved.plan === 'object') {
@@ -1501,6 +1509,31 @@ document.addEventListener('input', function (event) {
 // A rotated phone or a dragged window changes the room the picker was measured against.
 // No-op unless it is open.
 window.addEventListener('resize', sizeSlotPicker);
+
+// Another tab wrote the blob. Without this, two open tabs quietly destroy each other's
+// work: each holds its own `state`, and saveState() writes the *whole* object, so the
+// tab that saves second replaces a meal the first one just added with its own stale
+// picture of the week. Re-reading here keeps every tab current, so the next save from
+// any of them is built on the newest data instead of an old one.
+//
+// No focus handling, though a redraw normally destroys focus and this file is careful
+// about that everywhere else: this event only ever arrives in a tab the user is *not*
+// in — they are in the tab that did the saving — so there is no live focus to put back.
+// The tools row is never redrawn either way, so a half-typed search survives regardless.
+//
+// A missing key means someone called localStorage.clear(); the early return in
+// loadState() then leaves this tab's plan in memory, and its next save puts it back.
+//
+// ponytail: last write wins in the few ms before the event lands, so two tabs saving in
+// the same instant can still drop one change. A version counter and a per-field merge
+// is the fix if that ever shows up — a lot of machinery for a single-user planner.
+window.addEventListener('storage', function (event) {
+  if (event.key && event.key !== STORAGE_KEY) return;
+  loadState();
+  applyTheme();
+  render();
+  renderSlotPicker();   // self-guards, and it is the visible view while it is open
+});
 
 // Escape closes the inline picker, matching what it does in the dialogs — but an open
 // filter dropdown gets it first, or picking a filter inside the picker and pressing

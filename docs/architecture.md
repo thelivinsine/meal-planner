@@ -88,6 +88,22 @@ The plan, bookmarks, theme and card layout persist; view, week, `focusDay` and e
 `surface` are per-session on purpose. Theme and layout are the deliberate exceptions — a look you
 picked and lost on reload is a bug, not a fresh start.
 
+**Two tabs stay in step.** Each tab holds its own `state`, and `saveState()` writes the *whole*
+blob, so before PR #15 the tab that saved second replaced whatever the first had added — plan a
+meal in one tab, bookmark a recipe in the other, and the meal was gone. A `storage` listener now
+re-reads on any write from another tab, so every copy stays current and the next save is built on
+the newest data. `loadState()` **replaces** the plan and bookmarks rather than merging into them,
+which is what makes a *deletion* in one tab reach the other; the reset sits past every early
+return, so a read that failed or a blob that never parsed still leaves a good state alone.
+
+The listener does no focus restoration, though a redraw destroys focus everywhere else in this
+app. It does not need to: the event only ever arrives in a tab the user is *not* in — they are in
+the tab that did the saving — so there is no live focus to put back. The tools row is never
+redrawn either way, so a half-typed search survives regardless. What is left is a real but narrow
+race: two tabs saving inside the few milliseconds before the event lands can still drop one
+change. A version counter and a per-field merge would close it, and that is a lot of machinery for
+a single-user planner.
+
 ## Rendering and events
 
 **Rendering is deliberately dumb:** change state, then redraw the whole view from it. No diffing,
