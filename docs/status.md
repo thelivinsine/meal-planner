@@ -4,15 +4,16 @@
 
 | | |
 |---|---|
-| **Live** | Code at `PLACEHOLDER_SHA` (PR [#15](https://github.com/thelivinsine/meal-planner/pull/15), squash-merged). Pages `built` at `98afb27`, so the live app and `main` are the same commit. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **No PRs open — #14, #15 and #16 are all merged.** Reviewing #15 turned up two bugs in it: the four-week prune counted back from the week on screen (`72c7c8c`, inside #15), and the listener dropped a background tab's keyboard focus on the floor (PR #16). Both below. No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
+| **Live** | Code at `212ddd3` (PR [#16](https://github.com/thelivinsine/meal-planner/pull/16), squash-merged). Pages `built` at `212ddd3`, so the live app and `main` are the same commit. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **No PRs open — #14, #15 and #16 are all merged.** Reviewing #15 turned up two bugs in it: the four-week prune counted back from the week on screen (fixed inside #15, squashed into `98afb27`), and the listener dropped a background tab's keyboard focus on the floor (PR #16). Both below. No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
 | **Confirmed** | **Storage, hard**: the real `loadState`/`saveState` against 26 cases in a Node VM (sixteen kinds of corrupt blob, the four-week prune, a full quota, storage blocked outright), and cross-tab behaviour in **two real Chrome tabs over CDP** — nine assertions, and both probes fail against the unfixed code. Before that: the tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
 | **Branches** | `cross-tab-sync` and `week-grid-comment-parked` both deleted on merge, along with `search-filter-view-toolbar` before them. Two more on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
 
 ## What just shipped
 
-**PR #14 and PR #15, both squash-merged, in that order.** Pages rebuilt to `98afb27` and was
-confirmed `built` before this file was touched.
+**PR #14, PR #15 and PR #16, squash-merged in that order** as `8626bd0`, `98afb27` and `212ddd3`.
+Pages was confirmed `built` at `212ddd3` before this file was touched, so the live app and `main`
+are the same commit for the first time in four rounds.
 
 ### A seventh place focus has to be put back (PR #16)
 
@@ -38,7 +39,7 @@ Headless, with a real `StorageEvent` at the running app and the fix stashed out 
 chip, a meal card's **+ Add** and a card inside the open slot picker all keep focus with the fix and
 all land on `<body>` without it, the search box is untouched either way, and `scrollY` stays 0.
 
-### The review fix (`72c7c8c`, inside PR #15)
+### The review fix (inside PR #15)
 
 **Reviewing #15 before the merge found a data-loss bug in #15.** `loadState()` took its four-week
 prune cutoff from `state.weekStart`. That is today's Monday at start-up — the only time the
