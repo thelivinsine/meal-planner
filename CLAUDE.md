@@ -161,7 +161,7 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
 - **A redraw destroys focus.** If the control just activated lives inside what gets re-rendered,
-  put focus on what *replaced* it — six places do. **A conditionally-rendered control is the one
+  put focus on what *replaced* it — seven places do. **A conditionally-rendered control is the one
   that gets missed**; both focus bugs here were one.
 - **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
   `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,

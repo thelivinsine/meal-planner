@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Live** | Code at `98afb27` (PR [#15](https://github.com/thelivinsine/meal-planner/pull/15), squash-merged). Pages `built` at `98afb27`, so the live app and `main` are the same commit. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **No PRs open — #14 and #15 are both merged.** Review of #15 before merging found one real bug **in the branch itself** and fixed it in `72c7c8c` — the four-week prune counted back from the week on screen, so a tab paged forward destroyed the current week's plan on every `storage` event. See *The review fix* below. No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
+| **Live** | Code at `PLACEHOLDER_SHA` (PR [#15](https://github.com/thelivinsine/meal-planner/pull/15), squash-merged). Pages `built` at `98afb27`, so the live app and `main` are the same commit. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **No PRs open — #14, #15 and #16 are all merged.** Reviewing #15 turned up two bugs in it: the four-week prune counted back from the week on screen (`72c7c8c`, inside #15), and the listener dropped a background tab's keyboard focus on the floor (PR #16). Both below. No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
 | **Confirmed** | **Storage, hard**: the real `loadState`/`saveState` against 26 cases in a Node VM (sixteen kinds of corrupt blob, the four-week prune, a full quota, storage blocked outright), and cross-tab behaviour in **two real Chrome tabs over CDP** — nine assertions, and both probes fail against the unfixed code. Before that: the tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
 | **Branches** | `cross-tab-sync` and `week-grid-comment-parked` both deleted on merge, along with `search-filter-view-toolbar` before them. Two more on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
 
@@ -13,6 +13,30 @@
 
 **PR #14 and PR #15, both squash-merged, in that order.** Pages rebuilt to `98afb27` and was
 confirmed `built` before this file was touched.
+
+### A seventh place focus has to be put back (PR #16)
+
+**The storage listener shipped with a comment explaining why it needed no focus handling, and the
+comment was wrong.** The argument: the event only ever arrives in a tab the user is *not* in — they
+are in the tab that did the saving — so there is nothing live to restore.
+
+That confuses the user's **attention** with the **DOM**. `document.activeElement` is per-document
+and survives the tab going to the background: it is whatever they tabbed to before switching away.
+`render()` replaces whole `innerHTML`, so it falls to `<body>` and they come back to a tab that has
+forgotten where they were. **The seventh instance of the one defect class this project keeps
+shipping — and the first one argued away in a comment rather than missed.**
+
+The fix is the same move as the other six: find what replaced the control and focus it. Here it
+could be *any* control on the page, so it is looked up by its own `data-*` attributes rather than
+by name — every delegated control carries `data-action` plus whatever identifies it, so the element
+is already its own selector. Two guards do the real work: it runs **only if focus actually fell to
+`<body>`**, because the tools row is never redrawn and a caret half way through a search must be
+left alone; and the scope ladder is the bookmark handler's, because the day the picker replaced is
+still in the DOM with hidden controls of its own.
+
+Headless, with a real `StorageEvent` at the running app and the fix stashed out as a control: a day
+chip, a meal card's **+ Add** and a card inside the open slot picker all keep focus with the fix and
+all land on `<body>` without it, the search box is untouched either way, and `scrollY` stays 0.
 
 ### The review fix (`72c7c8c`, inside PR #15)
 
@@ -33,6 +57,10 @@ other tab's meal appeared, the theme followed, the tools row survived, no consol
 
 **The lesson is the one this file keeps writing down:** a value that was constant because a
 function ran once stops being constant the moment something calls it twice.
+
+**And the round's second lesson:** both of #15's bugs were in the *reasoning written beside the
+code*, not in the code. One comment said the cutoff was fine and one said focus was fine. Neither
+was checked, and neither could be — a comment passes every script here.
 
 ### The storage round (PR #15)
 
@@ -60,10 +88,11 @@ CDP, which is the only way to see a `storage` event at all. Both were run agains
 first and both fail there — the browser one on four assertions including the clobber itself.
 Covered in [log.md](log.md#the-storage-round-pr-15).
 
-**No focus restoration in the listener, deliberately.** A redraw destroys focus and six places here
-put it back, so its absence looks like the defect this project keeps shipping. It is not: the event
-only ever arrives in a tab the user is *not* in — they are in the tab that did the saving. Asserted,
-not assumed: a half-typed search in the other tab survives with the caret still in it.
+**It shipped with no focus restoration in the listener, and that was wrong — fixed in PR #16.**
+The argument was that the event only arrives in a tab the user is *not* in, so there is nothing live
+to put back. That confuses the user's attention with the DOM: a background tab keeps its
+`activeElement`, and the redraw drops it to `<body>`. See *A seventh place focus has to be put back*
+below.
 
 ### The docs-maintenance round (no PR)
 
@@ -194,7 +223,7 @@ the kind of thing that reads differently on a phone.
 ## Next jobs, in the order they'd earn their place
 
 1. **Finish the keyboard pass.** It has been next on this list for four rounds and the reason to do
-   it is now three times what it was: focus restoration is asserted in six places and driven by a
+   it is now three times what it was: focus restoration is asserted in seven places and driven by a
    person in none, and the tools row adds an Escape ordering and a "don't redraw" claim on top.
    Tab through the week, the picker with a dropdown open, both dialogs, and one filter menu end to
    end.

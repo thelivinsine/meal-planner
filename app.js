@@ -1521,10 +1521,12 @@ window.addEventListener('resize', sizeSlotPicker);
 // picture of the week. Re-reading here keeps every tab current, so the next save from
 // any of them is built on the newest data instead of an old one.
 //
-// No focus handling, though a redraw normally destroys focus and this file is careful
-// about that everywhere else: this event only ever arrives in a tab the user is *not*
-// in — they are in the tab that did the saving — so there is no live focus to put back.
-// The tools row is never redrawn either way, so a half-typed search survives regardless.
+// The user is not *looking* at this tab — they are in the one that did the saving — but
+// the document still has an activeElement, whatever they tabbed to before switching away.
+// A redraw replaces it and drops that to <body>, so they come back to a tab that has
+// forgotten where they were. Same answer as the six places above: find what replaced the
+// control and put focus on it. The difference is that here it could be any control on the
+// page, so it is looked up by its own data-* attributes rather than by name.
 //
 // A missing key means someone called localStorage.clear(); the early return in
 // loadState() then leaves this tab's plan in memory, and its next save puts it back.
@@ -1534,10 +1536,35 @@ window.addEventListener('resize', sizeSlotPicker);
 // is the fix if that ever shows up — a lot of machinery for a single-user planner.
 window.addEventListener('storage', function (event) {
   if (event.key && event.key !== STORAGE_KEY) return;
+
+  // Every delegated control carries data-action plus whatever identifies it — data-id,
+  // data-iso, data-meal, data-i — so the element is already its own selector. Read off
+  // the attributes rather than the dataset: no camelCase to convert back.
+  const had = document.activeElement;
+  const sig = had && had.dataset && had.dataset.action
+    ? Array.prototype.filter.call(had.attributes, function (a) { return a.name.indexOf('data-') === 0; })
+        .map(function (a) { return '[' + a.name + '="' + CSS.escape(a.value) + '"]'; }).join('')
+    : '';
+
   loadState();
   applyTheme();
   render();
   renderSlotPicker();   // self-guards, and it is the visible view while it is open
+
+  // Only when the redraw actually took it. The tools row is never redrawn, so a caret
+  // half way through a search is still sitting there and must be left alone — asking
+  // whether focus fell to <body> is what tells the two apart. The scope ladder is the
+  // bookmark handler's, for the same reason: the day the picker replaced is still in the
+  // DOM with controls of its own, and .focus() on a hidden element does nothing at all.
+  // preventScroll because this is a tab nobody is watching — it must not be scrolled to
+  // somewhere new by the time they come back to it.
+  if (sig && document.activeElement === document.body) {
+    const scope = el.detail.open ? el.detail
+      : !el.slotPicker.hidden ? el.slotPicker
+      : document.querySelector('.view:not([hidden])');
+    const again = scope && scope.querySelector(sig);
+    if (again) again.focus({ preventScroll: true });
+  }
 });
 
 // Escape closes the inline picker, matching what it does in the dialogs — but an open
