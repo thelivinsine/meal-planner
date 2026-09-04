@@ -127,7 +127,7 @@ exactly what dumb rendering is fine with everywhere else and not here.
 
 **Events** go through a single click listener on `document`, dispatching on a `data-action`
 attribute. No inline `onclick` anywhere. Because of that, redrawing a view never needs listeners
-re-attached — but it *does* destroy focus, which is why six places put it back. See
+re-attached — but it *does* destroy focus, which is why seven places put it back. See
 [decisions.md](decisions.md#accessibility-and-focus).
 
 ## How this gets tested
@@ -202,7 +202,7 @@ moves again.
 - **Keyboard-only and a screen reader — started, not finished.** PR #10 tabbed through the recipe
   grid and the sidebar in light mode on a wide screen, and immediately found a defect nothing else
   could see. **Still undriven: the week view, the inline slot picker and both dialogs** — which is
-  where the interesting part is, since focus restoration after a redraw is asserted in six places
+  where the interesting part is, since focus restoration after a redraw is asserted in seven places
   and driven by a person in none. Two of the six are now exercised by a scripted headless check —
   opening the picker, and bookmarking from inside it — which is how the hidden-copy bug below was
   confirmed, but a script clicking `.click()` is not a keyboard. A screen reader has never been run
