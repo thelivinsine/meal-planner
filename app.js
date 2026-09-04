@@ -563,7 +563,12 @@ function loadState() {
   state.bookmarks = [];
 
   // Only accept entries that still make sense: a real date, a real meal, a recipe we still have.
-  const cutoff = isoOf(addDays(dateOf(state.weekStart), -7 * KEEP_WEEKS));
+  // Counted back from *today*, never from the week on screen. This used to read
+  // `state.weekStart`, which is the same date at startup and a different one the moment you
+  // page ahead — a tab parked six weeks forward would prune this week's meals on every
+  // storage event and write the gap back out, which is the very loss this listener exists
+  // to stop.
+  const cutoff = isoOf(addDays(mondayOf(new Date()), -7 * KEEP_WEEKS));
   if (saved.plan && typeof saved.plan === 'object') {
     Object.keys(saved.plan).forEach(function (key) {
       const parts = String(key).split('|');
