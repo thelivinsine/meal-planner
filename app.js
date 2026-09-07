@@ -527,18 +527,26 @@ const state = {
 // typed on Recipes has nothing to do with what you are looking for in Saved, and the
 // slot picker's set arrives pre-filled with the meal it was opened for. Per-session,
 // like the view and the week — none of it is worth restoring next visit.
-// The same 620px line style.css turns the shell on. Read once at start-up on purpose:
-// a phone does not change width, and re-deciding this on every resize would shut a row
-// of dropdowns under the thumb that had just opened it.
-const NARROW = window.matchMedia('(max-width: 620px)').matches;
+// The same 620px line style.css flips the shell on, kept live rather than read once:
+// a phone does not change width but a desktop window dragged narrow does, and narrow is
+// where the controls have a height budget to keep. Crossing it is handled at the bottom
+// of this file — in place, not by redrawing the row.
+const NARROW_MQ = window.matchMedia('(max-width: 620px)');
+
+// Two hints, one field. The long one does not fit the narrow row: three controls share
+// 332px there and the field gets 107-135px of it, which cuts "Search by name or
+// ingredient…" off at "Search by n…". The <label> says the same thing to a screen reader
+// at either width, so only the visible hint gets shorter.
+const SEARCH_HINT = 'Search by name or ingredient…';
+const SEARCH_HINT_NARROW = 'Search recipes…';
 
 const surface = {
   // Open on a screen with the room, shut on one without it: five dropdowns are 66px of
   // a 780px phone, and the count badge on the Filters button says a filter is on
   // either way. It is a state, not a rule — one tap opens the row.
-  recipes: { search: '', tags: [], filtersOpen: !NARROW },
-  saved: { search: '', tags: [], filtersOpen: !NARROW },
-  slot: { search: '', tags: [], filtersOpen: !NARROW }
+  recipes: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
+  saved: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
+  slot: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches }
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -1019,17 +1027,14 @@ function dropHtml(name, group) {
     '</details>';
 }
 
+function searchHint() { return NARROW_MQ.matches ? SEARCH_HINT_NARROW : SEARCH_HINT; }
+
 function toolsHtml(name) {
   return '<div class="tool-bar">' +
       '<div class="search">' +
         '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
-        // The long placeholder does not fit the narrow row: three controls share 332px
-        // there and the field gets about 110px of it, which cuts "Search by name or
-        // ingredient…" off at "Search by n…". The <label> above says the same thing to
-        // a screen reader at either width, so only the visible hint gets shorter.
         '<input type="search" class="tool-search" id="search-' + name + '" ' +
-          'data-surface="' + name + '" placeholder="' +
-          (NARROW ? 'Search recipes…' : 'Search by name or ingredient…') + '" ' +
+          'data-surface="' + name + '" placeholder="' + searchHint() + '" ' +
           'autocomplete="off">' +
       '</div>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
@@ -1086,6 +1091,9 @@ function syncTools(name) {
   // Only when it disagrees: writing .value on every keystroke moves the caret to the end.
   const input = root.querySelector('.tool-search');
   if (input.value !== s.search) input.value = s.search;
+  // Same reason as the value above: only when it disagrees. This is the one thing in the
+  // row that has to follow the *width* as well as the state, since the row is drawn once.
+  if (input.placeholder !== searchHint()) input.placeholder = searchHint();
 }
 
 // Which list a toolbar steers. Every branch that changes a search or a filter ends here.
@@ -1198,7 +1206,7 @@ function openSlotPicker(iso, meal, opener) {
   // Reset on every open; last time's search is not this time's question.
   surface.slot.search = '';
   surface.slot.tags = [meal.toLowerCase()];
-  surface.slot.filtersOpen = !NARROW;
+  surface.slot.filtersOpen = !NARROW_MQ.matches;
   closeDrops(el.slotPicker);
 
   const date = dateOf(iso);
@@ -1225,7 +1233,8 @@ function openSlotPicker(iso, meal, opener) {
   // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
   // and focus left on a hidden element drops to <body>. The panel is the thing that
   // replaced it, and from here Tab reaches the back link, then the search, then the
-  // cards, in the order they are read.
+  // cards, in the order they are read — under 620px the back link is not in the page at
+  // all (it is the top bar's, above the panel), so there Tab starts at the search.
   el.slotPicker.focus();
 }
 
@@ -1566,6 +1575,23 @@ document.addEventListener('input', function (event) {
 // A rotated phone or a dragged window changes the room the picker was measured against.
 // No-op unless it is open.
 window.addEventListener('resize', sizeSlotPicker);
+
+// Crossing the 620px line, which a phone never does and a dragged desktop window does
+// constantly — and it is the narrow side that has a height budget: five dropdowns and a
+// long placeholder are 82px that side of the line and free on the other. Fires only when
+// the answer flips, not on every resize.
+//
+// syncTools() writes the row in place rather than redrawing it, which is the whole reason
+// this can happen at all: a redraw would shut whichever dropdown was open under the
+// finger and move the caret to the end of the search box. The ticked filters and the
+// typed search are untouched — only whether the row is showing.
+NARROW_MQ.addEventListener('change', function () {
+  Object.keys(surface).forEach(function (name) {
+    surface[name].filtersOpen = !NARROW_MQ.matches;
+    syncTools(name);
+  });
+  sizeSlotPicker();
+});
 
 // Another tab wrote the blob. Without this, two open tabs quietly destroy each other's
 // work: each holds its own `state`, and saveState() writes the *whole* object, so the
