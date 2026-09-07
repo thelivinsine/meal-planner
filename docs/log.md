@@ -76,6 +76,15 @@
 | **A value that stopped being constant** | Reviewing #17's own diff found the same class of bug as #15's prune, one layer up: the 620px breakpoint was read into a constant at start-up, so a desktop window *dragged* narrow kept the wide defaults and measured 41% instead of 30.6% at the same width. A `change` listener on the query fixed it, writing the row through `syncTools()` rather than redrawing it. **The case the whole round came from was a dragged window** |
 | **Two dead lines, and the path they hid** | The same review found a `margin-right: auto` the theme button's own auto margin makes redundant, and a `target.blur()` the focus guard never needed. Proving the second meant testing a route the branch had never touched — Escape while the top bar's back link holds focus, which reaches `closeSlotPicker()` without passing the handler at all. It restores focus correctly, which is what showed the blur was doing nothing |
 | **Three stale docs the sweep caught** | Not caused by #17: `architecture.md` still said the storage listener needs no focus restoration — the argument PR #16 disproved, and this was its last copy; the focus-restoration count was six in one file, seven in two others, and the tools row was numbered as a *place* while being the one place that restores nothing; and the README had the 400px figure. **A number written in four files drifts in three of them** |
+| **A focus ring that fired on a mouse** | Branch `controls-and-greys`, PR [#18](https://github.com/thelivinsine/meal-planner/pull/18), squash-merged as `ecdd6d4`. From your screenshots: the search field showed the shared 3px ring when clicked and kept it while you typed. It read as a CSS mistake and is a browser rule — **Chrome matches `:focus-visible` on a text field however it was focused**, deliberately, because a text field is for typing and the caret has to be findable. A text field already has a border, so the border became its indicator: accent, doubled to 2px by an *inset shadow* rather than a wider border, which would shift the field by a pixel on every focus. `outline: none` on that one control |
+| **The add button became a glyph, twice** | Under 620px first — 340px of accent across a 360px screen, louder than the recipe name being chosen. Then in a list at **every** width, once you saw it wide: a 251px accent bar beside a 195px name, with the name wrapping onto two lines because of a column it did not need. The tile foot keeps its words above 620px. Words *hidden, not dropped* — `aria-label` and `title` carry the same sentence, so it is never a nameless plus sign, and both are in the markup at every width so a dragged window needs no redraw |
+| **The greys were the wrong way up** | `--control`, the rest fill of every control on a card, was `#f0eae1` — a step *down* from the card and only **1.05 from the page**. So a search field and five filter dropdowns inside a white panel were the same shade as the page around that panel, and read as gaps punched through it rather than controls resting on it. The project already documents that exact failure for `--bg`; this was the same failure one token along. Corrected against [§3 of the light report](light-mode-reference.md#3-the-nesting-ladder-in-light-mode--and-where-it-runs-out), which makes one distinction: **states go down in light, elevation goes up in both themes** — and an input fill is elevation. `#fbf7f2` now, 1.07 below the card with `--line-strong` at 1.76 carrying the edge, and 1.07 *above* the page. The page went a step deeper to `#f4f0e9` so the cards lift at 1.14 |
+| **A document caught being wrong about itself** | The previous round had read the first half of that sentence and skipped the second, then written *"nothing in the light theme moved"* into the light report as if it were a result. It was the wrong thing to have been pleased about. Both reference docs now carry a correction to their own earlier verdict rather than a new section — **which is the point of keeping them as evidence: a document that records what it concluded last time can be caught being wrong** |
+| **The tag pills went the other way** | They could not follow the controls up: a tag is a **label, not a control**, it has no border, and a borderless pill at 1.07 on a white card is not there at all. So they took `--surface-sunk`, 1.20 down. The split turned out not to be control-versus-track but **pressable-versus-not** — everything you can press is raised, everything that is only a word is sunk |
+| **A no-op that had shipped for eight rounds** | Moving `--control` up meant no card hover could use it (1.07 is a no-op), so `--hover` became *the* state fill on either ground — and pointing it at a card surfaced an older bug. **Dark `--hover` had been `#2b2b2b` since PR #10, which *is* `--surface`**: every hover landing on a card had been doing nothing in dark. It was recorded as a harmless placeholder because both of its consumers landed on `--bg`, where it was a real 1.23 step — true when written, false the moment a third consumer appeared. The script said nothing, because the pair `--hover`/`--surface` was not on its list. **A token parked at a neighbour's value is a no-op waiting for a consumer, and the pair has to be measured before the consumer arrives** |
+| **Half a rule reverted, and it was not a climbdown** | The round had moved `.btn:hover` off the accent wash because hover and *pressed* were the same two colours. True of `.icon-btn` — the layout toggle's pressed state **is** the wash — and false of `.btn`, which has no pressed state anywhere. On a tools row that had just gone white-on-white, a grey `.btn` hover was the same move as every rest fill beside it and read as nothing happening. You said so; the wash is back on `.btn` and `.icon-btn` keeps the grey. **A rule that is right for one control is not therefore right for the class it inherits from** |
+| **Re-reading the diff caught a regression** | Workflow step 4, third round in a row it has earned its place. `.is-list .card-top` had gone from `flex: 0 1 40%; min-width: 178px` to a grown column, and the floor looked like decoration beside `flex: 1 1 auto`. **Growing a column is only generous while there is free space to grow into.** In the slot picker beside the summary panel the column is ~430px, the row runs out, and a grown basis loses to the tags: at 1024px the name fell to **83px over three lines** while three tags wrapped into three rows — worse than the basis it replaced. **The same rule has two very different amounts of room in this app, and the wide one is the one you look at** |
+| **The duplicate-value check earned its keep** | Moving `--bg` left the `theme-color` copy in `index.html` behind. `check.mjs` failed on it before the commit — the first time that particular check has caught anything, and the reason three values written twice are allowed to stay written twice. 96 checks now, up from 91 with **no new token**: two existing tokens landed on new ground and `--control` beside `--surface` split into its two hairline measures |
 
 ---
 
@@ -451,3 +460,50 @@ block on, and forcing it is not being on one. The budget is 4 points from its ce
 pointer nobody here has tested with, and it does not hold at all under about 760px of viewport
 height — named as a limit in [decisions.md](decisions.md#height-and-who-gets-the-screen) rather
 than fixed, because four rows of controls at the 44px touch floor are 200px before a single gap.
+
+### The controls-and-greys round (PR #18)
+
+**Two rounds of critique on the same screenshots, and the second reversed part of the first.** That
+is the shape worth recording: nothing in round one was measured wrong, and one of its four changes
+was pointed the wrong way.
+
+**The focus complaint was diagnosed before it was fixed, and the diagnosis is the whole answer.**
+The ring appeared on a mouse click, so the obvious reading is that `:focus-visible` was not being
+used. It was. Chrome matches it on a text field however the field was focused — that is deliberate
+UA behaviour, not a bug and not something CSS can argue with. Which settled the fix: spend the
+control's *existing* border rather than re-implement `:focus-visible` in JavaScript.
+
+**The greys were checked by arithmetic and the arithmetic is what found the bug.** `--control` at
+`#f0eae1` measured 1.05 against `--bg` — and the significance of that number is not that it is
+small, it is that `--control` sat on the **wrong side** of the page. Every ratio in the palette
+passed; the direction was wrong. `check.mjs` cannot see a direction, because a contrast ratio is
+symmetric: `ratio(a, b) == ratio(b, a)`, and it sorts the two luminances before dividing. **A script
+that measures distance cannot tell you which way you went.**
+
+**What headless could and could not show, precisely:**
+
+- **Measured off the live DOM**, which a screenshot cannot give: `.card-add` at 44×32 with its label
+  `display: none` in every list at every width, and 251×34 with its words in a wide tile;
+  `card-actions` reporting `0px` for both `border-top-width` and `border-left-width`; the narrow name
+  column at 214px against 149px before; `scrollWidth` inside `clientWidth` at 390, 700 and 1280.
+- **Rendered and looked at**, twelve of them: Recipes in list and tile at 1280px in both themes, the
+  narrow list and narrow tile, the week view wide and narrow, the add-to-week dialog in both themes,
+  the detail sheet, and the deployed site.
+- **Faked, and named as faked:** hover. Headless cannot hover, so the five hover fills were rendered
+  by injecting them onto specific elements as classes. That proves the *colours* read — the neutral
+  fill is visibly different from the toggle's accent-wash pressed state, which was the original
+  defect — and proves nothing about whether the rules fire.
+- **Not attempted:** a keyboard. The one thing the round was actually about.
+
+**One harness lesson, learnt by getting a pale screenshot.** CSS transitions do not tick under
+`--virtual-time-budget`, so any transitioned property sits at its start value: the first render of
+this round came out washed and half-transparent because the view's entrance animation had never
+advanced. Every render after it disables `animation` and `transition` in the frame first. The same
+trap had already cost a round when a focus border read as un-applied 300ms after `.focus()` — same
+cause, and it is worth knowing before it looks like a CSS bug for the second time.
+
+**What it did not do:** a real pointer, a real keyboard, a real phone, or the 1001–1150px band by
+eye — which is where the name column's restored floor bites and the tags wrap to three rows. And
+`--control` at 1.07 below a white card is a deliberate near-invisible fill with the border doing the
+work, which is what the references do at the white ceiling and is still worth a look on a real
+screen.

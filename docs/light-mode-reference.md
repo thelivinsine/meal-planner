@@ -335,8 +335,9 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 ## 8. Checklist for a light theme
 
 1. Near-neutral greys; at most a one-point warm tint on the off-white chrome. Never more.
-2. Page below white (`#f3f3f3`–`#f6f3ee`) if cards need to sit *above* it; page at white only
-   if everything nests downward.
+2. Page below white (`#f3f3f3`–`#f4f0e9`) if cards need to sit *above* it; page at white only
+   if everything nests downward. Leave room under white for the **inputs** as well as the cards —
+   an input fill goes up too (item 4), and a page pressed too close to white leaves it nowhere.
 3. Expect about **two** usable fill levels, then plan on borders and shadows. Do not try to
    build a light theme the way you would build a dark one.
 4. Raised containers and input fills go **towards white**; hover, selected, tracks and trays go
