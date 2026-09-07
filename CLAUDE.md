@@ -64,7 +64,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   markup either way**: two lists drift, two `<nav>`s are two landmarks.
 - **Under 620px the list gets two thirds of the screen**, measured. Paid for by: no brand, the top
   bar carrying the way back, one tools row with the dropdowns **shut**, four gaps a token lower, and
-  the add button as its **glyph alone**. `NARROW_MQ` decides the JS half, **live**.
+  the *tile* foot's add button compressed too. `NARROW_MQ` decides the JS half, **live**.
 - **The summary column is derived, so it may be dropped.** Anything that can only be read there
   doesn't belong there.
 - **One box per level:** the card gets the border, nothing inside it gets a second one — no filled
@@ -76,16 +76,15 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   than fitting.
 - **A planned day is an accent *ring*, never a fill.** One shape, three states: bare circle, ringed
   when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by.**
-- **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
-  tags, pills, chips, inputs use `--control`.
+- **`--bg` is the page and nothing else.** Nothing inside a card may be filled with it: a control
+  rests on `--control`, a tag pill on `--surface-sunk`.
 - **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
   the shade the control already has is a no-op, and no contrast script can see one.
 - **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the same path as the
-  sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, and inline in `index.html` — change one,
-  change the other).
+  sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
 - **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
-  near-white for cards, `--control` a step from a card for the controls on it, `--surface-sunk`
-  for a recessed *track*, `--surface-past` back *towards* the page — towards it, never past it.
+  white for cards, `--control` a control's rest fill *up* towards white, `--surface-sunk` a
+  recessed *track* or *tag* going down, `--surface-past` back *towards* the page, never past it.
 - **Measure contrast both directions with a script**, tokens read out of `style.css`: text needs
   4.5 on its ground, two touching surfaces about 1.10. Where a pair must sit closer a hairline
   carries the edge — and then it's the **line** you measure, against both sides.
@@ -93,9 +92,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   go darker than the page in *both* themes, but hover and selected go **up** in dark and **down** in
   light. Read `docs/dark-mode-reference.md` and `docs/light-mode-reference.md` before moving a
   surface token or inventing a state colour — **as evidence, not as a spec**.
-- **A hover fill goes down in light, up in dark.** `--hover` fills a control on the *page*; one on
-  a card uses `--control` — **down** from the card in light, **up** in dark, because a track recedes
-  and a control is raised. No `--selected` token: selected is an accent fill, and hover never is.
+- **`--hover` is the state fill, on either ground** — page or card — **down** in light, **up** in
+  dark. Not `--control`: that is where a control *rests*, near white in light, so a hover sent
+  there is a no-op. A control that already has a fill hovers by moving its **border** instead.
 - **`--accent` fills, `--accent-ink` writes.** Every accent-coloured *word* uses `--accent-ink`;
   borders, dots, chips and fills use `--accent`. Backwards breaks the floor quietly.
 - **Anything keyed to the *theme* reads the theme, not the OS** — it is a stored choice. Set it
@@ -123,8 +122,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   outside click and on Escape are wired by hand, and Escape takes the menu before the picker. The
   row **wraps** on a phone — a scroll container clips an absolutely positioned menu.
 - **A card is a card in both layouts, and neither has a divider *inside* it.** `.is-list` turns the
-  same `cardHtml` on its side; no second component. **Three tags at most, never `quick`**
-  (`cardTags()`), and the minutes are **bare text, not a pill**.
+  same `cardHtml` on its side — name left, minutes and tags collected on the right beside a foot
+  whose add button is its **glyph alone** at every width; no second component. **Three tags at
+  most, never `quick`** (`cardTags()`), and the minutes are **bare text, not a pill**.
 - **Rendering:** change state, redraw the whole view — no diffing. Views are HTML strings, so run
   any text through `escapeHtml` before `innerHTML`. No inline `onclick`: one delegated listener
   dispatches on `data-action`.

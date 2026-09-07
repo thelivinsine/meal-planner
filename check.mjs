@@ -83,14 +83,15 @@ const SURFACE = 1.1;
    nobody measures, so add one when a new combination appears in the CSS. */
 const TEXT_PAIRS = [
   ['--ink', '--bg'], ['--ink', '--surface'], ['--ink', '--surface-sunk'], ['--ink', '--surface-past'],
-  /* --control is the fill of a small control on a card — the search field, a tag, a
-     chip, a filter summary — so all three text tiers land on it, and the placeholder is
-     the faint one. It is the pair that moved dark --ink-faint: on the old #9b9794 the
-     placeholder measured 4.05 on a raised field. */
+  /* --control is where a control on a card *rests* — the search field, a filter chip, a
+     filter summary — so all three text tiers land on it, and the placeholder is the faint
+     one. It is the pair that moved dark --ink-faint: on the old #9b9794 the placeholder
+     measured 4.05 on a raised field. */
   ['--ink', '--control'], ['--ink-soft', '--control'], ['--ink-faint', '--control'],
-  /* A saved bookmark is accent ink on a bare icon button, and that button hovers to
-     --control. */
   ['--accent-ink', '--control'],
+  /* A saved bookmark is accent ink on a bare icon button, and that button hovers to
+     --hover. */
+  ['--accent-ink', '--hover'],
   ['--ink-soft', '--bg'], ['--ink-soft', '--surface'], ['--ink-soft', '--surface-sunk'], ['--ink-soft', '--surface-past'],
   ['--ink-faint', '--bg'], ['--ink-faint', '--surface'], ['--ink-faint', '--surface-sunk'], ['--ink-faint', '--surface-past'],
   ['--accent-ink', '--bg'], ['--accent-ink', '--surface'], ['--accent-ink', '--surface-sunk'],
@@ -111,12 +112,17 @@ const TEXT_PAIRS = [
 const SURFACE_PAIRS = [
   ['--surface', '--bg'],
   ['--surface-sunk', '--surface'],
-  ['--control', '--surface'],
-  /* Light spends state downward and there is no room below a near-white page, so a
-     --control fill that reaches the page is 1.08 there and the border carries the edge —
-     the same trade --surface-past makes. Dark clears it outright at 1.48. .chip is the
-     one --control element that can land on --bg, and it has the border. */
+  /* A control rests *up* towards white, and above a white card there is nowhere to go —
+     so in light this pair is 1.07 and the border is the whole edge, which is what a light
+     theme does once it runs out of greys (docs/light-mode-reference.md §3). Dark has the
+     room and clears it at 1.21. The pair that matters for the token's whole purpose is the
+     next one: --control must stay *above* --bg, or a pill on a card reads as a hole. */
+  ['--control', '--surface', { line: '--line-strong' }],
   ['--control', '--bg', { line: '--line-strong' }],
+  /* The state fill lands on both grounds now: .day-chip and .nav-btn on the page,
+     .icon-btn, .theme-btn and .filter-opt on a card or a menu. Dark's old #2b2b2b was a
+     no-op on the second. */
+  ['--hover', '--surface'],
   /* A pressed chip is an accent fill beside its unpressed siblings, and the search
      field's focus border is accent inside a --control field. */
   ['--accent', '--control'],

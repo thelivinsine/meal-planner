@@ -164,7 +164,7 @@ measures, so a new surface or ink token means adding its pairs by hand.
 
 **Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
 `--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
-CSS, passes all 91 checks, and puts the file straight back where it was before the scale existed.
+CSS, passes all 96 checks, and puts the file straight back where it was before the scale existed.
 A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
 a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
 in the next time one bites. Until then the scale is held by review, not by the script.
@@ -237,7 +237,7 @@ moves again.
   a third kind of check this project now has and had not used before, and it is the one that suits
   anything measured rather than drawn.
 
-**All 91 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 96 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the
@@ -259,9 +259,11 @@ next thing that does.
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
-`--control` at 4.97, dark `--ink-faint` on `--control` at 4.74 — closer than an eye can call. The
-third of those used to be `--ink-faint` on `--surface` at 4.89 and is now the tighter pair, because
-PR #18 raised the ground under the search placeholder.
+`--hover` at 4.70, dark `--ink-faint` on `--control` and `--hover` at 4.74 — closer than an eye can
+call. The last of those used to be `--ink-faint` on `--surface` at 4.89 and is now the tighter pair,
+because PR #18 raised the ground under the search placeholder. The middle one is new in PR #19: a
+saved bookmark is `--accent-ink`, and the button under it now hovers to `--hover` rather than to
+`--control`, which is a darker ground by 0.9.
 Since the light page went near-white there is also less room between surfaces than there was, so two
 edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-contrast). And
 `color-mix` is load-bearing for old browsers; `subgrid` no longer is.
@@ -269,7 +271,7 @@ edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-c
 **PR #13 added a search field, a layout toggle, five dropdowns and a menu of checkboxes to three
 views, and the pair list did not grow at all.** Every ground in it was already measured: the
 dropdown menu is `--surface` inside a `--surface` card with a `--line-strong` hairline; a summary
-chip is `--control` with `--ink-soft`; a ticked option hovers to `--control` with `--ink`;
+chip is `--control` with `--ink-soft`; a ticked option hovers to `--hover` with `--ink`;
 the pressed layout button is the `--accent-soft` wash with `--accent-ink` on it; the count badge is
 `--on-accent` on `--accent`; the checkbox's `accent-color` is `--accent` on a card. That is the
 happy version of the rule below — reusing a ground costs nothing, and it is why the count stayed at
@@ -283,6 +285,17 @@ free**, which is the whole reason the list is kept by hand rather than generated
 immediately — dark `--ink-faint` on `--control` came out at **4.05**, because raising the search
 field raised the ground under its placeholder, and no screenshot of a placeholder was ever going to
 show that. The token went to `#a8a4a1`.
+
+**PR #19 went 91 to 96 with no new token at all**, which is the same rule read the other way. Two
+existing tokens landed on new ground: `--accent-ink` on `--hover`, because the bookmark's hover fill
+moved there, and `--hover` beside `--surface`, because three card-level hovers moved there with it.
+That second pair is the one worth the paragraph: dark `--hover` had been `#2b2b2b` since PR #10 —
+*the same value as `--surface`* — so those three hovers were doing nothing at all in dark, and the
+script reported nothing because the pair was not on the list. **A no-op fill is invisible to a check
+that reads values and to a screenshot taken at rest**, and the only reason this one surfaced is that
+adding a consumer forced the pair to be written down. The fifth check is `--control` beside
+`--surface` splitting in two: at 1.07 in light it falls under the floor and the `line` branch
+measures `--line-strong` against both sides instead of the pair.
 
 The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
 It grew by three more when the week bar dissolved, without a single new token — `--ink-soft` and

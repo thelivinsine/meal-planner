@@ -364,56 +364,70 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 
 ## 9. Against Mise's current light tokens
 
-Measured from `style.css`, `:root`, on 2026-09-01. **Three of the four observations below were
-acted on in PR #10** — each is marked where it stands. The token list is as it shipped after that,
-plus `--control`, added in PR #18 for the dark theme's sake and holding light's existing value.
+Measured from `style.css`, `:root`. First taken on 2026-09-01; re-measured after PR #19, which
+moved `--bg`, `--control` and the tag pills. **Three of the four observations below were acted on
+in PR #10** — each is marked where it stands.
 
 ```
---bg           #f6f3ee
---surface      #ffffff   1.11 above bg
---surface-sunk #f0eae1   1.20 below surface, 1.08 below bg   (a recessed *track* only, since PR #18)
---control      #f0eae1   1.20 below surface                  (added in PR #18; same value, see below)
---surface-past #faf8f5   1.04 on bg
---line         #e3dbd0   1.24 on bg, 1.37 on surface
---line-strong  #cabbaa   1.88 on surface
+--bg           #f4f0e9                                       (deepened one step in PR #19)
+--surface      #ffffff   1.14 above bg
+--surface-sunk #f0eae1   1.20 below surface                  (a recessed *track*, and the tag pills)
+--control      #fbf7f2   1.07 below surface, 1.06 above bg   (a control's rest fill; up, see below)
+--surface-past #faf8f5   1.07 on bg
+--line         #e3dbd0   1.21 on bg, 1.37 on surface
+--line-strong  #cabbaa   1.88 on surface, 1.76 on control
 --ink          #191310   18.39 on surface
 --ink-soft     #56463c   8.99 on surface
---ink-faint    #6a5849   6.76 on surface
+--ink-faint    #6a5849   6.76 on surface, 6.34 on control
 --accent       #c8491f   4.74 on surface
 --accent-ink   #ad4020   5.95 on surface
 --accent-soft  #fbe9e1   1.18 on surface
 --on-accent    #ffffff   4.74 on accent
---hover        #eae4da   1.14 below bg      (added in PR #10)
+--hover        #eae4da   1.11 below bg, 1.26 below surface   (added in PR #10; both grounds, PR #19)
 --scrim        rgba(28,20,16,.42)           (added in PR #10; composites to #9a9591, 2.97 on white)
 ```
 
-**The light theme is structurally right, and more right than the dark one.** Read against
-section 3, every direction is correct: the page sits below white at `#f6f3ee` so cards can rise
-to `#ffffff` (1.11, between PowerToys' 1.07 and Claude's 1.03); `--surface-sunk` goes **down**
-from the card into grey, which is what light-mode trays and tiles are supposed to do; and
-`--surface-past` recedes towards the page. Three text tiers at 18.39 / 8.99 / 6.76 are all
-comfortably clear, with `--ink-faint` at 6.76 well above the 3.60 that Claude ships.
+**The light theme was structurally right in its containers and wrong in one of its fills**, and
+it took two readings of section 3 to see which was which. The containers were never in doubt:
+the page sits below white so cards can rise to `#ffffff` (1.14, either side of PowerToys' 1.07
+and Claude's 1.03), `--surface-sunk` goes **down** from the card into grey, which is what a
+light-mode tray is supposed to do, and `--surface-past` recedes towards the page. Three text
+tiers at 18.39 / 8.99 / 6.76 are all comfortably clear, with `--ink-faint` well above the 3.60
+that Claude ships.
 
-That is worth stating plainly because it sharpens the dark-mode diagnosis. `--surface-sunk`
-going down is **correct in light and wrong in dark** — it is the same token doing the right
-thing at `#f0eae1` and the wrong thing at `#212121`, because the light palette was designed
-first and the dark one inherited its structure rather than inverting its reasoning.
+`--surface-sunk` going down is **correct in light and wrong in dark** — the same token doing the
+right thing at `#f0eae1` and the wrong thing at `#212121`, because the light palette was designed
+first and the dark one inherited its structure rather than inverting its reasoning. That is the
+sentence PR #18 acted on, and it is still true. What PR #18 got wrong was the half it did *not*
+move.
 
-> **What shipped in PR #18, and why it shows up in the light report at all.** The token was doing two
-> jobs — a recessed *track*, and the rest fill of a small control on a card — and in light both go
-> down, so one value served both. In dark they want opposite directions, which is the sentence above
-> made concrete. So the control half became `--control`, and in light it holds **exactly the value
-> `--surface-sunk` had**: `#f0eae1`, 1.20 below the card. Nothing in the light theme moved. It is the
-> cleanest illustration of this document's thesis so far — the same idea needs one value in light and
-> two in dark, and the split is in the *token*, not in the theme block.
+> **What shipped in PR #18, and what PR #19 had to correct.** The token was doing two jobs — a
+> recessed *track*, and the rest fill of a small control on a card. PR #18 split the control half off
+> as `--control`, moved the dark value **up** to `#383838`, and held light at `#f0eae1` on the
+> grounds that a light theme spends everything downward. That reads section 3's second heading and
+> skips its first: **states** go down in light, but a **container or an input fill goes up** in both
+> themes — this document's own table says so, and its evidence is PowerToys' `#fefefe` input on a
+> `#fbfbfb` card and Claude's `#fefefd` on `#fcfcfb` chrome.
+>
+> The cost was visible before it was measured. At `#f0eae1` a control on a card sat **1.05 from the
+> page** — the same shade as the page around the card — so a search field and five filter chips read
+> as gaps punched in a white panel rather than controls sitting on one. PR #19 sends `--control`
+> up instead: `#fbf7f2`, 1.07 below the card with `--line-strong` at 1.76 carrying the edge, which
+> is the hand-off to borders this section's third heading describes. The number that matters is the
+> other side — 1.07 **above** the page, so nothing on a card is darker than the page again.
+>
+> The **tag pills** went the other way, to `--surface-sunk`. A tag has no border, and a borderless
+> pill at 1.07 on a white card is not there at all; the recessed shade is the only place one still
+> reads. So the split is not control-versus-track after all, it is **pressable-versus-not**:
+> everything you can press is raised, everything that is only a word is sunk.
 
 Four observations, none urgent:
 
-**a) The ramp is compressed at the same point the references are.** `--bg` to `--surface` is
-1.11 and `--bg` to `--surface-sunk` is 1.08 — both under the project's 1.10 target in one case
-and barely over it in the other. The existing comment in `style.css` already documents this and
-already solves it the way both references do, with `--line` carrying the edge at 1.24 on the
-page and 1.37 on a card. That is the right answer and matches PowerToys' 1.14–1.22 hairline
+**a) The ramp is compressed at the same point the references are.** `--bg` to `--surface` was
+1.11 and `--bg` to `--surface-sunk` 1.08 — one barely over the project's 1.10 target and one
+under it. PR #19 deepened the page to `#f4f0e9`, which takes the card to 1.14, and the existing
+comment in `style.css` already solves the rest the way both references do, with `--line` carrying
+the edge at 1.21 on the page and 1.37 on a card. That is the right answer and matches PowerToys' 1.14–1.22 hairline
 exactly. No change needed; it is simply worth knowing that this is not a Mise problem but the
 structural limit of light mode from section 2.
 
@@ -424,17 +438,20 @@ match; against `--bg`, roughly `#ebe6df`. This is the light-mode half of the sam
 in the dark report — there, states have nowhere to go *up*; here, nowhere to go *down* that is
 named. Both would be fixed by the same pair of tokens, pointing opposite ways per theme.
 
-> **What shipped.** `--hover: #eae4da`, 1.14 below `--bg` — inside the range this section predicted.
-> The sidebar nav hover, the one fill in the app that lands on the page, uses it; controls sitting
-> on a *card* were left on `--surface-sunk`, already a correct downward step at 1.20.
+> **What shipped.** `--hover: #eae4da`, 1.11 below `--bg` — inside the range this section predicted.
+> It started as the page-only hover, with controls on a *card* left on the downward `--surface-sunk`
+> step. PR #19 made it **the** state fill on both grounds, because once `--control` moved up to near
+> white there was no downward card step left to borrow: 1.11 on the page, 1.26 on a card, which
+> brackets this section's 1.10–1.25 band from both ends.
 >
 > **`--selected` was declined.** Every selected state in this app is an accent fill — the pressed
 > chip, the day circle, the current nav item — so a neutral selected shade would have had no
 > consumer.
 >
-> **Dark was deliberately left.** Its `--hover` holds the value dark already used. Closing the
-> symmetry would have meant inventing a hex for the theme nobody has looked at yet, which is the
-> dark report's open question, not this one's.
+> **Dark was deliberately left, and that was a bug rather than a deferral.** Its `--hover` held the
+> value dark already used — which was `--surface` itself, so every hover landing on a card did
+> nothing in dark. PR #19 closed it at `#383838`: 1.48 on the page, 1.21 on a card. **A parked value
+> is only safe if something measures it**, and the pair `--hover`/`--surface` was not in `check.mjs`.
 
 **c) `--accent` at 4.74 on white is close to the floor, and 4.74 is also `--on-accent`.** — *still
 true; now load-bearing in one more place.* The

@@ -319,16 +319,15 @@ any of it.
 
 ## 8. Against Mise's current dark tokens
 
-Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01. **Findings (a) and (b) below were
-acted on in PR #18**, which is why the token list here now carries `--control`; (c) still stands.
-`--hover` exists in dark as of PR #10, holding `#2b2b2b` — the value the dark sidebar hover already
-used. That is *not* the no-op it reads as: both of its consumers land on `--bg`, where `#2b2b2b` is
-a real upward step at 1.23, so it was left alone.
+Measured from `style.css`, `[data-theme="dark"]`. First taken on 2026-09-01. **Findings (a) and (b)
+were acted on in PR #18** and (d) in PR #19; (c) still stands. `--hover` has existed in dark since
+PR #10, and it held `#2b2b2b` until PR #19 — see (d) for why that was a defect rather than the
+harmless placeholder it was recorded as.
 
 ```
 --bg           #1a1a1a
 --surface      #2b2b2b   1.23 on bg
---surface-sunk #212121   1.14 BELOW surface, 1.08 above bg   (a recessed *track* only, since PR #18)
+--surface-sunk #212121   1.14 BELOW surface, 1.08 above bg   (a recessed *track*, and the tag pills)
 --control      #383838   1.21 above surface                  (added in PR #18)
 --surface-past #232323   1.11 on bg
 --line         #3a3a3a   1.53 on bg, 1.24 on surface
@@ -339,7 +338,7 @@ a real upward step at 1.23, so it was left alone.
 --accent       #ff7a4f   5.49 on surface
 --accent-ink   #ffab8b   7.72 on surface
 --accent-soft  #4a2c1a   1.12 on surface
---hover        #2b2b2b   = --surface; placeholder, see above
+--hover        #383838   1.48 on bg, 1.21 on surface          (was = --surface; fixed in PR #19)
 --on-accent    #1e1207   7.12 on accent
 ```
 
@@ -352,7 +351,7 @@ a real upward step at 1.23, so it was left alone.
 - `--line` at 1.53 on the page and 1.24 on a card, in the same band as ChatGPT's dividers.
 - `--surface-past` pulled *towards* the page rather than past it.
 
-**Three gaps, in order of how much they explain the flat feeling:**
+**Four gaps, in order of how much they explain the flat feeling:**
 
 **a) There is no token above `--surface`.** — *done in PR #18: `--control` at `#383838`.* The ramp stopped at `#2b2b2b`. ChatGPT keeps five
 levels above its panel; Mise keeps none — so hover, selected and pressed states have to be
@@ -390,11 +389,30 @@ than answering it.)
 > The loud icon-button hover this section mentions (`#5a5a5a`–`#676767`) was **not** built. Nothing
 > in the app wants a 2.33 state change yet, and light mode has no room for one, so it would have
 > been a dark-only invention.
+>
+> **One line of this needs correcting.** "The light theme did not move a pixel" was true and was the
+> wrong thing to be pleased about: holding light at `#f0eae1` sent the light `--control` *down*,
+> against [light-mode-reference.md §3](light-mode-reference.md#3-the-nesting-ladder-in-light-mode--and-where-it-runs-out),
+> which says an input fill goes up in **both** themes. PR #19 moved it to `#fbf7f2`. Dark's value is
+> untouched — this section's suggestion was right — and the tag pills went back down to
+> `--surface-sunk`, because a borderless pill cannot be seen at 1.07 on a white card. The split is
+> therefore not control-versus-track but **pressable-versus-not**.
 
 **c) `--accent-soft` at 1.12 on a card is scraping the floor.** It clears 1.10 by 0.02.
 PowerToys never uses a dark tinted accent fill at all — it uses the *bright* accent as the
 fill with dark text on top, which measures 10.47 instead of 1.12. If accent-soft keeps being
 hard to see, the reference answer is to stop making a dark tint work and invert the element.
+PR #19 put `.btn:hover` back on it, so one more element depends on that 0.02 than before.
+
+**d) `--hover` was `--surface`.** — *done in PR #19: `#383838`.* It was recorded above as a
+harmless placeholder on the grounds that both of its consumers landed on `--bg`, where `#2b2b2b`
+is a real 1.23 step. That was true when it was written and stopped being true the moment a hover
+was pointed at a control sitting **on a card** — three of them, in PR #19 — where the fill was the
+exact shade underneath it. Nothing was visible in dark and nothing failed, because `check.mjs` had
+no `--hover`/`--surface` pair to fail on. `#383838` clears both grounds at 1.48 and 1.21, which is
+inside this section's own band, and it is the same value as `--control`: nothing in the app rests
+on one and hovers to the other. **A token parked at a neighbour's value is a no-op waiting for a
+consumer, and the pair has to be measured before the consumer arrives, not after.**
 
 None of the above is a proposal to change tokens. `check.mjs` and a browser both have to agree
 before anything moves — this is the measured gap between `style.css` today and what the two
