@@ -67,9 +67,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   compressed. `NARROW_MQ` decides the JS half, **live**.
 - **The summary column is derived** — anything readable only there doesn't belong there.
 - **One box per level:** the card gets the border, nothing inside it gets a second one — no filled
-  tile around the recipe, no bordered icon button, one arithmetic exception (the pressed layout
-  toggle, 1.06 on the page). The recipe *name* shows a meal card is clickable:
-  `--accent-ink`, **underlined at rest** (accent at 45%), full on hover, never hover-only.
+  tile around the recipe, no bordered icon button, no exceptions; **selected is a fill**, never an
+  outline. The recipe *name* shows a meal card is clickable: `--accent-ink`, **underlined at rest**
+  (accent at 45%), full on hover, never hover-only.
 - **The week bar is navigation, so it stays compact — and it has no tile.** No fill, no border, no
   radius; capped at 520px and centred. Taller needs a better reason than fitting.
 - **A planned day is an accent *ring*, never a fill.** Bare circle, ringed when planned, filled
@@ -151,7 +151,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **An outline is clipped by an ancestor's `overflow`, and takes its *own* element's
   `border-radius`.** `.card-open` needs both a negative `outline-offset` and the card's top radius,
   or its focus ring is cut to a stray line. Nothing that reads a page at rest can see this.
-- **Chrome matches `:focus-visible` on a text field however it was focused**, so the shared 3px ring
+- **Chrome matches `:focus-visible` on a text field however it was focused**, so the shared 2px ring
   showed on a mouse click. A text field's focus is its **border** — accent, doubled by an inset
   shadow, with `outline: none` on that one control.
 - **Dialog `display` hangs off `[open]`.** A bare `display` on `.sheet` beats the UA rule, and both
@@ -161,9 +161,9 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 **Every defect here has been an accessibility defect.** Details: `docs/decisions.md#accessibility-and-focus`.
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
-- **A redraw destroys focus.** If the control just activated lives inside what gets re-rendered,
-  put focus on what *replaced* it — eight places do. **A conditionally-rendered control is the one
-  that gets missed**; all three focus bugs here were one.
+- **A redraw destroys focus.** Put focus on what *replaced* the control, through `handOff()` and
+  never a bare `.focus()` — Chrome rings programmatic focus, and a `<dialog>`'s restore, mouse or
+  not. Eight places do; **a conditionally-rendered control is the one that gets missed.**
 - **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
   `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,
   then open picker, then the view.

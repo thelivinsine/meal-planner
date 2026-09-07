@@ -310,10 +310,14 @@ button, input, select { font: inherit; color: inherit; }
 /* A ring with a gap, so it reads against the control it surrounds *and* the surface
    behind it. The reference draws 4px; that was tried here and looked at, and on this
    palette it was too loud — a thick orange band around the search field rather than a
-   ring. 3px keeps the reference's intent at a weight this accent can carry. --accent
-   measures 4.74 on a card and 4.28 on the page — a ring is a non-text component, so 3.0
-   is its floor, but it clears the text floor on both anyway. */
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+   ring. It went to 3px, and on the running app that was still a band rather than a ring:
+   2px is the third look and the one that stopped reading as a box. Nothing about the
+   reference's measurement was wrong — this accent is simply louder than its blue at any
+   given width, and the gap is doing the work the width was asked for. --accent measures
+   4.74 on a card and 4.28 on the page — a ring is a non-text component, so 3.0 is its
+   floor, but it clears the text floor on both anyway, and thinning a line does not move
+   the ratio. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- shell: top bar, sidebar, docked nav ---------- */
 /* Narrow first: a sticky top bar with the way back and the theme button, and the view
@@ -501,9 +505,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
               color var(--fast) var(--ease);
 }
 /* This one keeps the neutral fill, unlike .btn above, and the layout toggle is why: its
-   *pressed* state is --accent-soft with accent ink, so hovering to accent-soft made hover
+   *pressed* state used to be the --accent-soft wash, so hovering to accent-soft made hover
    and pressed the same two colours — you could not tell which button was on by looking at
-   the one under the pointer. --hover, not --control: this button has no fill of its own,
+   the one under the pointer. Pressed is the full --accent fill now, which puts two clear
+   steps between them rather than none, and the neutral hover still belongs here: an accent
+   hover on the *unpressed* button would be the app promising a state it is not entering.
+   --hover, not --control: this button has no fill of its own,
    so the hover has to be a step from the card it sits on, and --control is where a control
    *rests*. 1.26 down in light, 1.21 up in dark. */
 .icon-btn:hover { background: var(--hover); color: var(--ink); }
@@ -783,17 +790,24 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .search input:focus-visible { outline: none; }
 .search input::placeholder { color: var(--ink-faint); }
 
-/* Two icon buttons, no tile around them. Pressed is the accent wash and hover is neutral
-   — they used to be the same fill; see .icon-btn:hover.
-   The pressed one carries an accent *border*, which it did not need while the tools card
-   was under it: the wash is 1.18 on a white card and only **1.06** against the faded end
-   of the page it sits on now, under the 1.10 floor with nothing to carry the edge. This
-   is the hairline exception rather than a box — .icon-btn already declares a transparent
-   1px border, so colouring it shifts nothing, and --accent measures 4.28 on the page and
-   4.0 on the wash. The only bordered .icon-btn in the app, and the reason is arithmetic. */
+/* Two icon buttons, no tile around them. Hover is neutral (see .icon-btn:hover) and
+   pressed is the **full accent fill**, which is what "selected" already looks like
+   everywhere else in this app: the selected day chip and the pressed meal chip in the
+   dialogs are both --accent with --on-accent on them. It used to be the --accent-soft
+   wash plus an --accent border, and the border was arithmetic rather than taste — the
+   wash is 1.18 on the white tile it once sat on and only **1.06** against the faded end
+   of the page it sits on now, so it needed a hairline to have an edge at all. A bordered
+   icon button was the one exception to *one box per level* in the app, and it read as a
+   thick orange outline on a 30px control. The reference answer to a tint that cannot
+   hold its ground is to stop propping up the tint and invert the element
+   (dark-mode-reference.md §4c, on PowerToys): --accent measures 4.28 against the faded
+   page in light and 6.40 in dark, and --on-accent 4.74 / 7.12 on the fill — so the fill
+   holds its own edge and the glyph sits well over the text floor with nothing to carry.
+   The transparent 1px border stays declared and stays transparent, so pressing shifts
+   nothing. */
 .view-toggle { flex: none; display: flex; gap: 2px; }
 .view-toggle .icon-btn[aria-pressed="true"] {
-  background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink);
+  background: var(--accent); color: var(--on-accent);
 }
 
 .filter-toggle { flex: none; }

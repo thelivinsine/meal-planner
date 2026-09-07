@@ -192,14 +192,17 @@ const SURFACE_PAIRS = [
   /* Three grounds the untiled tools row created, all of them the *faded* end of the
      page: the row sits near the top of a view, but a short viewport puts it well down
      the gradient. --line is every edge on the row now, --hover is the layout buttons'
-     hover, and --accent is the pressed one's border plus the search field's focus edge. */
+     hover, and --accent is the *pressed* layout button's whole fill, plus the search
+     field's focus edge and the Filters button's hover border. */
   ['--line', '--bg-fade'],
   ['--hover', '--bg-fade'],
   ['--accent', '--bg-fade'],
-  /* The pressed layout button, and the one pair the tile was hiding: 1.18 on the white
-     card it used to sit on, 1.11 on --bg and **1.06** here. It is an .icon-btn, so the
-     glyph rather than a word is what the fill has to hold — hence a border, and hence
-     --accent rather than --line as the thing measured. */
+  /* The wash on the page, and the one pair the tile was hiding: 1.18 on the white card
+     it used to sit on, 1.11 on --bg and **1.06** here. This used to be the pressed layout
+     button, which gave up on the tint and took the full --accent fill instead; the pair
+     is still real, because .btn:hover and .meal-add:hover both wash accent-soft onto the
+     page and both come with an --accent border — hence --accent rather than --line as the
+     thing measured. */
   ['--accent-soft', '--bg-fade', { line: '--accent' }],
 ];
 
