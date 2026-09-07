@@ -14,7 +14,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 76 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 96 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
@@ -53,6 +53,9 @@ Nine documents, each with one job:
   while the tile / list choice is one preference for all three, remembered between visits
 - A card shows the name, the minutes, and **at most three tags**. `quick` is never one of them: the
   minutes beside the name already say so
+- **In list view the add button is just its icon** — a small calendar-plus square instead of a
+  wide *Add to Mon breakfast* bar, so the recipe's name is the loudest thing in the row. On a phone
+  the grid's cards do the same. The words are still there for a screen reader, at every width
 - Tapping a card opens a detail panel with the full tag set; close it with the ×, Escape, or a tap
   outside
 
@@ -106,7 +109,8 @@ open, so you can see why the list is short and untick it if you want a breakfast
 narrow screen the row starts closed and the count on the **Filters** button carries that instead —
 the dropdowns are 66px, and there they come out of the recipe list's height. The
 recipes appear as the same cards you get on the Recipes page, in whichever layout you last chose,
-except the button reads **Add to Thu breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
+except the button reads **Add to Thu breakfast** — or, in a list and on a phone, shows the
+calendar-plus icon alone — and fills the slot you tapped. Not sure about one? Tap the card to read the full
 recipe — the sheet's calendar icon adds it straight to the slot you came from, because the day and
 meal are already settled and this app never asks twice. This route is for empty slots only.
 
@@ -153,7 +157,9 @@ narrow screen: the row it sat in carries the way back out of a view instead.
 
 **Two ways to look at a list.** The two small buttons beside every search box switch between cards
 in a grid and a single column of rows. It's the same recipes either way — the rows just fit more of
-them on the screen at once. The app remembers which you picked.
+them on the screen at once. A row gives the name the width and gathers the minutes and the tags over
+on the right, next to the buttons that act on them; on a phone the name gets two thirds of it. The
+app remembers which you picked.
 
 **What it deliberately doesn't do yet.** No shopping list, no month calendar, no adding your own
 recipes, no sharing a plan with anyone else. Those are sensible next steps rather than oversights —
@@ -175,6 +181,11 @@ The full set is in [docs/decisions.md](docs/decisions.md). These five cost the m
 - **Passing the measurements is not the same as looking right.** A palette that cleared every ratio
   still read as one beige wash next to the mockups, twice, one shade apart. The script is a floor,
   not a verdict — which is why the mockups get looked at again after it passes.
+- **A grey that is darker than the page cannot sit on a card.** The search field and the filter
+  chips were filled with a shade one step below the page, so on a white panel they read as gaps
+  punched through to the background rather than as controls resting on it. Both reference apps send
+  an input *up* towards white and let its hairline do the separating; that is now what Mise does,
+  and the tag pills — which have no hairline — are the one thing left going down.
 - **Read it, look at it, and measure it — they are three checks, not one.** Each has caught what
   the other two could not. Two careful readings of the CSS missed a week rendering at a third of its
   width, and one screenshot found it. A script found six things no screenshot could. And a hover
