@@ -92,7 +92,12 @@
      Lifted from #fbf7f2 when the page went to #faf8f4, which had overtaken it: a control
      on a card was then *darker* than the page around the card, the exact reading that got
      this token invented. 1.03 above the page now, 1.03 below the card, --line-strong
-     carrying the edge at 1.82. */
+     carrying the edge at 1.82.
+     **Read the list of consumers above as history.** The tools row lost its tile, so the
+     search field and the five filter summaries are not on a card any more and went to
+     --surface with a --line edge. What is left is .chip in the dialogs, always on a
+     --surface sheet — which is also why this token cannot simply take --line: at 1.03
+     against it in dark, the lighter hairline disappears on a --control fill. */
   --control: #fdfbf8;
   /* A day that has been and gone: back towards the page, never past it. On a near-white
      page there is almost nothing left between the two — 1.04 from a live card and 1.02
@@ -465,7 +470,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 6px 13px; min-height: 32px;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   font-weight: 600; font-size: .8125rem; white-space: nowrap;
-  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
               color var(--fast) var(--ease);
 }
@@ -481,7 +486,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 .btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--on-accent); }
 
-.btn-quiet { background: var(--surface); border-color: var(--line-strong); color: var(--ink-soft); }
+.btn-quiet { background: var(--surface); border-color: var(--line); color: var(--ink-soft); }
 .btn-quiet:hover { color: var(--ink); }
 
 .btn-icon { padding: 6px; width: 32px; }
@@ -492,7 +497,8 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   cursor: pointer; border: 1px solid transparent; background: none;
   color: var(--ink-faint); border-radius: var(--radius-sm);
   width: 30px; height: 30px; display: grid; place-items: center;
-  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
+              color var(--fast) var(--ease);
 }
 /* This one keeps the neutral fill, unlike .btn above, and the layout toggle is why: its
    *pressed* state is --accent-soft with accent ink, so hovering to accent-soft made hover
@@ -730,10 +736,15 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .side-tip { font-size: .8125rem; line-height: 1.55; font-weight: 500; color: var(--ink-soft); }
 
 /* ---------- filters ---------- */
+/* No tile. The row used to be a --surface card with a --line rim and 16px of padding,
+   which made it the third box on a page that already stacks a card inside a view — and
+   the *one box per level* rule reads the same way here as it does on a recipe card: the
+   controls are the boxes, so the thing holding them is not. It sits straight on the page
+   now, which is also what moved the controls themselves off the on-a-card palette (see
+   .search input and .filter-summary below): --control is where a control rests *on a
+   card*, and 1.03 above the page it would have been a fill doing nothing. */
 .filters {
-  margin-bottom: var(--space-3); padding: 16px;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius);
+  margin-bottom: var(--space-3);
   display: flex; flex-direction: column; gap: var(--space-2);
 }
 /* Inside the slot picker it is a flex item in a max-height column, and a flex item will
@@ -746,8 +757,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .search input {
   width: 100%; max-width: 480px;
   padding: 8px 14px; min-height: 36px;
-  background: var(--control); color: var(--ink);
-  border: 1px solid var(--line-strong);
+  /* --surface, not --control: the tile went, so this field rests on the *page* rather
+     than on a card, and a control on the page goes up to white the same way a card does.
+     1.06 on --bg and 1.11 on the faded end, with --line carrying the edge at 1.29/1.24 —
+     the card's own arrangement, which is the point: one border colour on this row. */
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   font-size: .875rem;
   transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
@@ -764,11 +779,18 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .search input:focus-visible { outline: none; }
 .search input::placeholder { color: var(--ink-faint); }
 
-/* Two icon buttons, no tile around them: they sit inside the tools card, and a bordered
-   group in there would be the second box the card already is. Pressed is the accent wash
-   and hover is neutral — they used to be the same fill; see .icon-btn:hover. */
+/* Two icon buttons, no tile around them. Pressed is the accent wash and hover is neutral
+   — they used to be the same fill; see .icon-btn:hover.
+   The pressed one carries an accent *border*, which it did not need while the tools card
+   was under it: the wash is 1.18 on a white card and only **1.06** against the faded end
+   of the page it sits on now, under the 1.10 floor with nothing to carry the edge. This
+   is the hairline exception rather than a box — .icon-btn already declares a transparent
+   1px border, so colouring it shifts nothing, and --accent measures 4.28 on the page and
+   4.0 on the wash. The only bordered .icon-btn in the app, and the reason is arithmetic. */
 .view-toggle { flex: none; display: flex; gap: 2px; }
-.view-toggle .icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.view-toggle .icon-btn[aria-pressed="true"] {
+  background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink);
+}
 
 .filter-toggle { flex: none; }
 .filter-toggle::after {
@@ -776,7 +798,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   border: 4px solid transparent; border-top-color: currentColor;
   vertical-align: 2px; transition: transform var(--fast) var(--ease);
 }
-.filter-toggle[aria-expanded="false"]::after { transform: rotate(-90deg); }
+/* Down when the row is shut, up when it is open — the disclosure convention, and the
+   one the five dropdowns below now follow too. It used to point *left* when shut, which
+   is a caret saying "there is more to the side" about a row that opens downwards. */
+.filter-toggle[aria-expanded="true"]::after { transform: rotate(180deg); }
 .filter-badge {
   display: inline-grid; place-items: center; min-width: 18px; height: 18px;
   padding: 0 5px;
@@ -795,28 +820,35 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   display: inline-flex; align-items: center; gap: 6px;
   border-radius: var(--radius-sm); padding: 5px 11px; min-height: 30px;
   font-size: .75rem; font-weight: 600;
-  background: var(--control); border: 1px solid var(--line-strong); color: var(--ink-soft);
+  /* Same move as the search field: on the page, so --surface and --line rather than the
+     on-a-card pair. --line on --control measures 1.03 in dark, so the light border and
+     the raised-on-a-card fill could never have gone together anyway. */
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft);
   transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
 .filter-summary::-webkit-details-marker { display: none; }
 .filter-summary::after {
   content: ""; flex: none;
   border: 4px solid transparent; border-top-color: currentColor;
-  margin-top: 3px;
+  margin-top: 3px; transition: transform var(--fast) var(--ease);
 }
+/* Up while the menu is open, down while it is shut. The margin-top that centres a
+   downward triangle over-centres an upward one, so it comes off with the flip. */
+.filter-drop[open] > .filter-summary::after { transform: rotate(180deg); margin-top: -3px; }
 .filter-summary:hover,
 .filter-drop[open] > .filter-summary { border-color: var(--accent); color: var(--ink); }
 
-/* Floats over what follows rather than pushing the list down the page. --surface on a
-   --surface card, so the hairline is the whole edge — it is measured against both. */
+/* Floats over what follows rather than pushing the list down the page. --surface over
+   the page now the card under it has gone, which is the same 1.06 a card sits at, with
+   --line and --shadow between them — measured against both sides. */
 .filter-menu {
   position: absolute; z-index: 5; top: calc(100% + 6px); left: 0;
   min-width: 176px; max-height: 264px; overflow-y: auto;
   padding: 6px; display: flex; flex-direction: column; gap: 1px;
-  background: var(--surface); border: 1px solid var(--line-strong);
+  background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius-sm); box-shadow: var(--shadow);
 }
-/* The last group would otherwise open off the right edge of the card. */
+/* The last group would otherwise open off the right edge of the content column. */
 .filter-drop:last-of-type .filter-menu { left: auto; right: 0; }
 
 .filter-opt {
@@ -1311,7 +1343,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
      visible replacement three rows up, so it goes out of the page entirely here. The
      picker's accessible name is .slot-picker-title, which stays. */
   .slot-picker-head > .slot-back { display: none; }
-  .filters { padding: var(--space-1); margin-bottom: var(--space-1); }
+  .filters { margin-bottom: var(--space-1); }
   .meal { padding: 13px 14px 15px; }
   /* All three on one row after all. The wrap cost 44px of a screen that had none to
      spare, and the arithmetic it was written against was never measured: at 360px the

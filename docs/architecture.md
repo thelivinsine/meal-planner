@@ -164,7 +164,7 @@ measures, so a new surface or ink token means adding its pairs by hand.
 
 **Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
 `--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
-CSS, passes all 127 checks, and puts the file straight back where it was before the scale existed.
+CSS, passes all 136 checks, and puts the file straight back where it was before the scale existed.
 A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
 a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
 in the next time one bites. Until then the scale is held by review, not by the script.
@@ -237,7 +237,7 @@ moves again.
   a third kind of check this project now has and had not used before, and it is the one that suits
   anything measured rather than drawn.
 
-**All 127 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 136 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the
@@ -251,11 +251,11 @@ two tokens holding the same shade means a tray inside a past card has no edge at
 
 The pair is now **absent from the script's list on purpose**, with a comment saying to put it back
 the moment a bare sunk fill lands on the page again. `--line-strong` against `--bg` was added in its
-place. That once covered two sunk fills that could reach the page; the slot picker's tray went when
-the picker took over the day, and the filter row that replaced the loose chips sits inside the tools
-card — so `.chip` (in the dialogs) and `.filter-summary` (in the tools row) both carry that border
-and neither now lands on the page. The pair stays measured (2.30, comfortable) as the guard for the
-next thing that does.
+place. That once covered two sunk fills that could reach the page, and it now covers none: the slot
+picker's tray went when the picker took over the day, and the tools row lost its tile, which sent
+`.filter-summary` and the search field to `--surface`/`--line` — the card's arrangement. `.chip` in
+the dialogs is the last `--control` fill in the app and it is always on a `--surface` sheet. The
+pair stays measured (2.30, comfortable) as the guard for the next thing that reaches the page.
 
 A third thing to watch rather than a gap: contrast figures are computed, and three pairs now sit
 under 5.0 against the 4.5 floor — light `--on-accent` on `--accent` at 4.74, light `--accent-ink` on
@@ -269,9 +269,10 @@ edges are held by a hairline alone; see [decisions.md](decisions.md#colour-and-c
 `color-mix` is load-bearing for old browsers; `subgrid` no longer is.
 
 **PR #13 added a search field, a layout toggle, five dropdowns and a menu of checkboxes to three
-views, and the pair list did not grow at all.** Every ground in it was already measured: the
-dropdown menu is `--surface` inside a `--surface` card with a `--line-strong` hairline; a summary
-chip is `--control` with `--ink-soft`; a ticked option hovers to `--hover` with `--ink`;
+views, and the pair list did not grow at all.** Every ground in it was already measured — and the
+values here are the ones that held while the row still had a tile under it: the dropdown menu was
+`--surface` inside a `--surface` card with a `--line-strong` hairline; a summary chip was
+`--control` with `--ink-soft`; a ticked option hovers to `--hover` with `--ink`;
 the pressed layout button is the `--accent-soft` wash with `--accent-ink` on it; the count badge is
 `--on-accent` on `--accent`; the checkbox's `accent-color` is `--accent` on a card. That is the
 happy version of the rule below — reusing a ground costs nothing, and it is why the count stayed at
@@ -296,6 +297,15 @@ that reads values and to a screenshot taken at rest**, and the only reason this 
 adding a consumer forced the pair to be written down. The fifth check is `--control` beside
 `--surface` splitting in two: at 1.07 in light it falls under the floor and the `line` branch
 measures `--line-strong` against both sides instead of the pair.
+
+**Untiling the tools row went 127 to 136, and every one of the nine is the same sentence:** a
+control that was on a card is on the page now. `--line`, `--hover` and `--accent` all gained the
+faded end of the page as a ground, and `--accent-soft` gained it as a pair that **fails** — 1.06,
+against 1.18 on the white tile it used to sit on — which is how the pressed layout button came to be
+the only bordered `.icon-btn` in the app. `--control` beside `--bg` is still in the list with
+nothing filling it: kept as a guard, like `--surface-sunk` beside `--bg` before it, and its comment
+says so. **A layout change that moves a control from a card to the page is a palette change**, and
+the script is the only thing that says which of its colours stopped working.
 
 The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
 It grew by three more when the week bar dissolved, without a single new token — `--ink-soft` and

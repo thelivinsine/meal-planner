@@ -151,6 +151,11 @@ const SURFACE_PAIRS = [
      room and clears it at 1.21. The pair that matters for the token's whole purpose is the
      next one: --control must stay *above* --bg, or a pill on a card reads as a hole. */
   ['--control', '--surface', { line: '--line-strong' }],
+  /* Kept as a guard rather than as a live pair. The tools row lost its tile, so the
+     search field and the five filter summaries went to --surface with a --line edge —
+     the same arrangement a card has — and .chip in the dialogs is the last thing filled
+     with --control, always on a --surface sheet. Put this back to work the moment a
+     --control fill lands on the page again. */
   ['--control', '--bg', { line: '--line-strong' }],
   /* The state fill lands on both grounds now: .day-chip and .nav-btn on the page,
      .icon-btn, .theme-btn and .filter-opt on a card or a menu. Dark's old #2b2b2b was a
@@ -184,6 +189,18 @@ const SURFACE_PAIRS = [
   ['--line', '--bg'],
   ['--line', '--surface'],
   ['--line-strong', '--surface'],
+  /* Three grounds the untiled tools row created, all of them the *faded* end of the
+     page: the row sits near the top of a view, but a short viewport puts it well down
+     the gradient. --line is every edge on the row now, --hover is the layout buttons'
+     hover, and --accent is the pressed one's border plus the search field's focus edge. */
+  ['--line', '--bg-fade'],
+  ['--hover', '--bg-fade'],
+  ['--accent', '--bg-fade'],
+  /* The pressed layout button, and the one pair the tile was hiding: 1.18 on the white
+     card it used to sit on, 1.11 on --bg and **1.06** here. It is an .icon-btn, so the
+     glyph rather than a word is what the fill has to hold — hence a border, and hence
+     --accent rather than --line as the thing measured. */
+  ['--accent-soft', '--bg-fade', { line: '--accent' }],
 ];
 
 function measure(name, theme) {
