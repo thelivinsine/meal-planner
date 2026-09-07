@@ -910,14 +910,18 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   font-variant-numeric: tabular-nums;
 }
 .card-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-/* --surface-sunk, not --control: a tag is a label, not a control. It has no border, so a
-   near-white --control fill would leave it at 1.07 on a white card — a pill you cannot
-   see. The recessed shade is the one place a borderless pill still reads in a light
-   theme, and it is now the only fill inside a card that goes *down*. */
+/* The accent wash, the same fill and ink as a pressed .view-toggle button — a borderless
+   pill in the one shade a borderless pill is allowed to have. It was --surface-sunk, a
+   recessed grey, which read as a hole in the card rather than a label on it; the accent
+   pair is the tint each theme already reserves for a fill that carries no border, so it
+   needs no new token and no new measurement. Measured: --accent-soft 1.18 on a white
+   card and 1.12 on a dark one, --accent-ink on it 5.05 light and 6.87 dark. Not
+   --control (near-white in light, a 1.07 no-op) and not --accent (that fills solid; the
+   ink is what writes). */
 .tag {
   font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
-  font-weight: 700; color: var(--ink-soft);
-  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 8px;
+  font-weight: 700; color: var(--accent-ink);
+  background: var(--accent-soft); border-radius: var(--radius-pill); padding: 4px 8px;
 }
 
 /* No divider, in either layout. The hairline that used to close off the foot made a card
