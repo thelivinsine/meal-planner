@@ -189,10 +189,13 @@ button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- shell: top bar, sidebar, docked nav ---------- */
-/* Narrow first: a sticky top bar with the brand and the theme button, and the view
+/* Narrow first: a sticky top bar with the way back and the theme button, and the view
    switch docked over the content as a pill. Wide (the @media at the end of this
    section): the same nav list becomes a left sidebar and the top bar keeps only the
-   theme button. One set of nav markup and one nav landmark either way. */
+   theme button. One set of nav markup and one nav landmark either way.
+   The brand is in the sidebar and nowhere else. It used to sit here too, which cost the
+   narrow layout a 53px row for a nameplate above a list with 132px left for recipes —
+   and the bar had somewhere better to spend it. */
 .topbar {
   position: sticky; top: 0; z-index: 20;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
@@ -218,9 +221,25 @@ button, input, select { font: inherit; color: inherit; }
   background: var(--accent);
   border-radius: 5px;
 }
-/* The sidebar's copy of the brand. Hidden until there is a sidebar to put it in — the
-   top bar is carrying it at this width. */
+/* The only copy of the brand. Hidden until there is a sidebar to put it in: under
+   1000px the app is nameless and the top bar carries the way back instead. */
 .brand-side { display: none; }
+
+/* The way out of a view, in the row the brand used to fill. It shares .slot-back's
+   shape because it is the same control, so this class only places it: hard left, with
+   the theme button's auto margin holding the other end.
+   Off by default and switched on in the 620px block, rather than the other way round.
+   The line it hangs off has to be the *same* 620px line, because over it the picker's
+   own back link is on screen: turned off above 1000px instead, the two of them showed
+   together for the whole 621-1000px band. The `hidden` attribute app.js writes still
+   beats this either way — that is what the !important on [hidden] above is for.
+   Two classes, not one, and that is load-bearing: this button carries .slot-back too,
+   and .slot-back's own `display: inline-flex` sits 500 lines *below* here, so a single
+   class lost the tie on source order and the button showed at every width. The same
+   trap the media queries at the end of this file are gathered to avoid.
+   No margin of its own: the theme button's `margin-left: auto` already takes every spare
+   pixel in the row, which leaves this hard left with nothing to declare. */
+.topbar-inner .topbar-back { display: none; }
 
 /* The pill spans the viewport and centres with flex rather than translateX: a transform
    here would make this element the containing block for the fixed scrim below it. */
@@ -1028,7 +1047,6 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
     pointer-events: auto;
   }
   .brand-side { display: flex; padding: 0 10px; }
-  .brand-top { display: none; }
 
   /* The pill unwinds into a plain vertical list: no fill, no border, no shadow. */
   .nav {
@@ -1075,25 +1093,45 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 
 @media (max-width: 620px) {
-  .page { padding: var(--space-3) 14px 100px; }
-  .topbar-inner { padding: 10px 14px; gap: 10px; }
+  /* Everything above the recipe list steps down a token at this width, because the list
+     is the point of every view here and it was getting what was left: 540px of week bar,
+     picker head and tools row on a 780px screen, and 132px of recipes under it. The
+     budget is a third of the screen for the controls, the rest for the list — the
+     numbers behind it are in docs/decisions.md. Nothing in check.mjs sees this. */
+  .page { padding: var(--space-1) 14px 100px; }
+  /* 4px, not 10: the bar holds one or two 44px controls on a finger and the padding was
+     charging 12px on top of a floor that is already the tallest thing up here. */
+  .topbar-inner { padding: 4px 14px; gap: 10px; }
+  /* This width and no wider: see the base rule, including why it takes two classes. */
+  .topbar-inner .topbar-back { display: inline-flex; }
+  /* The 2px either side is what put the day chips *under* the 44px floor at 360px, and
+     it is 2px of a strip that has none to give: 332px of column, six 4px gaps and seven
+     chips comes to exactly 44.0 without it and 43.4 with it. Measured, not reasoned —
+     the wrap breakpoint below is arithmetic off this line, so the two move together. */
+  .weekbar { padding: 0 0 4px; }
+  .day-strip { margin-top: 4px; }
+  .meals, .slot-picker { margin-top: var(--space-2); }
   .nav-wrap { bottom: 14px; }
   .toast { bottom: 76px; }
   .nav-btn { padding: 6px 12px; font-size: .75rem; }
   .card-grid { grid-template-columns: 1fr; }
   .pick-grid { grid-template-columns: 1fr; }
-  /* One column: a centred heading and a back link do not share 360px. The back link
-     keeps the first row to itself, the heading centres under it. */
-  .slot-picker-head { grid-template-columns: 1fr; gap: 4px; }
+  /* One column, and the heading has it to itself: the back link is in the top bar at
+     this width, which is the same control in a row that already exists. */
+  .slot-picker-head { grid-template-columns: 1fr; gap: 4px; margin-bottom: var(--space-1); }
   .slot-picker-title { grid-column: 1; }
-  .filters { padding: 14px; }
+  /* Not .sr-only and not left in the tab order twice: this is a focusable control with a
+     visible replacement three rows up, so it goes out of the page entirely here. The
+     picker's accessible name is .slot-picker-title, which stays. */
+  .slot-picker-head > .slot-back { display: none; }
+  .filters { padding: var(--space-1); margin-bottom: var(--space-1); }
   .meal { padding: 13px 14px 15px; }
-  /* The search field takes the row to itself; the layout toggle and the filter button
-     share the one under it. Three controls do not fit 360px side by side, and a search
-     box squeezed to 90px is not a search box. */
-  .tool-bar { flex-wrap: wrap; }
-  .tool-bar .search { flex: 1 0 100%; }
-  .filter-toggle { flex: 1; }
+  /* All three on one row after all. The wrap cost 44px of a screen that had none to
+     spare, and the arithmetic it was written against was never measured: at 360px the
+     field comes out 135px wide on a mouse and 107px on a finger, where the two layout
+     buttons and the filter button are at their 44px floor. Not the 90px the old comment
+     claimed, and not roomy either — so the placeholder is what gives, not the field. */
+  .tool-bar { gap: 6px; }
   /* Sideways in a 360px column there is room for a name or for tags, not both. */
   .is-list .card-tags { display: none; }
   /* The menu stops floating and opens in the row instead — the open group takes a line
@@ -1116,12 +1154,16 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .sheet-title { font-size: 1.375rem; }
 }
 
-/* Seven across stops clearing the 44px floor — width as well as height — at about
-   400px, not at 620: at 401px the strip still gives 46px a chip. Below that it wraps
-   4 + 3 and centres, which shows the whole week with no scroll and no day off-screen.
-   This was in the 620px block, where it fired hundreds of pixels early and turned the
-   week into two rows of 100px buttons on a screen that had room for one row of seven. */
-@media (max-width: 400px) {
+/* Seven across stops clearing the 44px floor — width as well as height — at 360px, not
+   at 620 and not at 400: the page is 14px in from each edge here and the strip's own gap
+   is 4px, so a chip is (w - 28 - 24) / 7, which is 44.0px at exactly 360 and 44.1px at
+   361. Below that it wraps 4 + 3 and centres, which shows the whole week with no scroll
+   and no day off-screen. It was written as 400px against arithmetic that assumed the
+   wide page padding, and that cost every 361-400px phone — a 390px iPhone included — a
+   second 54px row of day chips it had the width to avoid.
+   This was in the 620px block before that, where it fired hundreds of pixels early and
+   turned the week into two rows of 100px buttons on a screen with room for one row. */
+@media (max-width: 359px) {
   .day-strip {
     display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
     margin: 6px auto 0;

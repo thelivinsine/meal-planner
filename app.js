@@ -527,10 +527,26 @@ const state = {
 // typed on Recipes has nothing to do with what you are looking for in Saved, and the
 // slot picker's set arrives pre-filled with the meal it was opened for. Per-session,
 // like the view and the week — none of it is worth restoring next visit.
+// The same 620px line style.css flips the shell on, kept live rather than read once:
+// a phone does not change width but a desktop window dragged narrow does, and narrow is
+// where the controls have a height budget to keep. Crossing it is handled at the bottom
+// of this file — in place, not by redrawing the row.
+const NARROW_MQ = window.matchMedia('(max-width: 620px)');
+
+// Two hints, one field. The long one does not fit the narrow row: three controls share
+// 332px there and the field gets 107-135px of it, which cuts "Search by name or
+// ingredient…" off at "Search by n…". The <label> says the same thing to a screen reader
+// at either width, so only the visible hint gets shorter.
+const SEARCH_HINT = 'Search by name or ingredient…';
+const SEARCH_HINT_NARROW = 'Search recipes…';
+
 const surface = {
-  recipes: { search: '', tags: [], filtersOpen: true },
-  saved: { search: '', tags: [], filtersOpen: true },
-  slot: { search: '', tags: [], filtersOpen: true }
+  // Open on a screen with the room, shut on one without it: five dropdowns are 66px of
+  // a 780px phone, and the count badge on the Filters button says a filter is on
+  // either way. It is a state, not a rule — one tap opens the row.
+  recipes: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
+  saved: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
+  slot: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches }
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -644,6 +660,8 @@ const el = {
   slotPickerTitle: document.getElementById('slot-picker-title'),
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
+  topbarBack: document.getElementById('topbar-back'),
+  topbarBackLabel: document.getElementById('topbar-back-label'),
   themeToggle: document.getElementById('theme-toggle'),
   themeColor: document.querySelector('meta[name="theme-color"]'),
   toast: document.getElementById('toast')
@@ -741,6 +759,18 @@ const MEAL_ICON = {
 
 // ---------------------------------------------------------------- rendering
 
+// The top bar's back control, which exists only under 1000px (style.css hides it above
+// that) and only where back means something: out of the slot picker, or off Recipes and
+// Saved to the week. Called from every place that changes which view — or the picker —
+// is on screen. It is the eighth instance of the one defect class this project keeps
+// shipping, so the button's own handler hands focus on before this hides it.
+function syncBack() {
+  const inPicker = Boolean(slotPick.iso);
+  const show = inPicker || state.view !== 'week';
+  el.topbarBack.hidden = !show;
+  if (show) el.topbarBackLabel.textContent = inPicker ? 'Back to the day' : 'Back to the week';
+}
+
 function setView(view) {
   state.view = view;
   closeSlotPicker();
@@ -753,6 +783,7 @@ function setView(view) {
     else btn.removeAttribute('aria-current');
   });
   window.scrollTo(0, 0);
+  syncBack();
   render();
 }
 
@@ -996,12 +1027,14 @@ function dropHtml(name, group) {
     '</details>';
 }
 
+function searchHint() { return NARROW_MQ.matches ? SEARCH_HINT_NARROW : SEARCH_HINT; }
+
 function toolsHtml(name) {
   return '<div class="tool-bar">' +
       '<div class="search">' +
         '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
         '<input type="search" class="tool-search" id="search-' + name + '" ' +
-          'data-surface="' + name + '" placeholder="Search by name or ingredient…" ' +
+          'data-surface="' + name + '" placeholder="' + searchHint() + '" ' +
           'autocomplete="off">' +
       '</div>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
@@ -1058,6 +1091,9 @@ function syncTools(name) {
   // Only when it disagrees: writing .value on every keystroke moves the caret to the end.
   const input = root.querySelector('.tool-search');
   if (input.value !== s.search) input.value = s.search;
+  // Same reason as the value above: only when it disagrees. This is the one thing in the
+  // row that has to follow the *width* as well as the state, since the row is drawn once.
+  if (input.placeholder !== searchHint()) input.placeholder = searchHint();
 }
 
 // Which list a toolbar steers. Every branch that changes a search or a filter ends here.
@@ -1165,10 +1201,12 @@ function openSlotPicker(iso, meal, opener) {
   // meal rather than all fifty — every recipe carries exactly one of the three tags. It
   // is a ticked box in the Meal group, not a hidden rule: the filter row opens with it
   // showing, so it explains the short list and can be turned off for a breakfast at
-  // dinner. Reset on every open; last time's search is not this time's question.
+  // dinner. Under 620px the row stays shut and the badge on the Filters button carries
+  // that instead — the row is 66px of a screen where the recipes had 132px.
+  // Reset on every open; last time's search is not this time's question.
   surface.slot.search = '';
   surface.slot.tags = [meal.toLowerCase()];
-  surface.slot.filtersOpen = true;
+  surface.slot.filtersOpen = !NARROW_MQ.matches;
   closeDrops(el.slotPicker);
 
   const date = dateOf(iso);
@@ -1187,6 +1225,7 @@ function openSlotPicker(iso, meal, opener) {
   // then measure from there. Both have to happen in this order or the height is taken
   // from wherever the page happened to be scrolled to.
   window.scrollTo(0, 0);
+  syncBack();
   sizeSlotPicker();
   // Focus the panel, not the search box. Typing is one way to use this and scanning the
   // cards is the other, so opening it with a caret blinking in a field picks the wrong
@@ -1194,7 +1233,8 @@ function openSlotPicker(iso, meal, opener) {
   // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
   // and focus left on a hidden element drops to <body>. The panel is the thing that
   // replaced it, and from here Tab reaches the back link, then the search, then the
-  // cards, in the order they are read.
+  // cards, in the order they are read — under 620px the back link is not in the page at
+  // all (it is the top bar's, above the panel), so there Tab starts at the search.
   el.slotPicker.focus();
 }
 
@@ -1233,6 +1273,7 @@ function closeSlotPicker() {
   closeDrops(el.slotPicker);
   el.dayTitle.hidden = false;
   el.weekGrid.hidden = false;
+  syncBack();
   // Focus was inside the panel we just hid, so hand it back: to the slot that opened the
   // picker if it's still there, otherwise to the week itself. Both targets are visible
   // again by now — focusing a hidden element does nothing at all.
@@ -1331,6 +1372,28 @@ document.addEventListener('click', function (event) {
 
   if (action === 'nav') {
     setView(target.dataset.view);
+    return;
+  }
+
+  // The top bar's back control, which is two things at once: out of the picker, or off a
+  // view to the week. Either way it hides itself the moment it works, so the focus it is
+  // holding has to be handed on — this is the eighth place, and the same shape as the
+  // other seven. Out of the picker there is nothing to write here: closeSlotPicker()
+  // calls syncBack() *before* it restores focus, so this button is already hidden by
+  // then, focus has already fallen to <body>, and its guard — which fires only when
+  // nothing visible still holds focus — puts you back on the "+ Add" that opened the
+  // picker. Escape from this button takes the same path, and both are asserted.
+  // Off a view, the nav button for the week is what replaced this one: it is where you
+  // now are, and the nav is never redrawn.
+  if (action === 'back') {
+    if (slotPick.iso) {
+      closeSlotPicker();
+    } else {
+      setView('week');
+      el.navButtons.forEach(function (btn) {
+        if (btn.dataset.view === 'week') btn.focus();
+      });
+    }
     return;
   }
 
@@ -1514,6 +1577,23 @@ document.addEventListener('input', function (event) {
 // A rotated phone or a dragged window changes the room the picker was measured against.
 // No-op unless it is open.
 window.addEventListener('resize', sizeSlotPicker);
+
+// Crossing the 620px line, which a phone never does and a dragged desktop window does
+// constantly — and it is the narrow side that has a height budget: five dropdowns and a
+// long placeholder are 82px that side of the line and free on the other. Fires only when
+// the answer flips, not on every resize.
+//
+// syncTools() writes the row in place rather than redrawing it, which is the whole reason
+// this can happen at all: a redraw would shut whichever dropdown was open under the
+// finger and move the caret to the end of the search box. The ticked filters and the
+// typed search are untouched — only whether the row is showing.
+NARROW_MQ.addEventListener('change', function () {
+  Object.keys(surface).forEach(function (name) {
+    surface[name].filtersOpen = !NARROW_MQ.matches;
+    syncTools(name);
+  });
+  sizeSlotPicker();
+});
 
 // Another tab wrote the blob. Without this, two open tabs quietly destroy each other's
 // work: each holds its own `state`, and saveState() writes the *whole* object, so the

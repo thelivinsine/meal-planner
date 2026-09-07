@@ -7,8 +7,8 @@ see [decisions.md](decisions.md).*
 
 | File | Contains |
 |---|---|
-| `index.html` | The page shell: top bar, three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker that replaces them, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
-| `style.css` | All styling. Custom properties first — the palette, the radii, and `--space-1/2/3/4`, the four-step scale every vertical gap *between* components names — then the rules, then **every media query at the end of the file**: three `max-width` breakpoints (1000px, 620px, 400px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
+| `index.html` | The page shell: top bar (the theme button, plus the way back under 1000px), three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker that replaces them, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
+| `style.css` | All styling. Custom properties first — the palette, the radii, and `--space-1/2/3/4`, the four-step scale every vertical gap *between* components names — then the rules, then **every media query at the end of the file**: three `max-width` breakpoints (1000px, 620px, 359px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 `Light mode Mockups/` holds the four supplied design concepts the current layout was built
@@ -96,10 +96,14 @@ the newest data. `loadState()` **replaces** the plan and bookmarks rather than m
 which is what makes a *deletion* in one tab reach the other; the reset sits past every early
 return, so a read that failed or a blob that never parsed still leaves a good state alone.
 
-The listener does no focus restoration, though a redraw destroys focus everywhere else in this
-app. It does not need to: the event only ever arrives in a tab the user is *not* in — they are in
-the tab that did the saving — so there is no live focus to put back. The tools row is never
-redrawn either way, so a half-typed search survives regardless. What is left is a real but narrow
+The listener **does** restore focus, and the argument that it did not need to was the bug PR #16
+fixed. That argument ran: the event only ever arrives in a tab the user is *not* in, so there is no
+live focus to put back. It confuses the user's attention with the DOM — `document.activeElement` is
+per-document and survives the tab going to the background, so the redraw dropped it to `<body>` and
+you came back to a tab that had forgotten where you were. It now looks the control up by its own
+`data-*` attributes, and only when focus actually fell to `<body>`, so a caret half way through a
+search is left alone. The tools row is never redrawn either way, so a half-typed search survives
+regardless. What is left is a real but narrow
 race: two tabs saving inside the few milliseconds before the event lands can still drop one
 change. A version counter and a per-field merge would close it, and that is a lot of machinery for
 a single-user planner.
@@ -121,13 +125,14 @@ has no fixed height. It re-runs on `resize`.
 **One component is the exception to "redraw the whole view".** The tools row — search, the
 tile/list toggle, the filter dropdowns — is drawn once at startup by `toolsHtml(name)` into three
 containers and never redrawn. `syncTools(name)` writes the ticked boxes, the badges, the pressed
-layout button and (only when it disagrees) the search value **in place**. Redrawing it would close
+layout button, the placeholder (which follows the *width*, since the row is drawn once) and (only
+when it disagrees) the search value **in place**. Redrawing it would close
 whichever dropdown was open and move the caret to the end of the field on every keystroke, which is
 exactly what dumb rendering is fine with everywhere else and not here.
 
 **Events** go through a single click listener on `document`, dispatching on a `data-action`
 attribute. No inline `onclick` anywhere. Because of that, redrawing a view never needs listeners
-re-attached — but it *does* destroy focus, which is why seven places put it back. See
+re-attached — but it *does* destroy focus, which is why eight places put it back. See
 [decisions.md](decisions.md#accessibility-and-focus).
 
 ## How this gets tested
@@ -202,15 +207,19 @@ moves again.
 - **Keyboard-only and a screen reader — started, not finished.** PR #10 tabbed through the recipe
   grid and the sidebar in light mode on a wide screen, and immediately found a defect nothing else
   could see. **Still undriven: the week view, the inline slot picker and both dialogs** — which is
-  where the interesting part is, since focus restoration after a redraw is asserted in seven places
-  and driven by a person in none. Two of the six are now exercised by a scripted headless check —
+  where the interesting part is, since focus restoration after a redraw is asserted in eight places
+  and driven by a person in none. Three of the eight are now exercised by a scripted headless check —
   opening the picker, and bookmarking from inside it — which is how the hidden-copy bug below was
   confirmed, but a script clicking `.click()` is not a keyboard. A screen reader has never been run
   at all. **Every accessibility defect
   this project has shipped was in this category**, and it remains the largest gap.
 - **A real phone — closed once, and it reopens.** A dragged-narrow desktop window is not one:
   controls are compact on a fine pointer and only return to the 44px floor under
-  `@media (pointer: coarse)`, which a desktop browser never enters. You opened the live site on a
+  `@media (pointer: coarse)`, which a desktop browser never enters. The narrow height budget makes
+  this sharper than it was: the difference between a mouse and a finger there is 33px of controls
+  (30.6% against 34.9% of a 780px screen), so the budget is 4 points from its ceiling on the
+  pointer nobody here has tested with. A headless run can *force* that block on — which is how
+  those numbers were taken — and forcing it is not being on one. You opened the live site on a
   phone after PR #8 and it was fine. That was one phone, unnamed, at one moment — so any change to a
   control's size puts this back on the list rather than inheriting the result.
 - **What a value-reading script cannot see.** `check.mjs` compares colours, names and paths. It
