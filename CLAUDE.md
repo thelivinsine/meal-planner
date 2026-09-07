@@ -16,9 +16,8 @@ read `docs/decisions.md` before proposing changes.
 - Explain things simply — I'm a non-tech vibe coder, not a developer.
 - **"Update the docs"** (however I phrase it) means sweep *every* markdown file against the
   current state — this file, `README.md`, and everything in `docs/`.
-- **Keep this file rules-only, and at 200 lines or fewer.** It reached 229 by keeping the *reasoning*
-  beside the rules and came back by moving it to `docs/decisions.md`, which has no budget. The test
-  is "is this a rule or is it reasoning"; the line count is what catches you failing it.
+- **Keep this file rules-only, and at 200 lines or fewer.** It hit 229 by keeping *reasoning* beside
+  the rules; the test is "rule or reasoning", and the line count is what catches you failing it.
 
 ## Hard constraints
 - **Never commit code to `main` directly.** Any change to `index.html`, `style.css` or `app.js`
@@ -59,11 +58,14 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   sidebar and summary column never move. `sizeSlotPicker()` **measures** its height rather than
   naming a `vh` figure, and `.pick-grid` scrolls inside it so the page itself never does.
 - **One day at a time, at every width.** Week bar, seven day buttons, then that day as three meal
-  cards (`state.focusDay`). **Never bring back a second week markup** — accordion, rails,
-  `expandAll`, `--week-cols` and `subgrid` sharing all went when the mockups settled on one day.
+  cards (`state.focusDay`). **Never a second week markup** — `docs/decisions.md` lists what went.
 - **The shell flips at 1000px, the week does not.** Over 1000px `body` is a two-column grid: nav
-  becomes a left sidebar, top bar keeps only the theme button, week gains its summary column. **One
-  set of nav markup either way** — two lists drift, two `<nav>`s are two landmarks.
+  becomes a left sidebar, the brand moves into it — its **only** copy, the app is nameless under
+  1000px — top bar keeps only the theme button, week gains its summary column. **One set of nav
+  markup either way** — two lists drift, two `<nav>`s are two landmarks.
+- **Under 620px the list gets two thirds of the screen**, measured — it was getting a third. Paid
+  for by: no brand, the top bar carrying the way back, one tools row with the dropdowns **shut**,
+  no second back link, four gaps a token lower. `NARROW_MQ` decides the JS half, **live**.
 - **The summary column is derived, so it may be dropped.** Anything that can only be read there
   doesn't belong there.
 - **One box per level:** the card gets the border, and nothing inside it gets a second one — no
@@ -74,8 +76,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   radius; capped at 520px and centred. If a change makes the bar taller, it needs a reason better
   than fitting.
 - **A planned day is an accent *ring*, never a fill.** One shape, three states: bare circle, ringed
-  when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by** — the
-  ring is about what is still ahead of you.
+  when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by.**
 - **`--bg` is the page and nothing else.** Nothing that sits inside a card may be filled with it —
   tags, pills, chips, inputs use `--surface-sunk`.
 - **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
@@ -106,16 +107,16 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   small eyebrow over it. Views get no eyebrow — a heading and at most one subtitle, centred over
   the content it introduces. The week has no head at all now, and its **two** grid items are both
   placed in **row 1** by hand: auto-flowed into row 2 they are charged a `--space-4` gap above.
-- **The week view has no visible heading.** The rotating greeting is parked in a comment in
-  `index.html` (`WEEK_GREETINGS` still in `app.js`, unread) and the day title is `.sr-only`. Don't
-  put either back without asking; if the greeting returns, the restore notes are in that comment.
+- **The week view has no visible heading.** The greeting is parked whole in a comment in
+  `index.html`, restore notes beside it; the day title is `.sr-only`. Neither returns unasked.
 - **One tools row, three lists.** Search, a tile/list toggle and the filter dropdowns are one
   component — `toolsHtml(name)` into `#tools-recipes`, `#tools-saved`, `#tools-slot`. Drawn once at
   startup and **never redrawn**; `syncTools(name)` writes boxes, badges and the pressed layout
   button in place. **Search text and ticked tags are per list** (`surface.recipes` / `.saved` /
   `.slot`), never shared; the layout is one `state.cardView` for all three, persisted.
 - **The slot picker opens filtered to its meal** — a ticked box in the *Meal* group with the filter
-  row open, not a hidden rule. Reset on every open.
+  row open, not a hidden rule. Under 620px the row starts shut and the count badge carries it.
+  Reset on every open.
 - **Filters mean OR *within* a group, AND *across* groups.** Groups are `FILTER_GROUPS`:
   `TAG_GROUPS` in order, minus tags no recipe carries, plus *More* for anything it forgot — so a
   new recipe tag can never become unfilterable. The matcher needs the *grouping*, not just the tags.
@@ -136,8 +137,7 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **CSS:** colours and spacing from the custom properties at the top of `style.css`; don't
   hardcode hex. One accent colour. **Style by class, never by id.**
 
-### Six CSS rules that each cost a bug
-Mechanism only — the stories are in `docs/decisions.md`.
+### Six CSS rules that each cost a bug — mechanism only, stories in `docs/decisions.md`
 
 - **`grid-auto-rows: auto` is content-sized only while the grid's own height is indefinite.** Give
   a grid a definite height — `flex: 1` inside a `max-height` panel does exactly that — and the
@@ -146,7 +146,7 @@ Mechanism only — the stories are in `docs/decisions.md`.
   the end of `style.css`, and an id selector outranks the lot — hence the rule above.
 - **`.page` needs its explicit `width: 100%`.** Over 1000px it's a grid item, and one with auto
   inline margins shrink-to-fits instead of stretching. Don't remove it.
-- **Breakpoints:** 1000/620/400px `max-width` in **descending order**, one `min-width: 1001px`,
+- **Breakpoints:** 1000/620/359px `max-width` in **descending order**, one `min-width: 1001px`,
   plus `pointer: coarse` and `prefers-reduced-motion`. Extend a block, never open a second at the
   same width, and put a new one where the arithmetic bites rather than where it feels right.
 - **An outline is clipped by an ancestor's `overflow`, and takes its *own* element's
@@ -156,13 +156,12 @@ Mechanism only — the stories are in `docs/decisions.md`.
   sheets then render in the page always.
 
 ## Accessibility
-**Every defect this project has shipped has been an accessibility defect**, so it gets its own
-section. Details: `docs/decisions.md#accessibility-and-focus`.
+**Every defect here has been an accessibility defect.** Details: `docs/decisions.md#accessibility-and-focus`.
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
 - **A redraw destroys focus.** If the control just activated lives inside what gets re-rendered,
-  put focus on what *replaced* it — seven places do. **A conditionally-rendered control is the one
-  that gets missed**; both focus bugs here were one.
+  put focus on what *replaced* it — eight places do. **A conditionally-rendered control is the one
+  that gets missed**; all three focus bugs here were one.
 - **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
   `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,
   then open picker, then the view.
@@ -170,9 +169,10 @@ section. Details: `docs/decisions.md#accessibility-and-focus`.
   and on a phone the keyboard covers it. Focus the panel (`tabindex="-1"`).
 - **A landmark's name must not change between loads**, so never point `aria-labelledby` at
   something that rotates — the week greeting did. A fixed `aria-label` on the section instead.
-- **Never leave a card unnamed, never hide a focusable control.** If a heading must vanish on
-  screen, `.sr-only` — never `display: none` — and only on something not focusable. `.day-title`
-  is the live example: off the screen, still the accessible name for the three meal cards.
+- **Never leave a card unnamed, and never hide a focusable control with nothing in its place.** A
+  heading that must vanish goes `.sr-only`, never `display: none`, and only if nothing in it takes
+  focus (`.day-title`). A *control* may go `display: none` only where a visible copy does the same
+  job — the picker's back link under 620px, the top bar carrying it. Never both at once.
 - **Tab through anything you change.** The focus ring is the one control state neither the script
   nor a screenshot can see, and it has hidden a defect here for months.
 - **Touch targets at least 44px**, width as well as height, measured at 360px. Controls are compact

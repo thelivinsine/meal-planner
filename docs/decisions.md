@@ -30,6 +30,7 @@ than by date; the chronology is in [log.md](log.md).*
 | Decision | Why |
 |---|---|
 | One day at every width, no accordion | Both mockups show one day. Seven columns gave each day ~150px, narrower than most recipe names, and the accordion that fixed that needed a whole second layout for narrow screens. One day needs neither, and deleting it took the rails, `expandAll`, the animated tracks and the `subgrid` sharing with it |
+| The day row wraps at 360px, not 400 | Recorded twice now, because the arithmetic was wrong both times. Seven chips have to clear 44px of *width* as well as height, and the width they get is the page's column minus the strip's own gaps. The 400px figure was computed against the wide page padding; the narrow page is 14px in from each edge, so at 360px a chip is (360 - 28 - 24) / 7 = 44.0px and clears the floor exactly. It measured 43.4 in the browser, not 44.0, because `.weekbar` carried 2px of its own padding either side — so that padding went and the breakpoint moved to `max-width: 359px`. The cost of getting it wrong was invisible and constant: every phone between 361 and 400px, a 390px iPhone included, was drawing a second 54px row of day chips on a screen with the width for one. **A breakpoint derived from arithmetic has to be checked against the browser, because the arithmetic is missing a padding somewhere** |
 | Day buttons, not a dropdown | A `<select>` opens the OS wheel on mobile and hides the dates; seven buttons show everything at once |
 | Past days editable, not locked | Useful for logging meals already eaten; the greying communicates enough |
 | Today is a dot, not a pill | The pill pushed the date onto a second line, which knocked that column out of alignment back when the days were columns |
@@ -47,6 +48,16 @@ than by date; the chronology is in [log.md](log.md).*
 | Tips are conditional, not random | A random line stops being read after the second time. One that notices the day is empty, or all meat, or two hours of cooking, is worth the four `if`s |
 | The nav list *is* the sidebar | Over 1000px the docked pill unwinds into a vertical list in a left column. Building a separate sidebar would mean two nav lists to keep in step and two landmarks for one control; restyling the one that exists means neither |
 | The view switch floats at the bottom on narrow | It is the one control used from every screen, and the top bar was carrying a wordmark, three tabs and a theme toggle. Docking it leaves the header quiet. On a wide screen there is a sidebar to put it in instead |
+
+## Height, and who gets the screen
+
+| Decision | Why |
+|---|---|
+| Under 620px the controls get a third of the screen and the list gets the rest | Measured at 390x780 with the slot picker open: the top bar, the week bar, the picker's own head and the tools row came to **540px, 69% of the screen**, and the recipe list they steer had **132px** — one card and a bit of the next. Recipes and Saved were 51-56%. Nothing was wrong with any one of those bands; they were each reasonable and they added up to a screen with no content on it. The budget is a third, and it is a *measurement*, not a feel: 30.6% on a mouse and 34.9% on a finger, where the 44px touch floor is doing most of the work. **A layout that was only ever checked one band at a time can be wrong in a way that no band is wrong** |
+| The brand leaves the top bar and lives only in the sidebar | It was the tallest thing on a phone that carried no information — a 53px nameplate over a list with 132px. Under 1000px the app is now nameless, which reads odder written down than it looks on screen: a phone app's name is on its home screen and in its tab title, not repeated above every view. The row is worth more as **the way back**, which the narrow layout never had: out of the slot picker, or off Recipes and Saved to the week |
+| One back control at a time, two copies of it | The picker's own back link keeps the picker head over 620px, where there is height for it. Under 620px that copy goes out of the page and the top bar's carries it, in a row that exists anyway — 64px of head becomes 28px of centred title. They share the `.slot-back` component and one `data-action`, so there is one control with two homes rather than two controls. Getting the two breakpoints out of step showed **both** for the whole 621-1000px band, which is the failure this arrangement has to be watched for |
+| Four gaps step down one token, and no new numbers | Page padding `--space-3` to `--space-1`, the gap under the week bar `--space-4` to `--space-2`, the tools card's bottom margin `--space-3` to `--space-1`. All of it on the four-step scale, so the narrow layout is the same rhythm played tighter rather than a second set of numbers. The two that are *not* tokens are the top bar's 4px padding and the week bar's dropped 2px — padding inside a component, which the scale has never governed |
+| The short screen is named as a limit, not fixed | The budget holds from about 760px of viewport height up. At 390x664 — a phone with browser chrome showing — the picker is 41%, and it cannot be less while the week bar stays: the top bar, the week range row, the day chips and the search field are all sitting on the 44px touch floor, and that is 200px before a single gap. The only lever left is the week bar itself, which is deliberately kept: **you cannot spend a touch floor, so on a short screen something has to leave the page rather than get smaller** |
 
 ## Adding a meal
 
@@ -69,6 +80,9 @@ than by date; the chronology is in [log.md](log.md).*
 
 | Decision | Why |
 |---|---|
+| The filter dropdowns start **shut** under 620px | It contradicts the rule directly above this one, and it is the same trade in the other direction. The five dropdowns are 66px, and on a 780px phone the recipe list they filter had 132px — so the row was spending half the list's height explaining a filter the badge on the Filters button already counts. Over 620px nothing changes: the ticked box is visible, which is what makes the short list explain itself. Under it the badge carries that and one tap opens the row. It is a *state*, not a rule in the render, so nothing is unreachable |
+| One tools row, and under 620px genuinely one row | It wrapped at 620px on the argument that "a search box squeezed to 90px is not a search box", and that 90px was never measured. Measured: at 360px the two layout buttons and the filter button take about 190px of the 332px column at their 44px touch floor, which leaves the field 135px on a mouse and 107px on a finger. Tight, and a search box. The wrap was costing 44px of height on the screen with least to spare, so the field keeps the row and the *placeholder* is what gives — "Search recipes…" narrow, the long hint wide, with the `.sr-only` label saying the same thing to a screen reader at either width |
+| The 620px line is read live, not once at start-up | The first cut read `matchMedia(...).matches` into a constant, which is right for a phone and wrong for the case the work came from: a desktop window *dragged* narrow kept the wide defaults, so the filter row stayed open and the chrome measured 41% instead of 30.6% at the same 390px. A `change` listener on the same query now flips it, and it writes the row through `syncTools()` rather than redrawing it — a redraw would shut whichever dropdown was open under a finger and move the caret to the end of the search box. A typed search and the ticked filters both survive the crossing. **A value that was constant because the viewport never changed stops being constant the moment a window can be dragged** — the same lesson as the four-week prune, one layer up |
 | One tools row drawn by one function into three views | Search had been on Recipes and, separately, in the slot picker; filters had been on Recipes alone. Adding both to Saved by copying markup would have made three filter rows to keep in step, and this project has already learned that lesson twice — two nav lists, two card components. `toolsHtml(name)` is the same move as `cardHtml(recipe, slot)`: one component, a name for which list it is steering |
 | The tools row is drawn once and synced in place, against the project's own rendering rule | "Change state, redraw the whole view" is right everywhere else and wrong here, for two reasons a screenshot cannot show. A redraw replaces the `<details>` you have open, so the menu shuts under your finger; and it replaces the search input, so the caret jumps to the end on every keystroke. `syncTools()` writes the ticked boxes, the badges, the pressed layout button and the field's value — the last one **only when it disagrees**, because writing `.value` on every keystroke moves the caret even when the text is identical |
 | Native `<details name>` instead of a hand-rolled menu | Click, Enter and Space, the disclosure semantics, and mutual exclusivity across the group come free and correct. Exactly two things it does not do had to be written: closing on a click elsewhere, and closing on Escape. The Escape half matters more than it looks — Escape already closed the slot picker, so without an order the first press would have taken the whole panel down from under an open menu. The menu goes first |
@@ -153,12 +167,16 @@ and it falls back to shrink-to-fit: the page sized itself to its own max-content
 divided what was left. **The week rendered at a third of its width.** Fixed with an explicit
 `width: 100%` — don't remove it. Reading the CSS twice missed this; one screenshot found it.
 
-**Breakpoints go where the arithmetic says the constraint bites.** The day row wraps at 400px
-because seven 44px chips plus gaps need 332px, and 401px yields 46px each. It first shipped
-wrapping from 620px — hundreds of pixels early — which turned a week that fitted on one row into
-two rows of oversized buttons. The `max-width` queries also stay in **descending order**, or a
-wider query overrides a narrower one; extend an existing block rather than opening a second at the
-same width, which has also happened.
+**Breakpoints go where the arithmetic says the constraint bites — and the arithmetic gets
+measured.** The day row wraps at 359px, because at 360px seven chips and their six 4px gaps divide
+the narrow page's 332px column into exactly 44.0px each, which is the floor. It shipped twice
+before that: from 620px — hundreds of pixels early, turning a week that fitted on one row into two
+rows of oversized buttons — and then from 400px, computed against the *wide* page padding and so
+still 40px early, which cost every 361-400px phone a second row it had the width to avoid. The row
+above has the full sum, including the 2px of `.weekbar` padding that made the browser disagree with
+the arithmetic. The `max-width` queries also stay in **descending order**, or a wider query
+overrides a narrower one; extend an existing block rather than opening a second at the same width,
+which has also happened.
 
 **`auto` grid rows are content-sized only while the grid's own height is indefinite.** `.pick-grid`
 gained `flex: 1` so it could fill the measured panel, which gives it a *definite* height — and with
@@ -181,7 +199,7 @@ page at all times.
 `CLAUDE.md` having their own section, and hence this.
 
 **A redraw destroys focus.** Rendering rebuilds a view from state, which means the control you just
-activated may no longer exist, and focus silently falls to `<body>`. Six places put it back, each
+activated may no longer exist, and focus silently falls to `<body>`. Eight places put it back, each
 aiming at whatever *replaced* the control:
 
 1. `closeSlotPicker()` — back to the slot the picker was opened from, or the week if it's gone.
@@ -193,6 +211,16 @@ aiming at whatever *replaced* the control:
    current week.
 6. `openSlotPicker()` — the **+ Add** that opened it is one of the meal cards being hidden, so
    focus goes to the panel that replaced them.
+7. The `storage` listener — a background tab keeps its `activeElement`, and the redraw drops it.
+   Looked up by the control's own `data-*` attributes, since it could be any control on the page.
+   The row above has the story: the comment arguing it was unnecessary was the bug.
+8. The top bar's back control, under 620px — it hides itself the moment it works, because off
+   Recipes there is nowhere back to go. Out of the picker it calls `.blur()` first and lets
+   `closeSlotPicker()` do the work, whose guard only fires when nothing visible still holds focus
+   and which aims at the **+ Add** that opened the picker. Off a view it aims at the nav button for
+   the week: that is where you now are, and the nav is never redrawn. **The conditional control
+   again, for the third time** — a control that exists only in some states is the one that gets
+   missed, and this one is conditional on *two* things, the state and the width.
 
 **The sixth one broke the fourth.** That single save-button lookup searched "the visible view" for
 the replacement button — sound while the whole view was visible, and wrong the moment part of a
@@ -203,7 +231,7 @@ It is scoped to the open dialog, then the open picker, then the view. **A lookup
 "visible view" means "everything in it is visible" is a lookup with an expiry date** — and this one
 was found by reviewing the branch's own diff, not by using the app.
 
-**The seventh place is the one that isn't there.** The tools row — three search fields, six
+**The place that isn't there** — no number, because nothing is restored. The tools row — three search fields, six
 buttons, five dropdowns, sixteen checkboxes — is the largest cluster of focusable controls in the
 app, and it is the only component that is never redrawn. `syncTools()` writes attributes and
 `.checked` in place instead, so there is no replacement to hunt for: tick a box and the box you
@@ -218,6 +246,14 @@ rather than after.
 **A conditionally-rendered control is the one that gets missed.** Both focus bugs shipped here
 were one: the save button, and then Today — which was missed precisely because it used to be static
 markup in `index.html` and had never needed handling before.
+
+**A control may be hidden outright only where a visible copy does its job.** One case, added when
+the narrow layout ran out of height: the slot picker's own back link is `display: none` under
+620px, because the top bar carries the same control there — the same `.slot-back` component, one
+`data-action`, one handler. Not `.sr-only`, which would leave two copies in the tab order and let
+you Tab to a link that isn't on screen; and never both visible, which the first cut of it managed
+for the whole 621-1000px band by hanging the two off different breakpoints. The test is whether a
+keyboard and a screen reader still have exactly one way out, in a place they can find it.
 
 **Never leave a card unnamed, and never hide a focusable control from sight.** The day's name is
 still a real `<h2>` above the meal cards and each meal name an `<h3>` — the `<h2>` is `.sr-only`

@@ -80,7 +80,7 @@ Nine documents, each with one job:
   An empty card is a dashed **+ Add a dinner** the width of it
 - Each slot can be filled, replaced, or cleared. Past days stay editable, so you can log what you
   actually ate — they just read quieter
-- **The same layout at every width.** There is no mobile version of the week; only below 400px
+- **The same layout at every width.** There is no mobile version of the week; only below 360px
   does the day row wrap four and three, so every button clears 44px on a thumb
 - It opens on today when today is in the week on screen, Monday otherwise
 
@@ -98,11 +98,13 @@ Nine documents, each with one job:
 
 *From the week.* Tap **+ Add** on an empty slot and the recipe list takes the day's place — the
 three meal cards step aside, the week bar above them stays put, and **Back to the day** is the way
-out. It is sized to finish on the screen, so the recipes scroll inside their own area and the page
+out — in the picker's own head on a wide screen, in the top bar on a narrow one, never both. It is sized to finish on the screen, so the recipes scroll inside their own area and the page
 itself never scrolls. The day and meal are already known from the slot you tapped, so it never asks
 again — and **the list arrives filtered to that meal**: tap *Add a breakfast* and you get the
 fourteen breakfasts, not all fifty. That is a ticked box in the *Meal* dropdown with the filter row
-open, so you can see why the list is short and untick it if you want a breakfast at dinner. The
+open, so you can see why the list is short and untick it if you want a breakfast at dinner. On a
+narrow screen the row starts closed and the count on the **Filters** button carries that instead —
+the dropdowns are 66px, and there they come out of the recipe list's height. The
 recipes appear as the same cards you get on the Recipes page, in whichever layout you last chose,
 except the button reads **Add to Thu breakfast** and fills the slot you tapped. Not sure about one? Tap the card to read the full
 recipe — the sheet's calendar icon adds it straight to the slot you came from, because the day and
@@ -143,6 +145,11 @@ designs. A date drawn in a circle outline is a day still to come that you've alr
 something for, so the row shows the shape of your week at a glance; days that have already passed
 just go pale. On a wide screen there's a column down the right with the day's numbers in it: how
 many meals you've planned, roughly how long they'll take, and one suggestion.
+
+**On a phone the list gets the screen.** Everything above it — the bar at the top, the week, the
+search and filters — is held to about a third of the height, measured rather than guessed, because
+it used to take two thirds and leave one recipe showing. That is why there is no *Mise* logo on a
+narrow screen: the row it sat in carries the way back out of a view instead.
 
 **Two ways to look at a list.** The two small buttons beside every search box switch between cards
 in a grid and a single column of rows. It's the same recipes either way — the rows just fit more of
