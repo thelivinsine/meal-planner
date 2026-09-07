@@ -93,6 +93,8 @@ const TEXT_PAIRS = [
      --hover. */
   ['--accent-ink', '--hover'],
   ['--ink-soft', '--bg'], ['--ink-soft', '--surface'], ['--ink-soft', '--surface-sunk'], ['--ink-soft', '--surface-past'],
+  /* The only text that lands on --tag-fill: a tag is one word in --ink-soft, at 8px. */
+  ['--ink-soft', '--tag-fill'],
   ['--ink-faint', '--bg'], ['--ink-faint', '--surface'], ['--ink-faint', '--surface-sunk'], ['--ink-faint', '--surface-past'],
   ['--accent-ink', '--bg'], ['--accent-ink', '--surface'], ['--accent-ink', '--surface-sunk'],
   ['--accent-ink', '--surface-past'], ['--accent-ink', '--accent-soft'],
@@ -112,6 +114,12 @@ const TEXT_PAIRS = [
 const SURFACE_PAIRS = [
   ['--surface', '--bg'],
   ['--surface-sunk', '--surface'],
+  /* The tag pill, and the only pair the token has: a tag is never on the page, never on
+     a past card, and carries no border for a hairline to measure instead. It is also the
+     one pair in here that is deliberately met from *opposite* directions — 1.32 below a
+     white card in light, 1.32 above a dark one in dark. A ratio cannot see a direction,
+     so that half is in the token's comment in style.css. */
+  ['--tag-fill', '--surface'],
   /* A control rests *up* towards white, and above a white card there is nowhere to go —
      so in light this pair is 1.07 and the border is the whole edge, which is what a light
      theme does once it runs out of greys (docs/light-mode-reference.md §3). Dark has the
