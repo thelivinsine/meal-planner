@@ -527,10 +527,18 @@ const state = {
 // typed on Recipes has nothing to do with what you are looking for in Saved, and the
 // slot picker's set arrives pre-filled with the meal it was opened for. Per-session,
 // like the view and the week — none of it is worth restoring next visit.
+// The same 620px line style.css turns the shell on. Read once at start-up on purpose:
+// a phone does not change width, and re-deciding this on every resize would shut a row
+// of dropdowns under the thumb that had just opened it.
+const NARROW = window.matchMedia('(max-width: 620px)').matches;
+
 const surface = {
-  recipes: { search: '', tags: [], filtersOpen: true },
-  saved: { search: '', tags: [], filtersOpen: true },
-  slot: { search: '', tags: [], filtersOpen: true }
+  // Open on a screen with the room, shut on one without it: five dropdowns are 66px of
+  // a 780px phone, and the count badge on the Filters button says a filter is on
+  // either way. It is a state, not a rule — one tap opens the row.
+  recipes: { search: '', tags: [], filtersOpen: !NARROW },
+  saved: { search: '', tags: [], filtersOpen: !NARROW },
+  slot: { search: '', tags: [], filtersOpen: !NARROW }
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -644,6 +652,8 @@ const el = {
   slotPickerTitle: document.getElementById('slot-picker-title'),
   slotPickerGrid: document.getElementById('slot-picker-grid'),
   slotPickerEmpty: document.getElementById('slot-picker-empty'),
+  topbarBack: document.getElementById('topbar-back'),
+  topbarBackLabel: document.getElementById('topbar-back-label'),
   themeToggle: document.getElementById('theme-toggle'),
   themeColor: document.querySelector('meta[name="theme-color"]'),
   toast: document.getElementById('toast')
@@ -741,6 +751,18 @@ const MEAL_ICON = {
 
 // ---------------------------------------------------------------- rendering
 
+// The top bar's back control, which exists only under 1000px (style.css hides it above
+// that) and only where back means something: out of the slot picker, or off Recipes and
+// Saved to the week. Called from every place that changes which view — or the picker —
+// is on screen. It is the eighth instance of the one defect class this project keeps
+// shipping, so the button's own handler hands focus on before this hides it.
+function syncBack() {
+  const inPicker = Boolean(slotPick.iso);
+  const show = inPicker || state.view !== 'week';
+  el.topbarBack.hidden = !show;
+  if (show) el.topbarBackLabel.textContent = inPicker ? 'Back to the day' : 'Back to the week';
+}
+
 function setView(view) {
   state.view = view;
   closeSlotPicker();
@@ -753,6 +775,7 @@ function setView(view) {
     else btn.removeAttribute('aria-current');
   });
   window.scrollTo(0, 0);
+  syncBack();
   render();
 }
 
@@ -1000,8 +1023,13 @@ function toolsHtml(name) {
   return '<div class="tool-bar">' +
       '<div class="search">' +
         '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
+        // The long placeholder does not fit the narrow row: three controls share 332px
+        // there and the field gets about 110px of it, which cuts "Search by name or
+        // ingredient…" off at "Search by n…". The <label> above says the same thing to
+        // a screen reader at either width, so only the visible hint gets shorter.
         '<input type="search" class="tool-search" id="search-' + name + '" ' +
-          'data-surface="' + name + '" placeholder="Search by name or ingredient…" ' +
+          'data-surface="' + name + '" placeholder="' +
+          (NARROW ? 'Search recipes…' : 'Search by name or ingredient…') + '" ' +
           'autocomplete="off">' +
       '</div>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
@@ -1165,10 +1193,12 @@ function openSlotPicker(iso, meal, opener) {
   // meal rather than all fifty — every recipe carries exactly one of the three tags. It
   // is a ticked box in the Meal group, not a hidden rule: the filter row opens with it
   // showing, so it explains the short list and can be turned off for a breakfast at
-  // dinner. Reset on every open; last time's search is not this time's question.
+  // dinner. Under 620px the row stays shut and the badge on the Filters button carries
+  // that instead — the row is 66px of a screen where the recipes had 132px.
+  // Reset on every open; last time's search is not this time's question.
   surface.slot.search = '';
   surface.slot.tags = [meal.toLowerCase()];
-  surface.slot.filtersOpen = true;
+  surface.slot.filtersOpen = !NARROW;
   closeDrops(el.slotPicker);
 
   const date = dateOf(iso);
@@ -1187,6 +1217,7 @@ function openSlotPicker(iso, meal, opener) {
   // then measure from there. Both have to happen in this order or the height is taken
   // from wherever the page happened to be scrolled to.
   window.scrollTo(0, 0);
+  syncBack();
   sizeSlotPicker();
   // Focus the panel, not the search box. Typing is one way to use this and scanning the
   // cards is the other, so opening it with a caret blinking in a field picks the wrong
@@ -1233,6 +1264,7 @@ function closeSlotPicker() {
   closeDrops(el.slotPicker);
   el.dayTitle.hidden = false;
   el.weekGrid.hidden = false;
+  syncBack();
   // Focus was inside the panel we just hid, so hand it back: to the slot that opened the
   // picker if it's still there, otherwise to the week itself. Both targets are visible
   // again by now — focusing a hidden element does nothing at all.
@@ -1331,6 +1363,26 @@ document.addEventListener('click', function (event) {
 
   if (action === 'nav') {
     setView(target.dataset.view);
+    return;
+  }
+
+  // The top bar's back control, which is two things at once: out of the picker, or off a
+  // view to the week. Either way it hides itself the moment it works, so the focus it is
+  // holding has to be handed on — this is the eighth place, and the same shape as the
+  // other seven. Out of the picker, blurring first is what lets closeSlotPicker do it:
+  // its guard only restores focus when nothing visible still holds it, and it puts you
+  // back on the "+ Add" that opened the picker. Off a view, the nav button for the week
+  // is what replaced this one — it is where you now are, and it never gets redrawn.
+  if (action === 'back') {
+    if (slotPick.iso) {
+      target.blur();
+      closeSlotPicker();
+    } else {
+      setView('week');
+      el.navButtons.forEach(function (btn) {
+        if (btn.dataset.view === 'week') btn.focus();
+      });
+    }
     return;
   }
 

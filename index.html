@@ -32,11 +32,21 @@
   </script>
 </head>
 <body>
-  <!-- Wide: the theme button alone, floated to the top right of the content column —
-       the brand has moved into the sidebar. Narrow: brand left, theme right. -->
+  <!-- The theme button, floated to the top right of the content column, and under
+       1000px the way back beside it. The brand sits in the sidebar and only in the
+       sidebar: on a phone this bar was a 53px nameplate above a recipe list with 132px
+       left, and the row is worth more as the way out of a view than as a name. -->
   <header class="topbar">
     <div class="topbar-inner">
-      <p class="brand brand-top"><span class="brand-mark" aria-hidden="true"></span>Mise</p>
+      <!-- Narrow only, and only when there is somewhere back to go: out of the slot
+           picker, or off Recipes and Saved to the week. It carries .slot-back as well
+           because it *is* that control — the picker's own back link is the same button
+           in the same shape, and at this width only one of the two is on screen.
+           syncBack() in app.js writes the label and hides it again on the week. -->
+      <button type="button" class="slot-back topbar-back" id="topbar-back" data-action="back" hidden>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+        <span id="topbar-back-label">Back to the week</span>
+      </button>
       <button type="button" class="theme-btn" id="theme-toggle" data-action="theme"
               aria-pressed="false" aria-label="Switch to dark theme" title="Switch theme">
         <span class="theme-icon theme-icon-sun" aria-hidden="true">
@@ -193,8 +203,8 @@
   </main>
 
   <!-- Wide: the left sidebar, brand on top of a vertical list. Narrow: the same list
-       docked over the content as a pill, and the brand above is hidden because the top
-       bar already carries it. One set of nav markup, one nav landmark, two layouts.
+       docked over the content as a pill, and the brand above is hidden — there is no
+       brand anywhere at this width. One set of nav markup, one nav landmark, two layouts.
        It lives at body level on purpose: .topbar has a backdrop-filter, and a filtered
        ancestor becomes the containing block for position: fixed. -->
   <nav class="nav-wrap" aria-label="Main views">
