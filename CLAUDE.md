@@ -63,11 +63,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   nameless under 1000px — the top bar keeps the theme button, the week gains its summary column.
   **One set of nav markup either way**: two lists drift, two `<nav>`s are two landmarks.
 - **Under 620px the list gets two thirds of the screen**, measured. Paid for by: no brand, the top
-  bar carrying the way back, one tools row with the dropdowns **shut**, four gaps a token lower, the
-  *tile* foot's add button compressed. `NARROW_MQ` decides the JS half, **live**.
+  bar carrying the way back, one tools row, four gaps a token lower, the *tile* foot's add button
+  compressed. `NARROW_MQ` decides the JS half, **live**.
 - **The summary column is derived** — anything readable only there doesn't belong there.
 - **One box per level:** the card gets the border, nothing inside it gets a second one — no filled
-  tile around the recipe, no bordered icon button. The recipe *name* shows a meal card is clickable:
+  tile around the recipe, no bordered icon button, one arithmetic exception (the pressed layout
+  toggle, 1.06 on the page). The recipe *name* shows a meal card is clickable:
   `--accent-ink`, **underlined at rest** (accent at 45%), full on hover, never hover-only.
 - **The week bar is navigation, so it stays compact — and it has no tile.** No fill, no border, no
   radius; capped at 520px and centred. Taller needs a better reason than fitting.
@@ -76,25 +77,22 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **`--bg` is the page and nothing else** — its top, fading to `--bg-fade` down the *viewport*;
   `--rail` is the sidebar, flat, wide block only. Nothing inside a card wears any of the three: a
   control rests on `--control`, a tag on `--tag-fill`.
-- **A fill must differ from what the control sits on**, not from the page behind it. No script
-  sees a no-op.
-- **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the same path as the
-  sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
+- **A fill must differ from what the control sits on**, not the page behind it. No script sees one.
+- **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the sidebar *Saved*
+  icon's path (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
 - **The page carries the warmth; the cards are the light.** `--bg` near-white and warm, `--rail`
   the one real tonal step in light, `--surface` white for cards, `--control` a rest fill *up*
   towards white, `--surface-sunk` a recessed *track* down, `--surface-past` back *towards* the
-  page, never past it. **A card's edge is its hairline, not its fill** — page to card is 1.06,
-  and the room that bought went to the rail.
+  page, never past it. **A card's edge is its hairline, not its fill** — page to card is 1.06.
 - **Measure contrast both directions with a script**, tokens read out of `style.css`: text needs
   4.5, two touching surfaces 1.10. Closer than that, a hairline carries the edge and the **line**
-  is what you measure — against both sides.
+  is what you measure, against both sides.
 - **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
-  go darker than the page in *both* themes, but hover, selected, `--tag-fill`, the page's own
-  fade and `--rail` all go **up** in dark and **down** in light. Read the two mode references in
-  `docs/` before moving a surface token or inventing a state colour — **as evidence, not a spec**.
+  darken in *both* themes, but hover, selected, `--tag-fill`, the page's fade and `--rail` go **up**
+  in dark, **down** in light. Read the two mode references in `docs/` — evidence, not a spec.
 - **`--hover` is the state fill, on either ground** — page or card — **down** in light, **up** in
-  dark. Not `--control`: that is where a control *rests*, near white in light, so a hover sent
-  there is a no-op. A control that already has a fill hovers by moving its **border** instead.
+  dark. Not `--control`: that is where a control *rests*, so a hover sent there is a no-op. A
+  control that already has a fill hovers by moving its **border** instead.
 - **`--accent` fills, `--accent-ink` writes.** Every accent-coloured *word* uses `--accent-ink`;
   borders, dots, chips and fills use `--accent`. Backwards breaks the floor quietly.
 - **Anything keyed to the *theme* reads the theme, not the OS** — it is a stored choice. Set it
@@ -102,25 +100,27 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **A past day is quieter by colour, never by opacity, and it carries no ring.** Name *and* date
   at `--ink-faint`, so the whole chip recedes rather than half of it.
 - **Subject gets the weight:** the recipe takes the large type in the add dialog, "Add to week" a
-  small eyebrow over it. Views get no eyebrow — a heading, at most one subtitle, centred on the
-  content. The week has no head, and its **two** grid items are placed in **row 1** by hand:
-  auto-flowed into row 2 they are charged a `--space-4` gap above.
+  small eyebrow over it. Views get no eyebrow — a heading, at most one subtitle, centred. The week
+  has no head, and its **two** grid items go in **row 1** by hand, or row 2 charges a `--space-4`.
 - **The week view has no visible heading.** The greeting is parked whole in a comment in
   `index.html`, restore notes beside it; the day title is `.sr-only`. Neither returns unasked.
+- **The tools row has no tile: its controls sit on the page**, resting on `--surface` with a
+  `--line` edge. **Not** `--control`/`--line-strong` — that pair is for a control on a *card*.
 - **One tools row, three lists.** Search, the tile/list toggle and the filter dropdowns are one
-  component — `toolsHtml(name)` into `#tools-recipes`, `#tools-saved`, `#tools-slot`. Drawn once at
-  startup and **never redrawn**; `syncTools(name)` writes boxes, badges and the pressed layout
-  button in place. **Search text and ticked tags are per list** (`surface.recipes` / `.saved` /
-  `.slot`), never shared; the layout is one `state.cardView` for all three, persisted.
-- **The slot picker opens filtered to its meal** — a ticked box in the *Meal* group with the filter
-  row open, not a hidden rule; reset on every open. Under 620px the row starts shut and the badge
-  carries it.
+  component — `toolsHtml(name)` into `#tools-recipes`, `#tools-saved`, `#tools-slot`. Drawn once and
+  **never redrawn**; `syncTools(name)` writes boxes, badges and the pressed layout button in place.
+  **Search text and ticked tags are per list** (`surface.*`), never shared; the layout is one
+  `state.cardView` for all three, persisted.
+- **The slot picker opens filtered to its meal** — a ticked box in the *Meal* group, not a hidden
+  rule; reset on every open. **The filter row starts shut on all three lists at every width**, and
+  the count badge is what says a filter is on.
 - **Filters mean OR *within* a group, AND *across* groups.** Groups are `FILTER_GROUPS`:
   `TAG_GROUPS` in order, minus tags no recipe carries, plus *More* for anything it forgot — so a
   new recipe tag can never become unfilterable. The matcher needs the *grouping*, not just the tags.
 - **Filter groups are dropdowns of checkboxes on one row.** Native `<details name>`; closing on an
   outside click and on Escape are wired by hand, and Escape takes the menu before the picker. The
-  row **wraps** on a phone — a scroll container clips an absolutely positioned menu.
+  row **wraps** on a phone — a scroll container clips an absolutely positioned menu. **Every caret
+  points down shut, up open**, the Filters button's included; never sideways.
 - **A card is a card in both layouts, and neither has a divider *inside* it.** `.is-list` turns the
   same `cardHtml` on its side — name left, minutes and tags collected on the right beside a foot
   whose add button is its **glyph alone** at every width; no second component. **Three tags at

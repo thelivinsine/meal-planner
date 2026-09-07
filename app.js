@@ -541,12 +541,13 @@ const SEARCH_HINT = 'Search by name or ingredient…';
 const SEARCH_HINT_NARROW = 'Search recipes…';
 
 const surface = {
-  // Open on a screen with the room, shut on one without it: five dropdowns are 66px of
-  // a 780px phone, and the count badge on the Filters button says a filter is on
-  // either way. It is a state, not a rule — one tap opens the row.
-  recipes: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
-  saved: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches },
-  slot: { search: '', tags: [], filtersOpen: !NARROW_MQ.matches }
+  // Shut at every width. It used to open on a screen with the room, which meant the row
+  // read two ways on the same app and the 620px line silently reopened it under a
+  // dragged window. Five dropdowns are 66px nobody asked for, the count badge on the
+  // Filters button says a filter is on without them, and one tap opens the row.
+  recipes: { search: '', tags: [], filtersOpen: false },
+  saved: { search: '', tags: [], filtersOpen: false },
+  slot: { search: '', tags: [], filtersOpen: false }
 };
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -1055,14 +1056,14 @@ function toolsHtml(name) {
         }).join('') +
       '</div>' +
       '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
-        'data-surface="' + name + '" aria-expanded="true" aria-controls="filter-row-' + name + '">' +
+        'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
         'Filters<span class="filter-badge" hidden></span></button>' +
     '</div>' +
     // One row of dropdowns rather than five stacks of chips: sixteen tags in the open
     // used a third of the screen before a single recipe. The Clear button is never
     // hidden, even with nothing ticked — hiding it the moment it did its job would
     // delete the control just pressed and drop focus to <body>.
-    '<div class="filter-row" id="filter-row-' + name + '">' +
+    '<div class="filter-row" id="filter-row-' + name + '" hidden>' +
       FILTER_GROUPS.map(function (g) { return dropHtml(name, g); }).join('') +
       '<button type="button" class="btn btn-quiet btn-sm filter-clear" ' +
         'data-action="clear-tags" data-surface="' + name + '">Clear</button>' +
@@ -1209,14 +1210,14 @@ function openSlotPicker(iso, meal, opener) {
   slotPick.opener = opener;
   // The slot already knows which meal it is, so the list starts as the recipes for that
   // meal rather than all fifty — every recipe carries exactly one of the three tags. It
-  // is a ticked box in the Meal group, not a hidden rule: the filter row opens with it
-  // showing, so it explains the short list and can be turned off for a breakfast at
-  // dinner. Under 620px the row stays shut and the badge on the Filters button carries
-  // that instead — the row is 66px of a screen where the recipes had 132px.
+  // is a ticked box in the Meal group, not a hidden rule, so it can be turned off for a
+  // breakfast at dinner. The row itself stays **shut**, at every width: the badge on the
+  // Filters button says a filter is on, which is what the row was being opened to say,
+  // and it costs 66px of a panel that has a height budget.
   // Reset on every open; last time's search is not this time's question.
   surface.slot.search = '';
   surface.slot.tags = [meal.toLowerCase()];
-  surface.slot.filtersOpen = !NARROW_MQ.matches;
+  surface.slot.filtersOpen = false;
   closeDrops(el.slotPicker);
 
   const date = dateOf(iso);
@@ -1589,19 +1590,16 @@ document.addEventListener('input', function (event) {
 window.addEventListener('resize', sizeSlotPicker);
 
 // Crossing the 620px line, which a phone never does and a dragged desktop window does
-// constantly — and it is the narrow side that has a height budget: five dropdowns and a
-// long placeholder are 82px that side of the line and free on the other. Fires only when
-// the answer flips, not on every resize.
+// constantly. All this changes now is the search placeholder, which is the one thing in
+// the row that follows the *width* rather than the state. The filter row used to be
+// reopened here too, and it no longer is: it is shut by default on both sides of the
+// line, so a row the reader opened is theirs to keep across a window drag.
 //
 // syncTools() writes the row in place rather than redrawing it, which is the whole reason
 // this can happen at all: a redraw would shut whichever dropdown was open under the
-// finger and move the caret to the end of the search box. The ticked filters and the
-// typed search are untouched — only whether the row is showing.
+// finger and move the caret to the end of the search box.
 NARROW_MQ.addEventListener('change', function () {
-  Object.keys(surface).forEach(function (name) {
-    surface[name].filtersOpen = !NARROW_MQ.matches;
-    syncTools(name);
-  });
+  Object.keys(surface).forEach(function (name) { syncTools(name); });
   sizeSlotPicker();
 });
 
