@@ -77,21 +77,21 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **A planned day is an accent *ring*, never a fill.** One shape, three states: bare circle, ringed
   when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by.**
 - **`--bg` is the page and nothing else.** Nothing inside a card may be filled with it: a control
-  rests on `--control`, a tag pill on `--surface-sunk`.
+  rests on `--control`, a tag pill on `--tag-fill`.
 - **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
   the shade the control already has is a no-op, and no contrast script can see one.
 - **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the same path as the
   sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
 - **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
   white for cards, `--control` a control's rest fill *up* towards white, `--surface-sunk` a
-  recessed *track* or *tag* going down, `--surface-past` back *towards* the page, never past it.
+  recessed *track* going down, `--surface-past` back *towards* the page, never past it.
 - **Measure contrast both directions with a script**, tokens read out of `style.css`: text needs
   4.5 on its ground, two touching surfaces about 1.10. Where a pair must sit closer a hairline
   carries the edge — and then it's the **line** you measure, against both sides.
 - **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
-  go darker than the page in *both* themes, but hover and selected go **up** in dark and **down** in
-  light. Read `docs/dark-mode-reference.md` and `docs/light-mode-reference.md` before moving a
-  surface token or inventing a state colour — **as evidence, not as a spec**.
+  go darker than the page in *both* themes, but hover, selected and `--tag-fill` go **up** in dark
+  and **down** in light. Read `docs/dark-mode-reference.md` and `docs/light-mode-reference.md`
+  before moving a surface token or inventing a state colour — **as evidence, not as a spec**.
 - **`--hover` is the state fill, on either ground** — page or card — **down** in light, **up** in
   dark. Not `--control`: that is where a control *rests*, near white in light, so a hover sent
   there is a no-op. A control that already has a fill hovers by moving its **border** instead.

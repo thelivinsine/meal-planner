@@ -27,11 +27,20 @@
      measure at, and it gives --surface-past and --control somewhere to be. */
   --bg: #f4f0e9;             /* the page, and only the page */
   --surface: #ffffff;        /* meal cards, recipe cards, panels — nearly white */
-  /* A recessed patch *on* a card, going down in both themes: the progress track, and the
-     tag pills. A tag is a label, not a control — it has no border, so it needs a fill
-     that can be seen, and 1.20 down from a white card is the only place in a light theme
-     where a borderless pill is visible at all. Controls go the other way; see below. */
+  /* A recessed patch *on* a card, going down in both themes — the progress track, and
+     since the tags left, only that. Controls go the other way; see below. */
   --surface-sunk: #f0eae1;
+  /* The tag pills, and the reason they are no longer --surface-sunk: a track can be
+     faint because the accent fill inside it does the reading, and a borderless pill
+     cannot. On --surface-sunk a tag measured 1.20 from a white card and 1.14 from a dark
+     one, and in the app it read as a smudge rather than a chip. This is a step deeper in
+     light (1.32) and — the half a shared token could never do — a step *up* in dark
+     (1.32), because down in dark is capped: the card is #2b2b2b and the page #1a1a1a, so
+     a pill with any more contrast below the card is darker than the page and reads as a
+     hole punched through it. Down in light, up in dark, which is what this palette does
+     with every fill that has to be seen rather than sunk. --ink-soft holds 6.82 and 5.79
+     on it. */
+  --tag-fill: #e8dfd3;
   /* The rest fill of a *control* sitting on a card — the search field, a filter chip, a
      filter summary — and it goes UP towards white, which is the one direction both light
      references agree on: PowerToys puts its input at #fefefe on a #fbfbfb card, Claude at
@@ -121,6 +130,11 @@
   --bg: #1a1a1a;
   --surface: #2b2b2b;
   --surface-sunk: #212121;
+  /* Up from the card, not down: see the light block for why the tag fill cannot be one
+     direction in both themes. 1.32 above --surface, and deliberately not --control's
+     #383838 — that value is where a control rests, and two tokens holding one shade is
+     how a change made for one silently moves the other. */
+  --tag-fill: #3e3e3e;
   /* Up, not down: see the light block. #383838 is PowerToys dark's own "input inside a
      card" value, 1.21 above --surface — the raised step the dark report asked for. */
   --control: #383838;
@@ -910,14 +924,15 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   font-variant-numeric: tabular-nums;
 }
 .card-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-/* --surface-sunk, not --control: a tag is a label, not a control. It has no border, so a
-   near-white --control fill would leave it at 1.07 on a white card — a pill you cannot
-   see. The recessed shade is the one place a borderless pill still reads in a light
-   theme, and it is now the only fill inside a card that goes *down*. */
+/* --tag-fill, and it is its own token rather than --surface-sunk or --control: a tag is a
+   label, so it has no border and the fill is the whole shape. Near-white --control would
+   leave it at 1.07 on a white card, and the recessed track shade left it at 1.20 light
+   and 1.14 dark — visible to a contrast script, a smudge to the eye. 1.32 both ways now;
+   the token comment has the direction and why it differs per theme. */
 .tag {
   font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
   font-weight: 700; color: var(--ink-soft);
-  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 8px;
+  background: var(--tag-fill); border-radius: var(--radius-pill); padding: 4px 8px;
 }
 
 /* No divider, in either layout. The hairline that used to close off the foot made a card
