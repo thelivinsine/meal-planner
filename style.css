@@ -236,8 +236,10 @@ button, input, select { font: inherit; color: inherit; }
    Two classes, not one, and that is load-bearing: this button carries .slot-back too,
    and .slot-back's own `display: inline-flex` sits 500 lines *below* here, so a single
    class lost the tie on source order and the button showed at every width. The same
-   trap the media queries at the end of this file are gathered to avoid. */
-.topbar-inner .topbar-back { display: none; margin-right: auto; }
+   trap the media queries at the end of this file are gathered to avoid.
+   No margin of its own: the theme button's `margin-left: auto` already takes every spare
+   pixel in the row, which leaves this hard left with nothing to declare. */
+.topbar-inner .topbar-back { display: none; }
 
 /* The pill spans the viewport and centres with flex rather than translateX: a transform
    here would make this element the containing block for the fixed scrim below it. */

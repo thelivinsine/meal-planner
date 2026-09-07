@@ -1378,13 +1378,15 @@ document.addEventListener('click', function (event) {
   // The top bar's back control, which is two things at once: out of the picker, or off a
   // view to the week. Either way it hides itself the moment it works, so the focus it is
   // holding has to be handed on — this is the eighth place, and the same shape as the
-  // other seven. Out of the picker, blurring first is what lets closeSlotPicker do it:
-  // its guard only restores focus when nothing visible still holds it, and it puts you
-  // back on the "+ Add" that opened the picker. Off a view, the nav button for the week
-  // is what replaced this one — it is where you now are, and it never gets redrawn.
+  // other seven. Out of the picker there is nothing to write here: closeSlotPicker()
+  // calls syncBack() *before* it restores focus, so this button is already hidden by
+  // then, focus has already fallen to <body>, and its guard — which fires only when
+  // nothing visible still holds focus — puts you back on the "+ Add" that opened the
+  // picker. Escape from this button takes the same path, and both are asserted.
+  // Off a view, the nav button for the week is what replaced this one: it is where you
+  // now are, and the nav is never redrawn.
   if (action === 'back') {
     if (slotPick.iso) {
-      target.blur();
       closeSlotPicker();
     } else {
       setView('week');
