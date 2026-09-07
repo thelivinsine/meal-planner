@@ -59,39 +59,39 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **One day at a time, at every width.** Week bar, seven day buttons, then that day as three meal
   cards (`state.focusDay`). **Never a second week markup** — `docs/decisions.md` lists what went.
 - **The shell flips at 1000px, the week does not.** Over 1000px `body` is a two-column grid: nav
-  becomes a left sidebar, the brand moves into it — its **only** copy, the app is nameless under
-  1000px — the top bar keeps the theme button, the week gains its summary column. **One set of nav
-  markup either way**: two lists drift, two `<nav>`s are two landmarks.
+  becomes a `--rail`-filled left sidebar, the brand moves into it — its **only** copy, the app is
+  nameless under 1000px — the top bar keeps the theme button, the week gains its summary column.
+  **One set of nav markup either way**: two lists drift, two `<nav>`s are two landmarks.
 - **Under 620px the list gets two thirds of the screen**, measured. Paid for by: no brand, the top
-  bar carrying the way back, one tools row with the dropdowns **shut**, four gaps a token lower, and
-  the *tile* foot's add button compressed too. `NARROW_MQ` decides the JS half, **live**.
-- **The summary column is derived, so it may be dropped.** Anything that can only be read there
-  doesn't belong there.
+  bar carrying the way back, one tools row with the dropdowns **shut**, four gaps a token lower, the
+  *tile* foot's add button compressed. `NARROW_MQ` decides the JS half, **live**.
+- **The summary column is derived** — anything readable only there doesn't belong there.
 - **One box per level:** the card gets the border, nothing inside it gets a second one — no filled
   tile around the recipe, no bordered icon button. The recipe *name* shows a meal card is clickable:
-  `--accent-ink`, **underlined at rest** (the accent at 45%), full strength on hover, never
-  hover-only.
+  `--accent-ink`, **underlined at rest** (accent at 45%), full on hover, never hover-only.
 - **The week bar is navigation, so it stays compact — and it has no tile.** No fill, no border, no
-  radius; capped at 520px and centred. If a change makes the bar taller, it needs a reason better
-  than fitting.
-- **A planned day is an accent *ring*, never a fill.** One shape, three states: bare circle, ringed
-  when planned, filled when selected. Chip hover is `--hover`. **Never on a day gone by.**
-- **`--bg` is the page and nothing else.** Nothing inside a card may be filled with it: a control
-  rests on `--control`, a tag pill on `--tag-fill`.
-- **A fill must differ from what the control sits on**, not from the page behind it. A hover set to
-  the shade the control already has is a no-op, and no contrast script can see one.
+  radius; capped at 520px and centred. Taller needs a better reason than fitting.
+- **A planned day is an accent *ring*, never a fill.** Bare circle, ringed when planned, filled
+  when selected; chip hover is `--hover`. **Never on a day gone by.**
+- **`--bg` is the page and nothing else** — its top, fading to `--bg-fade` down the *viewport*;
+  `--rail` is the sidebar, flat, wide block only. Nothing inside a card wears any of the three: a
+  control rests on `--control`, a tag on `--tag-fill`.
+- **A fill must differ from what the control sits on**, not from the page behind it. No script
+  sees a no-op.
 - **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the same path as the
   sidebar's *Saved* icon (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
-- **The page carries the warmth; the cards are the light.** `--bg` warm off-white, `--surface`
-  white for cards, `--control` a control's rest fill *up* towards white, `--surface-sunk` a
-  recessed *track* going down, `--surface-past` back *towards* the page, never past it.
+- **The page carries the warmth; the cards are the light.** `--bg` near-white and warm, `--rail`
+  the one real tonal step in light, `--surface` white for cards, `--control` a rest fill *up*
+  towards white, `--surface-sunk` a recessed *track* down, `--surface-past` back *towards* the
+  page, never past it. **A card's edge is its hairline, not its fill** — page to card is 1.06,
+  and the room that bought went to the rail.
 - **Measure contrast both directions with a script**, tokens read out of `style.css`: text needs
-  4.5 on its ground, two touching surfaces about 1.10. Where a pair must sit closer a hairline
-  carries the edge — and then it's the **line** you measure, against both sides.
+  4.5, two touching surfaces 1.10. Closer than that, a hairline carries the edge and the **line**
+  is what you measure — against both sides.
 - **A light palette is not a dark one inverted.** Raised surfaces move towards white and hairlines
-  go darker than the page in *both* themes, but hover, selected and `--tag-fill` go **up** in dark
-  and **down** in light. Read `docs/dark-mode-reference.md` and `docs/light-mode-reference.md`
-  before moving a surface token or inventing a state colour — **as evidence, not as a spec**.
+  go darker than the page in *both* themes, but hover, selected, `--tag-fill`, the page's own
+  fade and `--rail` all go **up** in dark and **down** in light. Read the two mode references in
+  `docs/` before moving a surface token or inventing a state colour — **as evidence, not a spec**.
 - **`--hover` is the state fill, on either ground** — page or card — **down** in light, **up** in
   dark. Not `--control`: that is where a control *rests*, near white in light, so a hover sent
   there is a no-op. A control that already has a fill hovers by moving its **border** instead.

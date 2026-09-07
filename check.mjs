@@ -106,13 +106,38 @@ const TEXT_PAIRS = [
      unlike a nav item, a chip carries three colours: its weekday name, the date, and
      the date again on a day gone by. */
   ['--ink-soft', '--hover'], ['--ink-faint', '--hover'],
+  /* Two new grounds, and every tier lands on both. The rail carries the brand, the
+     nav rows and the saved-bookmark icon; the faded end of the page carries whatever
+     the bottom of the viewport holds — a view heading on a short view, day chips, the
+     recipe count. --bg is only the *top* of the page now, so measuring text against it
+     alone measures one end of a gradient. */
+  ['--ink', '--rail'], ['--ink-soft', '--rail'], ['--ink-faint', '--rail'], ['--accent-ink', '--rail'],
+  ['--ink', '--bg-fade'], ['--ink-soft', '--bg-fade'], ['--ink-faint', '--bg-fade'], ['--accent-ink', '--bg-fade'],
 ];
 
 /* `line` means: this pair is allowed under 1.10 because a hairline carries the
    edge instead — so the *line* gets measured, against both sides, and the pair
    itself is not. That is the rule in CLAUDE.md, made runnable. */
 const SURFACE_PAIRS = [
-  ['--surface', '--bg'],
+  /* This pair used to be the one that needed no help, at 1.14. The page going to
+     #faf8f4 spent it: 1.06 now, and the card's own --line border is the edge — 1.29 on
+     the page, 1.37 on the card. It is the deliberate trade the token block sets out,
+     and the step it bought is --rail/--bg below. The faded end of the page is the
+     easier one and still clears the floor on its own, at 1.11 — the one place a card
+     still lifts off the page by fill. */
+  ['--surface', '--bg', { line: '--line' }],
+  ['--surface', '--bg-fade'],
+  /* The sidebar against the page, which is the contrast the whiter page was bought
+     with: 1.12 light, 1.11 dark. At the bottom of the viewport the page has faded
+     towards the rail in light and away from it in dark, so the light end dips to 1.07
+     and the border-right carries the seam there. */
+  ['--rail', '--bg'],
+  ['--rail', '--bg-fade', { line: '--line' }],
+  /* Both things that land *on* the rail: the selected nav pill is a white-ish card on
+     it, and every other row hovers to --hover. The second is why --hover had to be
+     deepened — on the rail the old value was 1.06. */
+  ['--surface', '--rail'],
+  ['--hover', '--rail'],
   ['--surface-sunk', '--surface'],
   /* The tag pill, and the only pair the token has: a tag is never on the page, never on
      a past card, and carries no border for a hairline to measure instead. It is also the

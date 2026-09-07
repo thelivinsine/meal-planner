@@ -14,7 +14,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 96 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 127 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
