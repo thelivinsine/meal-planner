@@ -6,7 +6,7 @@
 |---|---|
 | **Live** | **The app is `ecdd6d4`** — PR [#18](https://github.com/thelivinsine/meal-planner/pull/18), squash-merged. Pages reported `built` at that commit, and all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised) rather than grepped for a marker. The live page was then rendered and looked at. **No build hash here on purpose:** Pages rebuilds on every commit including this file's own, so naming the build commit in the file that names it is a hash that is stale the moment it is written. The build to trust is the one at the head of `main`. https://thelivinsine.github.io/meal-planner/ |
 | **Open work** | **No PRs open.** No known defect. Four things parked by choice: the accent-on-accent focus ring, `--accent-soft` at 1.12 on a dark card, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). The dark-mode token findings are **no longer on this list** — three of the four are done and the fourth is the accent-soft one. **One limit still named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height |
-| **Confirmed** | **This round, in headless Chrome:** Recipes in both layouts at 1280px, list at 1024/1100/700/390/359px, tile at 390px, the week view at 1280 and 390, the add-to-week dialog and the detail sheet, each in **both themes**; the five hover fills rendered by injecting them onto named elements, since headless cannot hover. Measured off the live DOM rather than eyeballed: `.card-add` is 44×32 with its label hidden in every list at every width and 251×34 with its words in a wide tile, `card-actions` reports `0px` on both borders, the narrow name column went 149px → 214px, and no width overflows its viewport. `node check.mjs` — **96 checks**. Before this: the narrow height budget (30.6% mouse / 34.9% finger, 48 assertions across three probes); **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP; and **your eyes on the running app** across every card round, including the screenshots that started this one |
+| **Confirmed** | **This round, in headless Chrome — and the two halves of that are worth keeping apart. Rendered fifteen, looked at eleven:** Recipes list and tile at 1280px light, list at 1280px dark, the narrow list, the week view wide and narrow, both dialogs, both hover renders, and the deployed site. **The four rendered and not opened**, because a render nobody opens is a file rather than a check: tile at 1280px dark, the narrow tile, the week in dark, and the detail sheet. The hover fills were rendered by *injecting* them onto named elements, since headless cannot hover. **Measured rather than rendered** — the other half, and the list row's widths live here rather than in a picture: 1001/1024/1100/700/359px, where the numbers were the whole point. Measured off the live DOM rather than eyeballed: `.card-add` is 44×32 with its label hidden in every list at every width and 251×34 with its words in a wide tile, `card-actions` reports `0px` on both borders, the narrow name column went 149px → 214px, and no width overflows its viewport. `node check.mjs` — **96 checks**. Before this: the narrow height budget (30.6% mouse / 34.9% finger, 48 assertions across three probes); **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP; and **your eyes on the running app** across every card round, including the screenshots that started this one |
 | **Branches** | `controls-and-greys` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
 
 ## What just shipped
@@ -174,7 +174,7 @@ were ever driven.
 5. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
 6. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
-   twelve renders and kept none. `*.png` is gitignored and would need a deliberate `!Screenshots/**`
+   fifteen renders and kept none. `*.png` is gitignored and would need a deliberate `!Screenshots/**`
    exception. Your call, and the 1001–1150px band is the one that would earn its place first.
 7. **Decide about `--accent-soft` on a dark card.** The last dark-mode finding, at 1.12. The
    reference answer is to stop making a dark tint work and **invert** the element — PowerToys uses
@@ -223,9 +223,11 @@ is worse than none, so stale ones get deleted rather than captioned. The four su
 concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
 
 They are **reproducible on demand** — headless Chrome from the shell renders any state, and this
-round drove it into twelve: Recipes in list and tile at 1280px in both themes, the narrow list and
-narrow tile, the week view wide and narrow, the add-to-week dialog in both themes, the detail sheet,
-the injected hover states in both themes, and the deployed site as the last check. Windows will not
+round drove it into fifteen: Recipes in list and tile at 1280px in both themes, the narrow list and
+narrow tile, the week view wide in both themes and narrow, the add-to-week dialog in both themes,
+the detail sheet, the injected hover states in both themes, and the deployed site as the last check.
+**Eleven of the fifteen were looked at**; the four that were not are named in the Confirmed row at
+the top, because a render nobody opened is a file rather than a check. Windows will not
 open a window under about 500 CSS px, so anything narrower is rendered in an `<iframe>` sized to the
 width, which gets its own viewport for media queries. **One thing to remember about that rig:** CSS
 transitions do not tick under `--virtual-time-budget`, so a transitioned property sits at its start

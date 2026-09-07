@@ -486,9 +486,11 @@ that measures distance cannot tell you which way you went.**
   `display: none` in every list at every width, and 251×34 with its words in a wide tile;
   `card-actions` reporting `0px` for both `border-top-width` and `border-left-width`; the narrow name
   column at 214px against 149px before; `scrollWidth` inside `clientWidth` at 390, 700 and 1280.
-- **Rendered and looked at**, twelve of them: Recipes in list and tile at 1280px in both themes, the
-  narrow list and narrow tile, the week view wide and narrow, the add-to-week dialog in both themes,
-  the detail sheet, and the deployed site.
+- **Rendered: fifteen. Looked at: eleven.** The gap is recorded rather than rounded away, because a
+  render nobody opens is a file and not a check. The eleven: Recipes list and tile at 1280px light,
+  list at 1280px dark, the narrow list, the week view wide and narrow, both dialogs, both hover
+  renders, and the deployed site. The four not opened: tile at 1280px dark, the narrow tile, the week
+  in dark, and the detail sheet.
 - **Faked, and named as faked:** hover. Headless cannot hover, so the five hover fills were rendered
   by injecting them onto specific elements as classes. That proves the *colours* read — the neutral
   fill is visibly different from the toggle's accent-wash pressed state, which was the original
@@ -503,7 +505,8 @@ trap had already cost a round when a focus border read as un-applied 300ms after
 cause, and it is worth knowing before it looks like a CSS bug for the second time.
 
 **What it did not do:** a real pointer, a real keyboard, a real phone, or the 1001–1150px band by
-eye — which is where the name column's restored floor bites and the tags wrap to three rows. And
+eye — that band was measured at five widths and rendered at none, and it is where the name column's
+restored floor bites and the tags wrap to three rows. And
 `--control` at 1.07 below a white card is a deliberate near-invisible fill with the border doing the
 work, which is what the references do at the white ceiling and is still worth a look on a real
 screen.
