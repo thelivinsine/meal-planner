@@ -164,7 +164,7 @@ measures, so a new surface or ink token means adding its pairs by hand.
 
 **Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
 `--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
-CSS, passes all 136 checks, and puts the file straight back where it was before the scale existed.
+CSS, passes all 140 checks, and puts the file straight back where it was before the scale existed.
 A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
 a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
 in the next time one bites. Until then the scale is held by review, not by the script.
@@ -237,7 +237,7 @@ moves again.
   a third kind of check this project now has and had not used before, and it is the one that suits
   anything measured rather than drawn.
 
-**All 136 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 140 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the
@@ -309,6 +309,17 @@ lands on the faded page as `.btn:hover`, with the same `--accent` border carryin
 nothing filling it: kept as a guard, like `--surface-sunk` beside `--bg` before it, and its comment
 says so. **A layout change that moves a control from a card to the page is a palette change**, and
 the script is the only thing that says which of its colours stopped working.
+
+**136 to 140, and the four came from a wrong comment rather than from a change.** Nothing in that
+round's diff was a colour except the pressed layout button's fill; the additions came from a code
+review noticing that the comment above `--accent-soft`/`--bg-fade` credited `.meal-add:hover` with
+washing accent-soft onto the *page*, when `.meal-add` lives inside `.meal` and its ground is a card.
+Following that found two pairs the list had never had: the "+" circle on an empty meal is
+`--accent-soft` at rest and `--accent` on hover, and on a day gone by the card under it is
+`--surface-past`, which appeared in no surface pair at all. Both pass — 1.13 / 1.25 and 4.55 / 6.10
+— so they are guards, not fixes. **The gap was in the list and the error was in the sentence beside
+it**, which is the argument for writing the ground down next to every pair: a comment naming the
+wrong consumer is the only thing that can make a missing pair look present.
 
 The pair list grew by two in PR #10, with `--hover`: the token beside `--bg`, and `--ink` on it.
 It grew by three more when the week bar dissolved, without a single new token — `--ink-soft` and

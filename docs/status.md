@@ -4,14 +4,108 @@
 
 | | |
 |---|---|
-| **Live** | **The app is `1b07bb0`** — PR [#24](https://github.com/thelivinsine/meal-planner/pull/24), squash-merged. Pages reported `built` at `1b07bb0`, all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised), and the deployed page was rendered and looked at — the week view, which is the one the live rig can reach unaided. https://thelivinsine.github.io/meal-planner/ <br><br>*Previously:* **`51ae81f`** — PR [#23](https://github.com/thelivinsine/meal-planner/pull/23), squash-merged. Pages reported `built` at `51ae81f`, all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised), and the deployed page was then rendered with the filter row and a dropdown open and looked at. https://thelivinsine.github.io/meal-planner/ <br><br>*Previously:* **`c3e399f`** — PRs [#20](https://github.com/thelivinsine/meal-planner/pull/20) and [#22](https://github.com/thelivinsine/meal-planner/pull/22), squash-merged in that order. Pages reported `built` at `c3e399f`, and all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised) rather than grepped for a marker; the live page was then rendered and looked at. #22 was reopened from #21, which GitHub **closed by itself** when the base branch it was stacked on was deleted on merging #20 — a stacked PR does not survive its base, so stack the branches and open the second PR only after the first lands. **No build hash here on purpose:** Pages rebuilds on every commit including this file's own, so naming the build commit in the file that names it is a hash that is stale the moment it is written. The build to trust is the one at the head of `main`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **No PRs open.** No known defect. **One new judgement call, and it is visible:** the search field has no `max-width` any more, so at 1440px it is about 1120px of input. That is what makes the tools row end where the card grid ends; the lever if it reads as too much is `flex: 0 1 480px` on `.search` and a row that deliberately stops short. **One new rig limit:** the deployed *Recipes* view could not be rendered — headless Chrome exits `21` the moment `--remote-debugging-port` is asked for in this shell, and a cross-origin iframe cannot be scripted from a `file://` rig, so a live view that needs a click is out of reach and the live tools row is covered by the byte-for-byte compare rather than by a look. **Still unread by script:** the caret rotation — `getComputedStyle(el, '::after').transform` returns `none` in this Chrome even while the `[open]` rule is demonstrably matching (its `margin-top` reads back fine), so the flip is confirmed **by eye in two screenshots and nothing else**. Four things parked by choice: the accent-on-accent focus ring, `--accent-soft` at 1.12 on a dark card, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). **Two new limits this round, both named rather than fixed:** `--surface-past` has almost nothing left on a near-white page (1.04 from a live card), and `--hover`/`--rail` are pinned to within one shade by the floors either side of them, with `--accent-ink` on `--hover` at **4.54** against a 4.5 floor. **One limit still named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height |
-| **Confirmed** | **This round: `node check.mjs` at 136 checks, unchanged** — nothing in the diff touches a token, which is the point. **Rendered and looked at, six:** Recipes tiles at **1440px**, **1280px** and **1100px** (the three widths where the row's right end is visible), the list at **700px**, **390x664** through the iframe rig, and the deployed site. **Measured rather than rendered**, and again the half that found the defect: the search input comes out **427px at 620px and 167px at 360px, identical before and after** the reorder — flex distribution does not depend on order — while at 1440px the *row* ended 481px short of the grid above it, which no narrow screenshot could show. A functional pass at 1254px and 390px with the slot picker open: panel keeps focus on open, `Meal` badge still 1, one tool row at 39px with no wrap, no page scroll, **no console errors**. <br><br>*Previously:* **`node check.mjs` at 136 checks, up from 127**, and the additions are all one sentence — a control that was on a card is on the page now. **Rendered and looked at, eight:** Recipes tiles at 1280px light with the row shut, the same with the row and a dropdown open, dark at 1280px with a dropdown open, the slot picker wide, the slot picker at 390px, the list layout at 700px with the row open, the focus-ring shot, and the deployed site. **Measured rather than rendered**, which is again the half that caught things: the narrow height budget went from the **41%** recorded below to **45.5%** at 390x664 with `pointer: coarse` forced on (50.5% on a mouse); the touch floor holds at 390px (search 155x44, each layout button 44x44, Filters 105x44, a summary 80x44, Clear 52x44); nine controls tabbed end to end with a 3px `rgb(200,73,31)` ring on every one; and a functional pass with **no console errors** — shut by default on all three lists, `aria-expanded` flipping, `indian` giving 27 of 50, badge 1, Clear back to 50, the row surviving a view switch, the picker opening shut with badge 1, and a meal added. <br><br>*Previously:* **In headless Chrome, and the two halves are worth keeping apart. Rendered thirteen, looked at twelve:** the Recipes grid at 1280px in both themes on the accent tags and again on the grey ones, the Recipes list at 1280px dark, the week view wide in both themes on the new page, the narrow week at **390px and 359px** through the iframe rig, and the deployed site. **The one rendered and not opened:** the Recipes list at 1280px light. **Measured rather than rendered**, which is the half that caught things: the live page was asked for its computed values — the tag pill reads `#56463c` on `#e8dfd3` over a white card in light and `#c2bebb` on `#3e3e3e` in dark, and the progress track still reads `#f0eae1` / `#212121`, so the two tokens that used to share a shade are demonstrably apart. `node check.mjs` — **127 checks**, up from 96. Before this: the narrow height budget (30.6% mouse / 34.9% finger, 48 assertions across three probes); **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP; and **your eyes on the running app**, which is what started both of this round's changes and rejected the first attempt at the tags |
-| **Branches** | `filters-button-left` deleted on merge; `tools-row-untiled` before it; `tag-contrast` and `page-white-rail` before it; `accent-tags` deleted with the PR that was dropped. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
+| **Live** | **The app is `a4be1c9`** — PR [#25](https://github.com/thelivinsine/meal-planner/pull/25), squash-merged. Pages reported `built` at `a4be1c9`, all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised), and the deployed page was rendered and looked at — **and, for the first time, *scripted*:** the live *Recipes* view was reached, switched to the list layout, toggled to dark and asked for its computed values. That closes the rig limit recorded below. It reads back `order=Filters@264 view-toggle@355 search@427`, the pressed layout button at `rgb(200,73,31)` with a transparent border, and the card ring at `solid 2px rgb(200,73,31)` light / `rgb(255,122,79)` dark. https://thelivinsine.github.io/meal-planner/ <br><br>*Previously:* **The app is `1b07bb0`** — PR [#24](https://github.com/thelivinsine/meal-planner/pull/24), squash-merged. Pages reported `built` at `1b07bb0`, all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised), and the deployed page was rendered and looked at — the week view, which is the one the live rig can reach unaided. https://thelivinsine.github.io/meal-planner/ <br><br>*Previously:* **`51ae81f`** — PR [#23](https://github.com/thelivinsine/meal-planner/pull/23), squash-merged. Pages reported `built` at `51ae81f`, all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised), and the deployed page was then rendered with the filter row and a dropdown open and looked at. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **No PRs open.** No known defect. **The judgement call from last round still stands:** the search field has no `max-width`, so at 1440px it is about 1120px of input — the lever if it reads as too much is `flex: 0 1 480px` on `.search`. **Two things this round left unverified rather than unfixed**, both in PR #25's own list: the dialogs' quiet focus-restore was reasoned and its primitive measured but never driven end to end, because headless Chrome does not sequence a `<dialog>`'s `close` event or its focus-restore the way a real browser does — **open a recipe with the mouse and press Escape** is the check that settles it; and a modal dialog autofocusing its first control shows a ring on that control in the rig, which may or may not be true of a real browser after a mouse click. `focusVisible` is also ignored by Safari, where the ring behaves as it did before this round. **Still unread by script:** the caret rotation — `getComputedStyle(el, '::after').transform` returns `none` in this Chrome even while the `[open]` rule is demonstrably matching. Four things parked by choice: the accent-on-accent focus ring (now 2px, so less of a blob, and the pressed layout toggle has joined the accent-filled set), `--accent-soft` at 1.12 on a dark card, the dialogs being off the spacing scale, and the week greeting. **Named limits carried forward:** `--surface-past` has almost nothing left on a near-white page (1.04 from a live card); `--hover`/`--rail` are pinned to within one shade with `--accent-ink` on `--hover` at **4.54** against a 4.5 floor; and the narrow height budget does not hold under about 760px of viewport height |
+| **Confirmed** | **This round: `node check.mjs` at 140 checks, up from 136** — and the four are not this round's colours, they are two pairs the script had never had. Chasing a comment the review said was wrong (`.meal-add:hover` washes accent-soft onto a *card*, not the page) found the "+" circle on an empty meal sitting on `--surface-past` on a day gone by, with `--accent-soft` beside it at **1.13 / 1.25** and `--accent` at **4.55 / 6.10**. Both pass, so it is a guard rather than a fix. **Rendered and looked at, seven:** Recipes tiles at 1280px light, the list light and dark with a card focused, the row after the button swap, and three on the deployed site — Recipes light, Recipes list dark with a card focused, and the week. **Measured rather than rendered, which is the whole of this round:** `matches(':focus-visible')` after every handoff — mouse gives `false` on the bookmark, day-chip and clear-slot paths, keyboard gives `true` on all of them — and **seventeen focusables focused the way a Tab does, every one reading `solid 2px rgb(200,73,31)`** except the search input, which is `outline: none` by design. Row order and tab order read off the DOM (`filters-toggle → tile → list → input`), 39px with no wrap at 1280px *and* at 360px, and the search field at **167px at 360px — the same number recorded before the previous reorder**, so flex distribution did not move and no touch target changed. A functional pass with **no console errors**: layout toggle both ways, the slot picker opening with focus on the panel and its `Meal` badge at 1, a meal added and cleared. **One rig trap walked into again, and it was already written down four sections below:** under `--virtual-time-budget` a colour transition started by a *click* never advances in the CSSOM, so `getComputedStyle` keeps reporting the pre-toggle value while the paint shows the final one — a theme toggled by clicking read back `--ink: #f5f3f1` on `:root` but `#191310` on a card name, and twenty minutes went on chasing a palette bug that was not there. Seeding `localStorage` with `theme: 'dark'` and reloading gives the honest numbers (`#f5f3f1` / `#1a1a1a` / `#2b2b2b`) and is now the recorded way round it. **Not a new finding — a note that was read too late**, which is the more useful thing to record about it <br><br>*Previously:* **This round: `node check.mjs` at 136 checks, unchanged** — nothing in the diff touches a token, which is the point. **Rendered and looked at, six:** Recipes tiles at **1440px**, **1280px** and **1100px** (the three widths where the row's right end is visible), the list at **700px**, **390x664** through the iframe rig, and the deployed site. **Measured rather than rendered**, and again the half that found the defect: the search input comes out **427px at 620px and 167px at 360px, identical before and after** the reorder — flex distribution does not depend on order — while at 1440px the *row* ended 481px short of the grid above it, which no narrow screenshot could show. A functional pass at 1254px and 390px with the slot picker open: panel keeps focus on open, `Meal` badge still 1, one tool row at 39px with no wrap, no page scroll, **no console errors**. <br><br>*Previously:* **`node check.mjs` at 136 checks, up from 127**, and the additions are all one sentence — a control that was on a card is on the page now. **Rendered and looked at, eight:** Recipes tiles at 1280px light with the row shut, the same with the row and a dropdown open, dark at 1280px with a dropdown open, the slot picker wide, the slot picker at 390px, the list layout at 700px with the row open, the focus-ring shot, and the deployed site. **Measured rather than rendered**, which is again the half that caught things: the narrow height budget went from the **41%** recorded below to **45.5%** at 390x664 with `pointer: coarse` forced on (50.5% on a mouse); the touch floor holds at 390px (search 155x44, each layout button 44x44, Filters 105x44, a summary 80x44, Clear 52x44); nine controls tabbed end to end with a 3px `rgb(200,73,31)` ring on every one; and a functional pass with **no console errors** — shut by default on all three lists, `aria-expanded` flipping, `indian` giving 27 of 50, badge 1, Clear back to 50, the row surviving a view switch, the picker opening shut with badge 1, and a meal added. |
+| **Branches** | `quieter-focus-ring` deleted on merge; `filters-button-left` before it; `tools-row-untiled` before that; `tag-contrast` and `page-white-rail` before it; `accent-tags` deleted with the PR that was dropped. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
 
 ## What just shipped
 
-**One PR, `#24`: one request, one line of CSS to pay for it, and three doc lines that had gone false.**
+**One PR, `#25`: two complaints off one screenshot, a button swap asked for mid-round, and a review
+that found a gap in the contrast script.**
+
+### The focus ring is 2px, and it stops appearing after a mouse click
+
+Two things wearing one complaint, and only the second was a defect.
+
+The **width** is the third look at a number taken off a reference app. §6 of the light report
+measures 4px; built at 4px it was too loud, shipped at 3px, and 3px was still a band rather than a
+ring on the running app. 2px, with the same 2px gap. Contrast does not move — a line's ratio does
+not depend on how thick the line is.
+
+The **appearance** was real, and the cause is a browser rule this project had never measured:
+
+> **Chrome paints `:focus-visible` on *programmatic* focus, and on the focus a `<dialog>` hands
+> back when it closes.** Confirmed in headless Chrome with nothing ever typed at the page — a bare
+> `.focus()` on a button matched `:focus-visible`, and so did the element a closed dialog restored
+> to.
+
+That is the sting: this project's own accessibility rule — *a redraw destroys focus, so put it on
+what replaced the control* — is **why** the app calls `.focus()` in eight places. Every one of them
+was drawing an orange ring for a mouse user. The thing in the screenshot was the recipe name that
+had been opened and closed.
+
+`handOff()` passes `focus({ focusVisible })`, and the value is **read off the control that was
+activated**: a keypress leaves it `:focus-visible`, a mouse click does not. One line at the top of
+the delegated listener pays for all eight. The dialogs get a `blur()` and a quiet re-focus, because
+the flag only moves when focus does. Focus still lands in exactly the same place either way.
+
+**What this deliberately is not** is a modality flag tracking the pointer. That was rejected once
+already, for the search field, and re-deriving what `:focus-visible` already means is still the
+wrong answer to a browser doing the right thing in the case it was designed for.
+
+### The pressed layout toggle loses its orange border
+
+It had one for arithmetic, not taste: `--accent-soft` measures **1.06** against the faded end of
+the page it has sat on since the tools row lost its tile, so it needed a hairline to have an edge.
+The arithmetic was right and the reading of it was not — on a 30px icon button a 1px accent border
+reads as a thick orange outline.
+
+The answer was already written down, two rounds before the question was asked.
+[dark-mode-reference.md §4c](dark-mode-reference.md), off PowerToys: *a tint that cannot hold its
+ground should be inverted, not propped up.* Pressed is the full `--accent` fill with `--on-accent`
+on it — 4.28 against the faded page in light, 6.40 in dark, glyph at 4.74 / 7.12 — so it carries
+its own edge. It is also the shape this app already used for "selected": the selected day chip and
+the pressed meal chip in the dialogs are both exactly this.
+
+The only bordered `.icon-btn` in the app is gone, and with it the one exception to *one box per
+level*.
+
+### The row's two buttons swap: Filters, then the layout toggle
+
+Asked for mid-round. A markup reorder inside `toolsHtml()` and nothing else — `.tool-bar` is a flex
+row, so DOM order is visual order **and tab order**. A CSS `order` would have got the same picture
+and left a keyboard reaching the two buttons in the old sequence, which is the version of this
+change that would have been a bug. Same lesson as `#24`, which moved the search field.
+
+### The review found a gap the comment was hiding
+
+`/code-review` traced the focus machinery end to end and found **no correctness bug in it**. What it
+did find was a comment of mine crediting `.meal-add:hover` with washing `--accent-soft` onto the
+page. It does not — `.meal-add` lives inside `.meal`, so its ground is a card. Chasing that down
+found two pairs `check.mjs` has never had:
+
+> The "+" circle on an empty meal is `--accent-soft` at rest and `--accent` on hover, and on a day
+> gone by the card under it is `--surface-past` — which appeared in no surface pair at all.
+
+Both pass, at 1.13 / 1.25 and 4.55 / 6.10, so this is a guard rather than a fix. But a past day with
+an empty meal is the one place in the app where that pair is on screen, and nothing was measuring
+it. **A wrong comment is worth chasing even when the code it sits over is right** — the error was in
+the sentence and the gap was in the list beside it.
+
+It also caught that the rule added earlier in the same branch was **already violated**: "never a
+bare `.focus()`" is broken by `el.slotPicker.focus()` and `el.weekGrid.focus()`, ringless today only
+because two `outline: none` rules suppress it. Delete either and a plain mouse click on "+ Add"
+draws a 2px ring around the whole content column — the exact defect the branch exists to fix. Named
+as the exemption in `CLAUDE.md` and at both call sites, with what has to change if either panel ever
+gets a visible ring.
+
+### Six doc lines that had gone false
+
+The `toolsHtml()` comment and `openSlotPicker()`'s tab-order comment both named the old row order;
+README enumerated the row; `docs/log.md`'s narrow tab pass records which control comes first after
+the picker panel. `docs/decisions.md`'s *one box per level* row still ended "the glyph and the ink
+say it", which is what this round replaced with a fill, and `status.md`'s own PR #23 write-up still
+asserted the bordered-icon-button exception in the present tense. The parts lists in `CLAUDE.md` and
+`architecture.md` were left alone deliberately, the same call as last round: they name the
+component's parts, not their order.
+
+`CLAUDE.md` is at 200 lines, its cap, which is what forced the new focus rule to be three lines
+rather than four.
+
+---
+
+*Previously:* **One PR, `#24`: one request, one line of CSS to pay for it, and three doc lines that had gone false.**
 
 ### The Filters button moves left of the search field
 
@@ -200,15 +294,20 @@ by reading the diff**, for the second round running.
 
 ## What is not verified
 
-**The deployed *Recipes* view was not rendered.** The live shot is the week view: headless Chrome
-exits `21` here the moment `--remote-debugging-port` is asked for, and a `file://` rig cannot script
-a cross-origin iframe, so a live view that needs a click is out of reach. The three served files
-were fetched back and compared **byte for byte** against `main`, so the live tools row is identical
-to the one rendered locally at four widths — identity, not a look.
+**~~The deployed *Recipes* view was not rendered.~~ Closed this round.** It stood on two true
+facts — headless Chrome exits `21` here the moment `--remote-debugging-port` is asked for, and a
+`file://` rig cannot script a cross-origin iframe — and on one thing nobody had tried: a page served
+from **`localhost`** can `fetch()` the deployed files, because GitHub Pages sends
+`Access-Control-Allow-Origin: *`, and `document.write` them into a **same-origin** iframe with
+relative paths rewritten to the deployed origin. The live page then takes clicks and answers
+`getComputedStyle`. The deployed *Recipes* view was reached, switched to the list layout, toggled to
+dark and measured. **The limit was the `file://` half, not the cross-origin half**, and it went
+unexamined for four rounds because the sentence naming it read like a browser rule.
 
-**No keyboard, and tab order changed this round.** Filters is now reached before the search field.
-The review's pass was CDP key events at 1254px and 390px; a person has still driven none of it, and
-this is the eighth round that sentence has been written.
+**No keyboard, still, and tab order changed again this round.** Filters is reached before the two
+layout buttons now, and the search field is last. Seventeen focusables were focused *the way a Tab
+does* and every ring measured, which is not the same as a hand on a Tab key: nothing tests that the
+sequence is comfortable, only that each stop is visible. Ninth round for this sentence.
 
 **`pointer: coarse` was not forced this round at all.** The 44px floor at 360px is pure arithmetic
 here: no control changed size, only its position in a flex row, and the field's measured width came
@@ -318,7 +417,7 @@ were ever driven.
    decide what leaves the page there — the week range row is the only candidate that is not a touch
    floor.
 5. **Decide whether the spacing scale gets a check.** Unchanged: a rule writing `margin-bottom: 18px`
-   is legal CSS and passes all 136 checks. Described in
+   is legal CSS and passes all 140 checks. Described in
    [architecture](architecture.md#how-this-gets-tested), deliberately not written, held by review.
 6. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
@@ -386,10 +485,15 @@ page, the narrow week at 390px and 359px, and the deployed site as the last chec
 thirteen were looked at**; the one that was not is named in the Confirmed row at the top, because a
 render nobody opened is a file rather than a check.
 
-**A third thing about the rig, new this round:** Chrome exits `21` here the moment
-`--remote-debugging-port` is asked for, so there is no CDP session to drive the *deployed* site
-with — and a `file://` rig cannot script a cross-origin iframe either. A local file can be driven
-both ways; the live site can only be loaded and shot as it lands, which is the week view.
+**A third thing about the rig — and it was half wrong for four rounds.** Chrome does exit `21`
+here the moment `--remote-debugging-port` is asked for, so there is no CDP session to drive the
+*deployed* site with, and a `file://` rig cannot script a cross-origin iframe. The conclusion drawn
+from those two — "the live site can only be loaded and shot as it lands" — was the mistake. Serve
+the rig from `localhost`, `fetch()` the deployed files (Pages sends
+`Access-Control-Allow-Origin: *`), rewrite their relative `href`/`src` to the deployed origin, and
+`document.write` them into a same-origin iframe: the live page is then scriptable. That is how the
+deployed *Recipes* view was reached and measured this round. **Two true constraints and one
+unexamined inference is how a limit outlives its cause.**
 
 **Two things about the rig, both of which cost time in an earlier round.** Windows will not open a headless
 window under about 500 CSS px — `--window-size=390` reports `innerWidth: 526` and the PNG is a
