@@ -1280,9 +1280,16 @@ function openSlotPicker(iso, meal, opener) {
   // one — and on a phone it throws the keyboard up over the recipes. It still has to go
   // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
   // and focus left on a hidden element drops to <body>. The panel is the thing that
-  // replaced it, and from here Tab reaches the back link, then the search, then the
-  // cards, in the order they are read — under 620px the back link is not in the page at
-  // all (it is the top bar's, above the panel), so there Tab starts at the search.
+  // replaced it, and from here Tab reaches the back link, then the tools row — Filters,
+  // the two layout buttons, the search field, in that markup order — then the cards, in
+  // the order they are read. Under 620px the back link is not in the page at all (it is
+  // the top bar's, above the panel), so there Tab starts at Filters.
+  //
+  // A bare .focus(), against the rule: the panel is one of two elements in the app that
+  // take focus without ever wearing a ring (.slot-picker and .meals, both `outline: none`
+  // — a 2px accent ring around the whole content column is not a focus indicator, it is a
+  // border). Nothing to hand on, so nothing to read. Give either of them a visible ring
+  // and this line has to go through handOff() the same as the other eight.
   el.slotPicker.focus();
 }
 
@@ -1327,7 +1334,7 @@ function closeSlotPicker() {
   // again by now — focusing a hidden element does nothing at all.
   if (!el.slotPicker.contains(document.activeElement) && document.activeElement !== document.body) return;
   if (opener && opener.isConnected) handOff(opener);
-  else el.weekGrid.focus();
+  else el.weekGrid.focus();      // bare on purpose: `outline: none`, see openSlotPicker()
 }
 
 function renderSlotPicker() {

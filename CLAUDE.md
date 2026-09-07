@@ -162,8 +162,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 
 - Semantic HTML, labels on inputs, native `<dialog>` for modals.
 - **A redraw destroys focus.** Put focus on what *replaced* the control, through `handOff()` and
-  never a bare `.focus()` — Chrome rings programmatic focus, and a `<dialog>`'s restore, mouse or
-  not. Eight places do; **a conditionally-rendered control is the one that gets missed.**
+  never a bare `.focus()` — Chrome rings programmatic focus, and a `<dialog>`'s restore. The two
+  `outline: none` panels are the only bare ones. **A conditionally-rendered control gets missed.**
 - **Focus something visible.** `.focus()` on a hidden element does nothing and drops you to
   `<body>`, so a lookup for "what replaced it" must be scoped to what is on screen: open dialog,
   then open picker, then the view.

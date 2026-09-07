@@ -199,11 +199,22 @@ const SURFACE_PAIRS = [
   ['--accent', '--bg-fade'],
   /* The wash on the page, and the one pair the tile was hiding: 1.18 on the white card
      it used to sit on, 1.11 on --bg and **1.06** here. This used to be the pressed layout
-     button, which gave up on the tint and took the full --accent fill instead; the pair
-     is still real, because .btn:hover and .meal-add:hover both wash accent-soft onto the
-     page and both come with an --accent border — hence --accent rather than --line as the
-     thing measured. */
+     button, which gave up on the tint and took the full --accent fill instead. The pair is
+     still real, and .btn:hover is the whole of why: the Filters and Clear buttons sit on
+     the page and wash accent-soft on hover, with an --accent border coming too — hence
+     --accent rather than --line as the thing measured. (.meal-add:hover washes the same
+     colour and is *not* this pair: it lives inside .meal, so its ground is a card. That is
+     the two rows below.) */
   ['--accent-soft', '--bg-fade', { line: '--accent' }],
+  /* The "+" circle on an empty meal, and the wash behind it when the row is hovered —
+     both inside .meal, so both land on a card, and on a day gone by that card is
+     --surface-past. Missed for as long as --surface-past has existed: the accent-soft
+     half of it was measured against --surface and nothing else, and a past day with an
+     empty meal is the one place in the app where this pair is on screen. The dashed
+     --line-strong edge is what carries the button; the circle inside it has none, so it
+     is measured bare. */
+  ['--accent-soft', '--surface-past'],
+  ['--accent', '--surface-past'],
 ];
 
 function measure(name, theme) {
