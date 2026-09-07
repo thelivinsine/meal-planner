@@ -365,12 +365,14 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 ## 9. Against Mise's current light tokens
 
 Measured from `style.css`, `:root`, on 2026-09-01. **Three of the four observations below were
-acted on in PR #10** — each is marked where it stands. The token list is as it shipped after that.
+acted on in PR #10** — each is marked where it stands. The token list is as it shipped after that,
+plus `--control`, added in PR #18 for the dark theme's sake and holding light's existing value.
 
 ```
 --bg           #f6f3ee
 --surface      #ffffff   1.11 above bg
---surface-sunk #f0eae1   1.20 below surface, 1.08 below bg
+--surface-sunk #f0eae1   1.20 below surface, 1.08 below bg   (a recessed *track* only, since PR #18)
+--control      #f0eae1   1.20 below surface                  (added in PR #18; same value, see below)
 --surface-past #faf8f5   1.04 on bg
 --line         #e3dbd0   1.24 on bg, 1.37 on surface
 --line-strong  #cabbaa   1.88 on surface
@@ -396,6 +398,14 @@ That is worth stating plainly because it sharpens the dark-mode diagnosis. `--su
 going down is **correct in light and wrong in dark** — it is the same token doing the right
 thing at `#f0eae1` and the wrong thing at `#212121`, because the light palette was designed
 first and the dark one inherited its structure rather than inverting its reasoning.
+
+> **What shipped in PR #18, and why it shows up in the light report at all.** The token was doing two
+> jobs — a recessed *track*, and the rest fill of a small control on a card — and in light both go
+> down, so one value served both. In dark they want opposite directions, which is the sentence above
+> made concrete. So the control half became `--control`, and in light it holds **exactly the value
+> `--surface-sunk` had**: `#f0eae1`, 1.20 below the card. Nothing in the light theme moved. It is the
+> cleanest illustration of this document's thesis so far — the same idea needs one value in light and
+> two in dark, and the split is in the *token*, not in the theme block.
 
 Four observations, none urgent:
 

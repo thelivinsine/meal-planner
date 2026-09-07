@@ -22,11 +22,23 @@
      filter chips and the search field — all of which sit *inside* a card — and once dark
      mode went neutral that read as holes punched through the tile: the page shade is the
      darkest thing on screen, so a pill filled with it looks like a gap, not a pill. Those
-     four now use --surface-sunk, which is what "trays and inner tiles" means. Nothing
-     inside a card gets the page shade. */
+     four now use --control, the fill for a small control on a card. Nothing inside a card
+     gets the page shade. */
   --bg: #f6f3ee;             /* the page, and only the page */
   --surface: #ffffff;        /* meal cards, recipe cards, panels — nearly white */
-  --surface-sunk: #f0eae1;   /* trays and inner tiles — a step deeper than a card */
+  --surface-sunk: #f0eae1;   /* a recessed *track* or well — down in both themes */
+  /* The rest fill of a small control sitting on a card: the search field, a tag, a chip,
+     a filter summary, and the hover of a control that has no fill of its own. It is a
+     separate token from --surface-sunk because the two point opposite ways in dark: a
+     track is meant to recede, a control is meant to be *raised*, and the ladder in dark
+     goes up towards white (docs/dark-mode-reference.md §3). --surface-sunk was doing both
+     jobs, which is right in light — where state and trays both go down — and wrong in
+     dark, where it left every chip, tag and search field 1.14 *below* the card it sits on
+     and only 1.08 above the page: the "hole punched through the tile" this file already
+     documents for --bg, one token along. Light keeps the value --surface-sunk had, so
+     nothing in the light theme moves; dark rises to PowerToys' own control fill.
+     Measured: 1.20 below the card in light, 1.21 above it in dark. */
+  --control: #f0eae1;
   --surface-past: #faf8f5;   /* a day that has been and gone: back towards the page */
   --ink: #191310;
   --ink-soft: #56463c;
@@ -39,9 +51,9 @@
      a card is lighter than the page in both themes. The two point opposite ways and both
      are right; see docs/light-mode-reference.md §3.) 1.14 on --bg, mid-band for the
      1.10–1.25 the reference apps measure at. A control that sits on a *card* does not use
-     this — --surface-sunk is already a correct downward step from --surface, at 1.20.
-     Dark's own hover ramp is the parked dark-mode job, so there --hover is today's value
-     unchanged. */
+     this — --control is the step from --surface, at 1.20 in light and 1.21 in dark.
+     Dark's own page hover is still today's value: its two consumers both land on --bg,
+     where #2b2b2b is a real upward step at 1.23, so nothing there was a no-op. */
   --hover: #eae4da;
   /* The scrim behind a dialog. Both light references use a mid grey around 2.9 over
      white, not a heavy black; .42 composites to #9a9591 here, which measures 2.97. */
@@ -102,13 +114,20 @@
   --bg: #1a1a1a;
   --surface: #2b2b2b;
   --surface-sunk: #212121;
+  /* Up, not down: see the light block. #383838 is PowerToys dark's own "input inside a
+     card" value, 1.21 above --surface — the raised step the dark report asked for. */
+  --control: #383838;
   /* Back towards the page, like its light counterpart — not past it. A past card that
      is *darker* than --bg reads as a hole in the page rather than a card that has
      receded into it. Clears 1.10 against the page on its own. */
   --surface-past: #232323;
   --ink: #f5f3f1;
   --ink-soft: #c2bebb;
-  --ink-faint: #9b9794;
+  /* Lifted from #9b9794. The third text tier's hardest ground used to be the card at
+     4.89; now it is the raised --control fill under the search placeholder, where the old
+     value measured 4.05 — under the floor. 4.74 there and 5.72 on a card, still a clear
+     step below --ink-soft's 7.67, so the tier order holds. */
+  --ink-faint: #a8a4a1;
   --line: #3a3a3a;
   --line-strong: #545454;
   /* Unchanged behaviour: this is the same #2b2b2b the sidebar hover already used. Dark
@@ -288,7 +307,7 @@ button, input, select { font: inherit; color: inherit; }
    apply here. It was briefly changed to --surface and that made the rule a no-op,
    since the button is already --surface at rest: the fill has to differ from what the
    control sits on, not from the page behind it. */
-.theme-btn:hover { background: var(--surface-sunk); color: var(--ink); }
+.theme-btn:hover { background: var(--control); color: var(--ink); }
 /* An inline SVG sits on the text baseline and leaves descender space under it, so
    the glyph rides high in a centred box. Making it a block removes the baseline. */
 .theme-btn svg { display: block; width: 16px; height: 16px; }
@@ -347,7 +366,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
               color var(--fast) var(--ease);
 }
-.btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+/* A neutral fill, not the accent wash it used to be. Two reasons, and the second is the
+   real one: in dark, --accent-soft is 1.12 on a card and this hover barely registered,
+   where --control is 1.21; and every *selected* state in this app is an accent fill, so a
+   secondary button that washed accent on hover was borrowing the one signal that means
+   "this is the chosen one". The border still goes accent, which is the colour half of the
+   hover. Measured 1.20 down from --surface in light, 1.21 up in dark. */
+.btn:hover { background: var(--control); border-color: var(--accent); }
 
 .btn-primary {
   background: var(--accent); border-color: var(--accent); color: var(--on-accent);
@@ -367,7 +392,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   width: 30px; height: 30px; display: grid; place-items: center;
   transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-.icon-btn:hover { background: var(--accent-soft); color: var(--accent-ink); }
+/* Same fill as .btn:hover, and for a sharper version of the same reason: the layout
+   toggle's *pressed* state is --accent-soft with accent ink, so hovering to accent-soft
+   made hover and pressed the same two colours — you could not tell which button was on
+   by looking at the one under the pointer. Hover is neutral now, pressed keeps the
+   accent, and the two states are different things again. */
+.icon-btn:hover { background: var(--control); color: var(--ink); }
 
 /* ---------- week ---------- */
 /* The day column, and the summary column beside it. Everything in the aside is derived
@@ -613,18 +643,27 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .search input {
   width: 100%; max-width: 480px;
   padding: 8px 14px; min-height: 36px;
-  background: var(--surface-sunk); color: var(--ink);
+  background: var(--control); color: var(--ink);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   font-size: .875rem;
-  transition: border-color var(--fast) var(--ease);
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
 }
-.search input:focus { border-color: var(--accent); }
+/* The one control in the app that does not get the shared 3px ring, and the reason is a
+   browser rule rather than a taste: Chrome matches :focus-visible on a text field however
+   it was focused — deliberately, because a text field is for typing and the caret has to
+   be findable. So the ring appeared on a mouse click and while typing, which is the one
+   thing a focus ring exists not to do. A text field already carries a border, so the
+   border is its focus indicator: accent, doubled to 2px by an inset shadow rather than a
+   wider border, which would shift the field by a pixel every time it took focus. A
+   keyboard user loses nothing — the same accent edge appears either way. */
+.search input:focus { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.search input:focus-visible { outline: none; }
 .search input::placeholder { color: var(--ink-faint); }
 
 /* Two icon buttons, no tile around them: they sit inside the tools card, and a bordered
-   group in there would be the second box the card already is. Pressed is the accent
-   wash, the same one .icon-btn hovers to — measured against --surface. */
+   group in there would be the second box the card already is. Pressed is the accent wash
+   and hover is neutral — they used to be the same fill; see .icon-btn:hover. */
 .view-toggle { flex: none; display: flex; gap: 2px; }
 .view-toggle .icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
 
@@ -653,7 +692,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   display: inline-flex; align-items: center; gap: 6px;
   border-radius: var(--radius-sm); padding: 5px 11px; min-height: 30px;
   font-size: .75rem; font-weight: 600;
-  background: var(--surface-sunk); border: 1px solid var(--line-strong); color: var(--ink-soft);
+  background: var(--control); border: 1px solid var(--line-strong); color: var(--ink-soft);
   transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
 .filter-summary::-webkit-details-marker { display: none; }
@@ -682,7 +721,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 6px 8px; min-height: 32px; border-radius: var(--radius-sm);
   font-size: .8125rem; font-weight: 500; color: var(--ink-soft);
 }
-.filter-opt:hover { background: var(--surface-sunk); color: var(--ink); }
+.filter-opt:hover { background: var(--control); color: var(--ink); }
 .filter-opt input {
   flex: none; width: 15px; height: 15px; margin: 0;
   accent-color: var(--accent);
@@ -694,7 +733,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   cursor: pointer; border-radius: var(--radius-sm);
   padding: 5px 11px; min-height: 30px;
   font-size: .75rem; font-weight: 600;
-  background: var(--surface-sunk); border: 1px solid var(--line-strong); color: var(--ink-soft);
+  background: var(--control); border: 1px solid var(--line-strong); color: var(--ink-soft);
   transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
               color var(--fast) var(--ease);
 }
@@ -785,8 +824,8 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 }
 
 /* List layout: one column, and the card turns on its side — name and time left, the
-   same foot of buttons moved to the right of it and divided by the same hairline. No
-   second component, so a card is a card in both layouts. */
+   same foot of buttons moved to the right of it. No second component, so a card is a
+   card in both layouts. */
 .card-grid.is-list, .pick-grid.is-list { grid-template-columns: 1fr; }
 .is-list .card { flex-direction: row; align-items: stretch; }
 .is-list .card-open {
@@ -806,7 +845,11 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    column — the slot picker beside the summary panel — three tags ran under the foot of
    buttons and the card's own `overflow: hidden` sliced the last one in half. */
 .is-list .card-tags { margin-top: 0; flex: 1 1 auto; min-width: 0; }
-.is-list .card-actions { border-top: 0; border-left: 1px solid var(--line); }
+/* No divider either way. The hairline that separates the foot from the card's body in
+   a tile becomes a *vertical* rule in a list, and a vertical rule down the middle of a
+   card cuts one card into two — the name and the button that adds it are one row, not two
+   panes. The gap does the separating; the card's own border is still the only box. */
+.is-list .card-actions { border-top: 0; }
 /* Same trap as the tile ring below, other two corners: the outline follows its own
    element's radius and .card-open now runs down the card's left edge. */
 .is-list .card-open:focus-visible { border-radius: var(--radius) 0 0 var(--radius); }
@@ -857,7 +900,7 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .tag {
   font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
   font-weight: 700; color: var(--ink-soft);
-  background: var(--surface-sunk); border-radius: var(--radius-pill); padding: 4px 8px;
+  background: var(--control); border-radius: var(--radius-pill); padding: 4px 8px;
 }
 
 .card-actions {
@@ -865,6 +908,10 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   padding: 11px 13px 13px; border-top: 1px solid var(--line);
 }
 .card-actions .btn { flex: 1; }
+
+/* The glyph is in the markup at every width and hidden here, because the swap has to
+   survive a window dragged across 620px and a card is not redrawn on a resize. */
+.card-add > svg { display: none; }
 
 /* Nothing but an .icon-btn, same as the clear x beside it: no border and no fill, so a
    card is not ringed by two boxed controls. Saved is carried by the filled bookmark glyph
@@ -1134,6 +1181,25 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .tool-bar { gap: 6px; }
   /* Sideways in a 360px column there is room for a name or for tags, not both. */
   .is-list .card-tags { display: none; }
+  /* And with the tags gone, the 40% basis left 46px of the row empty between the minutes
+     and the foot — the width the icon button just freed, sitting there as a hole. The
+     name column takes the whole of what is left instead, which is the point of shrinking
+     the button. */
+  .is-list .card-top { flex: 1 1 auto; }
+  /* The add button compresses to its glyph. Full width it was 340px of accent across a
+     360px screen, louder than the recipe name it belongs to and — in a list — pushing the
+     name into two lines with a third of the row. The words are *hidden, not dropped*: the
+     button carries the same sentence as its aria-label at both widths (app.js), so this
+     is a label going quiet, not a control losing its name.
+     It sets its own width, and the width is var(--tap): this rule sits after the
+     `pointer: coarse` block and would otherwise undercut the 44px floor it names. */
+  .card-actions .card-add { flex: none; width: var(--tap); padding: 6px; }
+  /* Two 44px controls in a full-width foot: huddled at the left they read as a row that
+     ran out, so the primary keeps the left edge and the bookmark takes the right. It is a
+     no-op in a list, where the foot is exactly as wide as the pair. */
+  .card-actions { justify-content: space-between; }
+  .card-add > svg { display: block; }
+  .card-add-label { display: none; }
   /* The menu stops floating and opens in the row instead — the open group takes a line
      of its own. A 176px panel hanging off a chip two thirds of the way across a 360px
      screen runs off the right edge, and there is no CSS that flips it to the side with

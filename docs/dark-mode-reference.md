@@ -319,22 +319,23 @@ any of it.
 
 ## 8. Against Mise's current dark tokens
 
-Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01. **Nothing here has been acted on**
-— PR #10 fixed the *light* half of the shared hover gap and deliberately left dark alone, so the
-two themes are asymmetric on purpose until someone looks at dark. `--hover` exists in dark as of
-that PR, holding `#2b2b2b`, which is the value the dark sidebar hover already used: a placeholder
-carrying today's behaviour, not an answer to anything below.
+Measured from `style.css`, `[data-theme="dark"]`, on 2026-09-01. **Findings (a) and (b) below were
+acted on in PR #18**, which is why the token list here now carries `--control`; (c) still stands.
+`--hover` exists in dark as of PR #10, holding `#2b2b2b` — the value the dark sidebar hover already
+used. That is *not* the no-op it reads as: both of its consumers land on `--bg`, where `#2b2b2b` is
+a real upward step at 1.23, so it was left alone.
 
 ```
 --bg           #1a1a1a
 --surface      #2b2b2b   1.23 on bg
---surface-sunk #212121   1.14 BELOW surface, 1.08 above bg
+--surface-sunk #212121   1.14 BELOW surface, 1.08 above bg   (a recessed *track* only, since PR #18)
+--control      #383838   1.21 above surface                  (added in PR #18)
 --surface-past #232323   1.11 on bg
 --line         #3a3a3a   1.53 on bg, 1.24 on surface
 --line-strong  #545454   1.87 on surface
 --ink          #f5f3f1   12.79 on surface
 --ink-soft     #c2bebb   7.67 on surface
---ink-faint    #9b9794   4.89 on surface
+--ink-faint    #a8a4a1   5.72 on surface, 4.74 on --control  (lifted in PR #18)
 --accent       #ff7a4f   5.49 on surface
 --accent-ink   #ffab8b   7.72 on surface
 --accent-soft  #4a2c1a   1.12 on surface
@@ -353,7 +354,7 @@ carrying today's behaviour, not an answer to anything below.
 
 **Three gaps, in order of how much they explain the flat feeling:**
 
-**a) There is no token above `--surface`.** The ramp stops at `#2b2b2b`. ChatGPT keeps five
+**a) There is no token above `--surface`.** — *done in PR #18: `--control` at `#383838`.* The ramp stopped at `#2b2b2b`. ChatGPT keeps five
 levels above its panel; Mise keeps none — so hover, selected and pressed states have to be
 built out of `--surface-sunk` (which is *darker*) or `--line`. This is the headroom problem in
 section 4, and since nesting and hover share one budget (section 3c), the ladder tops out at
@@ -362,7 +363,8 @@ depth 1 with nothing left for depth 2 or for any state. Most likely source of th
 ChatGPT's popover-selected step) would give states somewhere to go, with `#5a5a5a`–`#676767`
 available for the loud icon-button hover.
 
-**b) `--surface-sunk` goes down, against the ladder, into almost nothing.** It is 1.14 below the card and only
+**b) `--surface-sunk` goes down, against the ladder, into almost nothing.** — *done in PR #18 for the
+half of it that was wrong.* It is 1.14 below the card and only
 **1.08** above the page — under this project's own 1.10 floor against `--bg`. That is one step
 away from being the same "hole punched through the tile" bug `CLAUDE.md` already documents for
 `--bg`. Both references put small inner elements — chips, tags, pills, icon buttons — *above*
@@ -372,6 +374,22 @@ multi-line entry wells, and Mise has none. The tags, filter summary chips and se
 use this token are all in the "small and pressable, therefore up" row. (The time pill was one of
 them until PR #13 took its fill away — it is bare text now, which sidesteps the question rather
 than answering it.)
+
+> **What shipped in PR #18.** The token split in two rather than moving, because the two jobs it was
+> doing want opposite directions in dark and the same direction in light. `--surface-sunk` keeps the
+> one genuine recessed track — the At-a-glance bar — and stays `#212121`. Everything small and
+> pressable moved to `--control`: `#f0eae1` in light, the value it already had, so **the light theme
+> did not move a pixel**; `#383838` in dark, this section's own suggested value and PowerToys' "input
+> inside a card" fill, 1.21 above the panel. The two hovers that were washing `--accent-soft` at 1.12
+> moved to `--control` too, which also stopped hover and *pressed* being the same fill on the layout
+> toggle. One number came with it: raising the search field raised the ground under its placeholder,
+> where `--ink-faint` measured 4.05, so that token was lifted to `#a8a4a1`. **A raised surface moves
+> every ratio computed against it** — `check.mjs` gained four `--control` text pairs and three
+> surface pairs, and that is what caught it.
+>
+> The loud icon-button hover this section mentions (`#5a5a5a`–`#676767`) was **not** built. Nothing
+> in the app wants a 2.33 state change yet, and light mode has no room for one, so it would have
+> been a dark-only invention.
 
 **c) `--accent-soft` at 1.12 on a card is scraping the floor.** It clears 1.10 by 0.02.
 PowerToys never uses a dark tinted accent fill at all — it uses the *bright* accent as the

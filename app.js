@@ -940,10 +940,20 @@ function renderGlance(iso) {
 function cardHtml(recipe, slot) {
   const saved = isBookmarked(recipe.id);
   const slotAttrs = slot ? ' data-iso="' + slot.iso + '" data-meal="' + slot.meal + '"' : '';
+  // Under 620px this button is the icon alone — CSS hides the label and shows the glyph,
+  // so it survives a window dragged across the breakpoint without a redraw. Both are in
+  // the markup either way, and the label is *hidden, not dropped*: aria-label carries the
+  // same words at both widths, so the button is never a nameless plus sign.
+  // The two data-action names stay written out rather than picked by the ternary: check.mjs
+  // reads them out of this file as text, and one built by concatenation is a button it can
+  // no longer see has a branch.
+  const addLabel = slot ? 'Add to ' + slotLabel(slot.iso, slot.meal) : 'Add to week';
+  const addAttrs = ' data-id="' + recipe.id + '"' + slotAttrs +
+    ' aria-label="' + escapeHtml(addLabel) + '" title="' + escapeHtml(addLabel) + '">' +
+    ICON.calendarPlus + '<span class="card-add-label">' + escapeHtml(addLabel) + '</span></button>';
   const addBtn = slot
-    ? '<button type="button" class="btn btn-primary" data-action="fill-slot" data-id="' + recipe.id + '"' +
-        slotAttrs + '>Add to ' + escapeHtml(slotLabel(slot.iso, slot.meal)) + '</button>'
-    : '<button type="button" class="btn btn-primary" data-action="add-to-week" data-id="' + recipe.id + '">Add to week</button>';
+    ? '<button type="button" class="btn btn-primary card-add" data-action="fill-slot"' + addAttrs
+    : '<button type="button" class="btn btn-primary card-add" data-action="add-to-week"' + addAttrs;
 
   return '<article class="card">' +
       '<button type="button" class="card-open" data-action="open-recipe" data-id="' + recipe.id + '"' + slotAttrs + '>' +
