@@ -164,7 +164,7 @@ measures, so a new surface or ink token means adding its pairs by hand.
 
 **Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
 `--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
-CSS, passes all 96 checks, and puts the file straight back where it was before the scale existed.
+CSS, passes all 127 checks, and puts the file straight back where it was before the scale existed.
 A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
 a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
 in the next time one bites. Until then the scale is held by review, not by the script.
@@ -237,7 +237,7 @@ moves again.
   a third kind of check this project now has and had not used before, and it is the one that suits
   anything measured rather than drawn.
 
-**All 96 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 127 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the

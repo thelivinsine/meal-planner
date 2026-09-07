@@ -12,20 +12,55 @@
      beige wash next to the mockups, because a heavy page plus a heavy inner tile leaves
      the white card as the only bright thing on screen. So the page moves up to a
      near-white warm off-white and the card to pure white, matching Concept A, and the
-     separation is carried by the hairline as much as by the fill. Measured: page to
-     card 1.14, card to sunk 1.20, --line 1.21 on the page and 1.37 on a card, no text
-     pair under 4.5. --surface-past (1.07), --accent-soft (1.04) and --control (1.07 from
-     the card) sit closer than 1.10 against their ground on purpose — there is no room
-     left between a near-white page and white — so each is drawn with a border, and it is
-     the border that gets measured: --line at 1.29 and 1.17, --line-strong at 1.76. */
+     separation is carried by the hairline as much as by the fill.
+
+     Then the page went whiter still, to #faf8f4, and that is the move this palette is
+     now organised around. White to the old page was 1.14 of range in total, and the
+     floor for two surfaces that touch is 1.10 — so **cards, a whiter page and a rail
+     that reads apart from the page cannot all have a tonal step**, because 1.10 twice
+     over is 1.21 and there is only 1.14 to spend. One of the three edges has to be a
+     hairline instead, and the card's is the one that already had a border: page to card
+     is 1.06 now, carried by --line at 1.29 on the page and 1.37 on the card. The step
+     that was bought with it is the sidebar — a real 1.12 — which is the arrangement both
+     light references use (Claude runs content to chrome at 1.03 and lets the seam do the
+     work; docs/light-mode-reference.md §3).
+
+     Measured: page to rail 1.12, card to sunk 1.20, card to tag 1.32, --line 1.29 on the
+     page and 1.15 on the rail, no text pair under 4.5. --surface-past (1.04), --control
+     (1.03), --accent-soft (1.04) and page-to-card itself sit closer than 1.10 against
+     their ground on purpose — there is no room left between a near-white page and white
+     — so each is drawn with a border and it is the border that gets measured. */
   /* --bg is the page and nothing else — no tag, pill, chip, input or menu is ever filled
      with it. The page shade is the darkest surface on screen, so anything inside a white
      card wearing it reads as a hole punched through to the page rather than as a pill.
      Deepened one step from #f6f3ee: with every control on a card now sitting *above* the
      page (see --control), the page is the only mid-tone left, and at 1.11 the white cards
-     barely lifted off it. 1.14 now — still inside the 1.07–1.25 band both light references
-     measure at, and it gives --surface-past and --control somewhere to be. */
-  --bg: #f4f0e9;             /* the page, and only the page */
+     barely lifted off it. It is #faf8f4 now, near enough white that the cards no longer
+     lift off it by fill at all — see the block above for the arithmetic that forces that,
+     and why the sidebar got the tonal step instead. --control and --surface-past moved up
+     with it, because both have to stay *above* the page or a fill on a card reads as a
+     hole punched through to it, and both were below #faf8f4 where they stood. */
+  --bg: #faf8f4;             /* the page, and only the page — the top of its gradient */
+  /* The other end of the page's gradient, and the whole of the gradient: 1.04 down from
+     --bg over the height of the viewport, which is about as subtle as a fade can be and
+     still be there. It goes **down** in light and **up** in dark (see the dark block),
+     the same direction state goes in each theme — a light page has nothing above it to
+     fade towards, and a dark page has nothing below.
+     It is a token and not an rgba() overlay so check.mjs can measure it: it is the
+     *other* ground everything on the page sits on, and at 1.11 from a white card it is
+     the more forgiving end — the only place left where a card still lifts off the page by
+     fill alone, and the reason this end needs no hairline exception. Anything keyed to the page's colour —
+     theme-color, the translucent top bar — still reads --bg, which is the top of the
+     page and the shade the browser chrome sits against. */
+  --bg-fade: #f6f3ec;
+  /* The sidebar over 1000px, and the one surface bought with the card's hairline: 1.12
+     from the page, so the panel reads as a panel rather than as page with a line down it.
+     There is almost no choice in the value. The rail is pinned between the page above it
+     and --hover below it, 1.10 each way, and --hover cannot move down because the saved
+     bookmark's --accent-ink is already at 4.54 on it — which leaves the four shades from
+     #f1ebe2 to #f2ece5, and this is the middle of them. 1.12 above, 1.11 below. Under 1000px there is no rail: the nav is a
+     floating ink-coloured pill, so the fill is set inside the wide block only. */
+  --rail: #f1ebe3;
   --surface: #ffffff;        /* meal cards, recipe cards, panels — nearly white */
   /* A recessed patch *on* a card, going down in both themes — the progress track, and
      since the tags left, only that. Controls go the other way; see below. */
@@ -53,9 +88,19 @@
      does once it runs out of greys. What matters is the other side: 1.07 *above* the page,
      so nothing on a card is ever darker than the page again.
      Dark keeps PowerToys dark's own "input inside a card" value, 1.21 above --surface —
-     same direction, and there it has the room to be a fill on its own. */
-  --control: #fbf7f2;
-  --surface-past: #faf8f5;   /* a day that has been and gone: back towards the page */
+     same direction, and there it has the room to be a fill on its own.
+     Lifted from #fbf7f2 when the page went to #faf8f4, which had overtaken it: a control
+     on a card was then *darker* than the page around the card, the exact reading that got
+     this token invented. 1.03 above the page now, 1.03 below the card, --line-strong
+     carrying the edge at 1.82. */
+  --control: #fdfbf8;
+  /* A day that has been and gone: back towards the page, never past it. On a near-white
+     page there is almost nothing left between the two — 1.04 from a live card and 1.02
+     from the page — so a spent card is now told by its --ink-faint name and date and by
+     its border, not by its fill. That is the cost of the whiter page, and it is the
+     cheapest of the three edges to give up, because a past day is already the quietest
+     thing in the week. */
+  --surface-past: #fcfaf7;
   --ink: #191310;
   --ink-soft: #56463c;
   --ink-faint: #6a5849;
@@ -69,8 +114,15 @@
      opposite ways in light and both are right; docs/light-mode-reference.md §3.) 1.11 on
      --bg and 1.26 on a card, which brackets the 1.10–1.25 band the reference apps measure
      at. This is not --control: --control is where a control *rests*, near white, and a
-     hover that went there would be a 1.07 no-op. */
-  --hover: #eae4da;
+     hover that went there would be a 1.07 no-op.
+     Deepened from #eae4da the moment the sidebar got a fill of its own, because the nav
+     rows hover on the rail and #eae4da sat 1.06 from it — a hover you cannot see, which
+     is the bug this project has already shipped twice. #e7e0d5 is the only value that
+     clears both ends of its own squeeze: 1.11 on the rail below it, and --accent-ink
+     still 4.54 on it, above the 4.5 floor the saved bookmark needs. One step deeper
+     (#e5ddd1) reads better on the rail and takes that bookmark to 4.42, which is the
+     whole reason it is not that. Now 1.24 on the page and 1.31 on a card. */
+  --hover: #e7e0d5;
   /* The scrim behind a dialog. Both light references use a mid grey around 2.9 over
      white, not a heavy black; .42 composites to #9a9591 here, which measures 2.97. */
   --scrim: rgba(28, 20, 16, .42);
@@ -124,10 +176,26 @@
    you can see on both, near-white text instead of beige text, and the accent appearing
    only on small elements — a chip, a dot, a fill — the way PowerToys uses its blue.
    Warmth is now the light theme's job and the accent's.
-   Measured: page to panel 1.23, panel to sunk 1.14, --line 1.53 on the page and 1.24 on
-   a panel, accent-soft 1.12 on a panel, no text pair under 4.5. */
+   Measured: page to panel 1.23, page to rail 1.12, panel to sunk 1.14, panel to tag 1.32,
+   --line 1.53 on the page and 1.24 on a panel, accent-soft 1.12 on a panel, no text pair
+   under 4.5. Dark keeps its tonal card edge — the squeeze that cost light's is a light
+   problem, because white is a ceiling and #1a1a1a is not a floor. */
 [data-theme="dark"] {
   --bg: #1a1a1a;
+  /* The page's gradient, and it fades **up** here while light fades down — the same
+     split as every other state in this file. Down is not available: the page is already
+     the darkest surface, and a page that fades below itself has --surface-past sitting in
+     a hole. 1.06 over the viewport, and the card still clears the floor on it at 1.16. */
+  --bg-fade: #1f1f1f;
+  /* The sidebar, and unlike every other dark fill here it goes *down* off the page —
+     ChatGPT's arrangement, chrome darker than content (docs/dark-mode-reference.md).
+     Up was tried first and does not fit: between the page and the card there is 1.23 of
+     room in total, and a raised rail has to clear 1.10 from the page *and* leave 1.10 for
+     the white-ish selected pill sitting on it. #242424 was the only candidate and it
+     missed, at 1.0999 under the pill. Down has the whole of black to spend: 1.11 from the
+     page, 1.36 under the pill, 1.62 under a nav hover, and it *gains* contrast towards the
+     bottom of the viewport where the page fades up and away from it. */
+  --rail: #0e0e0e;
   --surface: #2b2b2b;
   --surface-sunk: #212121;
   /* Up from the card, not down: see the light block for why the tag fill cannot be one
@@ -194,9 +262,20 @@ html { scrollbar-color: var(--line-strong) transparent; scrollbar-width: thin; }
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
 
+/* The page is --bg at the top fading to --bg-fade at the bottom of the *viewport*, not
+   of the document: `fixed` anchors it to the window, so the fade reads the same on the
+   week view and 300px down a list of fifty recipes. Attached to the document it would
+   stretch over the whole scroll height and vanish.
+   The colour underneath is still the flat --bg, which is what everything keyed to the
+   page's shade reads — theme-color, the translucent top bar — and what the transition
+   below actually animates. A gradient image is not interpolable, so it snaps on a theme
+   switch while the colour under it fades; at 1.03 between the two stops that is about a
+   1% step and the switch is already repainting the whole page. */
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, var(--bg) 0%, var(--bg-fade) 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 15px;
@@ -1135,11 +1214,19 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
   .nav-wrap { grid-column: 1; grid-row: 1 / 3; }
   .topbar, .page { grid-column: 2; }
 
+  /* The fill is set here and only here: under 1000px this same element is a floating
+     ink-coloured pill over the content, and a warm rail behind it would show as a halo.
+     Flat, so it does not take the page's gradient — the rail is the one thing on screen
+     that is one shade, and the 1.13 step against the page is what buys the card its
+     hairline (see the token block). The border-right stays: the step dips to 1.09 at the
+     bottom of the viewport where the page has faded towards the rail, and the seam has to
+     hold there too — --line measures 1.16 on the rail and 1.24 on the faded page. */
   .nav-wrap {
     position: sticky; top: 0; bottom: auto; align-self: start;
     height: 100vh; padding: 22px 14px;
     display: flex; flex-direction: column; align-items: stretch; gap: 24px;
     justify-content: flex-start;
+    background: var(--rail);
     border-right: 1px solid var(--line);
     pointer-events: auto;
   }
@@ -1157,13 +1244,16 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
     border-radius: var(--radius-sm);
     color: var(--ink-soft); font-size: .9375rem;
   }
-  /* The nav unwinds to no fill above, so this hover lands on the page: --surface-sunk
-     measured 1.08 there and the hover barely registered. It then went *up* to --surface,
-     which cleared the floor but is the wrong direction for a light theme — hover belongs
-     below what it sits on. --hover is that step down: 1.11 on the page. */
+  /* The nav unwinds to no fill above, so this hover lands on whatever the rail is:
+     --surface-sunk measured 1.08 on the old page and the hover barely registered, then it
+     went *up* to --surface, which cleared the floor but is the wrong direction for a light
+     theme — hover belongs below what it sits on. --hover is that step down, and it had to
+     be deepened to #e7e0d5 when the rail arrived: against the rail's own fill the old
+     value was 1.06, a hover that does nothing. 1.11 on the rail now, 1.62 in dark. */
   .nav-btn:hover { background: var(--hover); color: var(--ink); }
-  /* A card-coloured pill, not an accent-soft one: on the tinted page accent-soft sits
-     at 1.04 and the pill had no edge at all. The accent is carried by the text. */
+  /* A card-coloured pill, not an accent-soft one: on a warm ground accent-soft sits at
+     1.04 and the pill had no edge at all. The accent is carried by the text. On the rail
+     the white pill is 1.18 in light and 1.36 in dark. */
   .nav-btn[aria-current="page"] {
     background: var(--surface); color: var(--accent-ink);
     box-shadow: var(--shadow);
