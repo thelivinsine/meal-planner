@@ -4,259 +4,179 @@
 
 | | |
 |---|---|
-| **Live** | Code at `212ddd3` (PR [#16](https://github.com/thelivinsine/meal-planner/pull/16), squash-merged). Pages `built` at `212ddd3`, so the live app and `main` are the same commit. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **No PRs open — #14, #15 and #16 are all merged.** Reviewing #15 turned up two bugs in it: the four-week prune counted back from the week on screen (fixed inside #15, squashed into `98afb27`), and the listener dropped a background tab's keyboard focus on the floor (PR #16). Both below. No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable) |
-| **Confirmed** | **Storage, hard**: the real `loadState`/`saveState` against 26 cases in a Node VM (sixteen kinds of corrupt blob, the four-week prune, a full quota, storage blocked outright), and cross-tab behaviour in **two real Chrome tabs over CDP** — nine assertions, and both probes fail against the unfixed code. Before that: the tools row at 1254 / 760 / 360px **and in dark mode**, headless, driving the real controls and reading numbers back — plus **your eyes on the running app** for three rounds of card notes. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
-| **Branches** | `cross-tab-sync` and `week-grid-comment-parked` both deleted on merge, along with `search-filter-view-toolbar` before them. Two more on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, which is fully contained in `main` and has been since the second round |
+| **Live** | Code at `c648fad` (PR [#17](https://github.com/thelivinsine/meal-planner/pull/17), squash-merged). Pages `built` at `c648fad`, and the three live files were fetched back and checked for this round's markers — so the live app and `main` are the same commit, confirmed rather than assumed. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **No PRs open.** No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). **One new limit, named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height — see *What is not verified* |
+| **Confirmed** | **The narrow height budget**, headless at 360/390/412/500/619/800/1254px with `pointer: coarse` forced on for the phone numbers: **30.6% on a mouse, 34.9% on a finger**, against 69% before, and 400-433px of recipe list where there were 132px. 48 assertions across three throwaway probes — 20 narrow, 11 wide, 17 across the 620px crossing — plus six renders looked at, including dark mode and the wide layout as a regression. Before that: **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP, both probes failing against the unfixed code; the tools row at three widths and in dark mode; and **your eyes on the running app** across the card rounds. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
+| **Branches** | `narrow-list-first` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
 
 ## What just shipped
 
-**PR #14, PR #15 and PR #16, squash-merged in that order** as `8626bd0`, `98afb27` and `212ddd3`.
-Pages was confirmed `built` at `212ddd3` before this file was touched, so the live app and `main`
-are the same commit for the first time in four rounds.
+**PR #17, squash-merged as `c648fad`** — four commits, and Pages `built` at the same commit before
+this file was touched.
 
-### A seventh place focus has to be put back (PR #16)
+### The list gets the screen, not the controls
 
-**The storage listener shipped with a comment explaining why it needed no focus handling, and the
-comment was wrong.** The argument: the event only ever arrives in a tab the user is *not* in — they
-are in the tab that did the saving — so there is nothing live to restore.
+**It started from one screenshot of the slot picker on a narrow window, with one and a bit recipe
+cards on it.** The first thing built was a probe rather than a fix, and the answer was that no band
+was wrong on its own:
 
-That confuses the user's **attention** with the **DOM**. `document.activeElement` is per-document
-and survives the tab going to the background: it is whatever they tabbed to before switching away.
-`render()` replaces whole `innerHTML`, so it falls to `<body>` and they come back to a tab that has
-forgotten where they were. **The seventh instance of the one defect class this project keeps
-shipping — and the first one argued away in a comment rather than missed.**
+| | |
+|---|---|
+| top bar | 53px |
+| week bar (the day strip wrapping to two rows) | 149px |
+| picker head (back link over a centred title) | 48px |
+| tools row (search, then the toggles, then the filter dropdowns) | 195px |
+| gaps and page padding | 95px |
+| **above the list** | **540px — 69% of a 780px screen** |
+| the recipe list it all steers | **132px** |
 
-The fix is the same move as the other six: find what replaced the control and focus it. Here it
-could be *any* control on the page, so it is looked up by its own `data-*` attributes rather than
-by name — every delegated control carries `data-action` plus whatever identifies it, so the element
-is already its own selector. Two guards do the real work: it runs **only if focus actually fell to
-`<body>`**, because the tools row is never redrawn and a caret half way through a search must be
-left alone; and the scope ladder is the bookmark handler's, because the day the picker replaced is
-still in the DOM with hidden controls of its own.
+Recipes and Saved measured 51-56%. **A layout that has only ever been checked one band at a time
+can be wrong in a way that no band is wrong** — that is the finding worth keeping, and the reason
+the budget is now a number rather than a feeling.
 
-Headless, with a real `StorageEvent` at the running app and the fix stashed out as a control: a day
-chip, a meal card's **+ Add** and a card inside the open slot picker all keep focus with the fix and
-all land on `<body>` without it, the search box is untouched either way, and `scrollY` stays 0.
+Six changes, all under 620px, and two of them agreed with you before anything was built:
 
-### The review fix (inside PR #15)
+1. **The brand leaves the top bar for good.** It lives in the sidebar and only there, so under
+   1000px the app is nameless and the bar carries **the way back** instead: out of the slot picker,
+   or off Recipes and Saved to the week. One button, sharing the picker's `.slot-back` shape and one
+   `data-action`.
+2. **The picker's own back link goes out of the page at that width** — the bar's copy is the same
+   control in a row that already exists — and the centred title gets the row to itself.
+3. **The tools row stops wrapping.** The old comment's "a search box squeezed to 90px is not a
+   search box" was never measured: the field is 135px on a mouse and 107px on a finger, so the
+   *placeholder* is what gives instead — "Search recipes…" narrow, the long hint wide, with the
+   `.sr-only` label unchanged for a screen reader.
+4. **The filter dropdowns start shut.** The Meal preset is still ticked and the badge still reads
+   `1`; the row is 66px and one tap away. **This contradicts a rule in `CLAUDE.md` on purpose** —
+   over 620px the ticked box is still visible, which is what makes the short list explain itself.
+5. **The day strip stops wrapping at 400px and starts at 360px.** Below.
+6. **Four gaps step down one token**, all on the four-step scale.
 
-**Reviewing #15 before the merge found a data-loss bug in #15.** `loadState()` took its four-week
-prune cutoff from `state.weekStart`. That is today's Monday at start-up — the only time the
-function ran before this round — and a *different* date the moment you page the week forward. Add
-a `storage` listener that calls `loadState()` again and the cutoff starts moving with the view.
+### A breakpoint that was arithmetic, and wrong twice
 
-Tab B parked six weeks ahead, tab A plans a meal in the current week: the event lands, the prune
-drops every current-week entry out of tab B's memory, and tab B's next save writes the gap back to
-storage. **The exact loss the listener was added to stop, through a different door.**
+The day row had wrapped to two rows below 400px since the Concept A round. The sum behind it was
+computed against the **wide** page padding, so it fired about 40px early — and the corrected sum
+was still wrong, because `.weekbar` carried 2px of its own padding either side: the browser said
+43.4px where the arithmetic promised 44.0. The padding went, the breakpoint is `max-width: 359px`,
+and a chip is exactly 44.0px at 360, which is the floor.
 
-The cutoff now counts back from today. At start-up the two expressions give the same date, so
-nothing else moved. Proven against the real functions in a Node VM, with the unfixed code as a
-negative control, plus a headless Chrome run dispatching a real `StorageEvent` at the app — the
-other tab's meal appeared, the theme followed, the tools row survived, no console errors, and a
-`localStorage.clear()` elsewhere left the plan alone.
+The cost had been invisible and constant: **every phone between 361 and 400px, a 390px iPhone
+included, was drawing a second 54px row of day chips on a screen with the width for one.**
 
-**The lesson is the one this file keeps writing down:** a value that was constant because a
-function ran once stops being constant the moment something calls it twice.
+**A breakpoint derived from arithmetic has to be checked against the browser, because the
+arithmetic is missing a padding somewhere.**
 
-**And the round's second lesson:** both of #15's bugs were in the *reasoning written beside the
-code*, not in the code. One comment said the cutoff was fine and one said focus was fine. Neither
-was checked, and neither could be — a comment passes every script here.
+### A value that stopped being constant
 
-### The storage round (PR #15)
+**Reviewing the branch's own diff found the same class of bug as PR #15's prune, one layer up.**
+The 620px line was read into a constant at start-up — right for a phone, wrong for the case the
+whole round came from. A desktop window *dragged* narrow kept the wide defaults, so the filter row
+stayed open, the long placeholder stayed put, and the chrome measured **41% instead of 30.6% at the
+same 390px**. The screenshot that started this round was a dragged window.
 
-**The question was "does `localStorage` work well?" and the answer was yes — which is why the
-round is worth recording.** The saving code was already sound: try/catch on both the read *and*
-the write, `JSON.parse` guarded separately, every value re-validated on load against the recipe
-catalogue and a date pattern, a four-week prune, a toast on a full quota, and all six mutation
-sites paired with a `saveState()`. Twenty-six cases against the real functions confirmed it,
-including sixteen kinds of corrupt blob. Nothing inside it needed changing.
+A `change` listener on the same query fixes it, writing the row through `syncTools()` rather than
+redrawing it, so a typed search and the ticked filters survive the crossing. **A value that was
+constant because nothing could change it stops being constant the moment something can.**
 
-**The hole was one level up, between tabs.** Each tab holds its own `state` and `saveState()`
-writes the *whole* blob, so with two tabs open the one that saved second replaced whatever the
-first had added — plan a Monday dinner in tab A, bookmark a recipe in tab B, and the dinner was
-gone. Silently, and with tab A still showing it until you reloaded.
+### Two dead lines, and the path they were hiding
 
-A `storage` listener now re-reads on any write from another tab. **That is what stops the loss,
-not just the divergence:** once tab B's copy is current, tab B's next save carries tab A's meal
-along with it. `loadState()` also replaces the plan and bookmarks instead of merging into them,
-which is what lets a *deletion* reach the other tab — with the reset placed past every early
-return, so a corrupt blob still cannot wipe a plan that is on screen.
+The same review found a `margin-right: auto` that does nothing (the theme button's own auto margin
+already takes every spare pixel in the row) and a `target.blur()` the focus guard never needed.
 
-**Eight lines of code, and the rest of the round was proving it.** Two throwaway probes, neither
-committed: the real `loadState`/`saveState` in a Node `vm`, and two real Chrome tabs driven over
-CDP, which is the only way to see a `storage` event at all. Both were run against the unfixed code
-first and both fail there — the browser one on four assertions including the clobber itself.
-Covered in [log.md](log.md#the-storage-round-pr-15).
+Proving the second meant testing a route this branch had never touched: **Escape while the top
+bar's back link holds focus**, which reaches `closeSlotPicker()` without passing the handler at
+all. It restores focus to the `+ Add` that opened the picker — and it did so before the blur came
+out, which is what showed the blur was doing nothing.
 
-**It shipped with no focus restoration in the listener, and that was wrong — fixed in PR #16.**
-The argument was that the event only arrives in a tab the user is *not* in, so there is nothing live
-to put back. That confuses the user's attention with the DOM: a background tab keeps its
-`activeElement`, and the redraw drops it to `<body>`. See *A seventh place focus has to be put back*
-below.
+That back control is **the eighth place focus has to be put back**, and it is the conditional
+control again for the third time — conditional on *two* things here, the state and the width.
 
-### The docs-maintenance round (no PR)
+### Three stale docs the sweep caught, none of them this branch's fault
 
-**One docs-only round and no code.** Every figure in the nine markdown files was
-re-derived from `app.js` rather than trusted, three stale facts in this file were corrected (the
-Pages commit, the branch row, a heading that counted three bugs over a list of six), and
-`CLAUDE.md` came back from 229 lines to 200 with all 55 rules intact — the reasoning moved to
-[decisions.md](decisions.md), which is where it was already written. Details in
-[log.md](log.md#the-docs-maintenance-round-no-pr).
+- **`architecture.md` still said the storage listener needs no focus restoration** — the argument
+  PR #16 disproved. This was its last surviving copy.
+- **The focus-restoration count was six in `decisions.md`, seven in `CLAUDE.md` and
+  `architecture.md`**, and the tools row was numbered as a *place* while being the one place that
+  restores nothing. It is eight numbered places now, the storage listener among them, and the tools
+  row has no number.
+- **The README said the day row wraps below 400px.**
 
-The sweep also turned up one thing that is *not* documentation: `style.css` still described the
-week's parked heading in the present tense and still carried `.view-week > .view-head`, a rule the
-live page matches with 0 elements. That became PR #14, merged as `8626bd0` — the same present-tense-comment defect the PR
-#13 review caught in `index.html`, one file over, which is worth noting: **a parked feature leaves
-its story in more than one file, and the sweep after it only swept one of them.**
+**A number written in four files drifts in three of them.**
 
-**PR #13: one tools row — search, layout, filters — on Recipes, on Saved, and in the week's slot
-picker.** Four commits and a review pass.
-
-**It started as a defect.** Tapping **+ Add** on a breakfast slot showed all fifty recipes. The
-slot already knows which meal it is, so the list now arrives filtered to it — 14 breakfasts, 17
-lunches, 19 dinners — and it arrives *visibly*: a ticked box in the **Meal** dropdown with the
-filter row open, so the short list explains itself and anyone who wants a breakfast at dinner can
-untick it.
-
-**Fixing that forced the matcher's semantics, which is the one change a user of the old Recipes
-page would notice.** Filters were a single flat OR over every ticked tag. Asking for a vegan
-breakfast returned every vegan dinner too, because *breakfast* and *vegan* were alternatives rather
-than conditions — so the meal preset stopped meaning anything the moment a second box was ticked.
-It is now **OR within a group, AND across groups**: two macro boxes still means either macro.
-Measured: breakfast 14, + vegan 5, + vegetarian 12.
-
-**The row itself is one component in three places** — `toolsHtml(name)` into `#tools-recipes`,
-`#tools-saved` and `#tools-slot`, the same move as `cardHtml(recipe, slot)`. Five labelled stacks
-of chips became one row 30px tall, five dropdowns of checkboxes with a count badge each. Search
-text and ticked tags are **per list** (`surface`); the tile/list layout is **one preference**
-(`state.cardView`), shared by all three and persisted with the theme.
-
-**And it is the only component in the app that is never redrawn.** `syncTools()` writes the ticked
-boxes, the badges, the pressed layout button and the field's value in place. A redraw would shut
-whichever `<details>` was open under your finger and move the caret to the end of the search box on
-every keystroke — neither of which any check here can see, and both of which are certain. That
-makes it a seventh answer to "a redraw destroys focus": **don't redraw**.
-
-Then three rounds of your notes on the cards, in order:
-
-| | Before | After |
-|---|---|---|
-| Tags on a card | up to 6, wrapping | **3**, and never `quick` |
-| The minutes | a `--surface-sunk` pill, same as a tag | **bare text** |
-| Card name / tag type | 17px / 9px | **15px / 8px** |
-| Card height, tile | 186px | **136px** |
-| Card height, list | 85px | **62px** |
-| Minutes in list layout | 469, 429, 535px across one list | **442px on every row**, midline level with the tags |
-| Week view headings | greeting + day title | **none visible** |
-
-**The alignment bug had two causes and one symptom.** `align-items: flex-start` aligned the
-*boxes*, so 11px minutes floated above the top of a 15px name that had wrapped to two lines; and in
-list layout `flex: 1` with `space-between` put the number wherever each name happened to end.
-Baseline alignment fixes the first, a fixed 40% name column the second — with a 178px floor under
-that 40%, because in the slot picker the content column is ~400px wide and a plain percentage
-squeezed "Overnight Oats with Berries" into three lines.
-
-**Two headings left the page and neither was deleted.** The rotating week greeting is parked whole
-in a comment where it stood, with the `el` entry, the start-up line and the grid rule it needs
-written beside it; `WEEK_GREETINGS` is still in `app.js`, unread. The day title is `.sr-only` — it
-repeated the week bar for anyone who could see the week bar, and it is the only name those three
-meal cards have for anyone who cannot. Both surviving grid items in `.view-week` had to be told
-they are in **row 1**: left in row 2 the grid charges a `--space-4` row gap for the empty row above
-them.
-
-**A past day lost its ring.** With meals logged on Monday and Tuesday, the two loudest marks on the
-week bar were the two days you cannot act on. It is colour alone now, name and date both at
-`--ink-faint`. The cost is accepted: a past day with meals looks like a past day without.
-
-### 76 checks, unchanged — and this round that is the finding
-
-A search field, a layout toggle, five dropdowns and a menu of sixteen checkboxes went into three
-views and the pair list did not grow by one. Every ground was already measured: the menu is
-`--surface` inside a `--surface` card with a `--line-strong` hairline, a summary chip is
-`--surface-sunk` with `--ink-soft`, an option hovers to `--surface-sunk` with `--ink`, the pressed
-layout button is the `--accent-soft` wash with `--accent-ink` on it, the badge is `--on-accent` on
-`--accent`. **Reusing a ground costs nothing; moving a token onto a new one is what makes a pair.**
-
-`--line-strong` beside `--bg` now has no live consumer at all — `.chip` sits on a dialog and
-`.filter-summary` sits on the tools card. It stays in the list as the guard for the next thing that
-lands on the page.
-
-### The bugs this round caused and this round found
-
-- **`.card-tags` carried `flex: none` in list layout**, so in the slot picker's narrow column three
-  tags ran under the foot of buttons and the card's own `overflow: hidden` sliced the last one in
-  half. Caught in a render — no script would have seen it.
-- **The dropdown menu ran 2px off the right edge at 360px.** Caught by asking the live page for
-  `getBoundingClientRect().right` on all five menus at three widths. Fixed by making the open group
-  stop floating under 620px rather than by shaving 2px.
-- **Reviewing the diff before merging found four more**, all written by this branch, none
-  behavioural: both empty states still blamed "that search" when there are filters now, a comment
-  described two rules the branch had deleted, another said "six groups" where there are five, and
-  the parked greeting comment still spoke in the present tense. That is the fourth round in a row
-  where reading the branch's own diff found something using the app had not.
+`CLAUDE.md` is still at exactly 200 lines: two rules changed, one added, and the accessibility rule
+about hiding focusable controls gained its one exception — a visible copy doing the same job, never
+both at once. Paid for by compressing five rules whose reasoning was already in `decisions.md`.
 
 ## What is not verified
 
-**A real keyboard.** Unchanged as a gap and worse as a debt, because this round added the largest
-cluster of focusable controls in the app — three search fields, six buttons, five `<summary>`
-disclosures, sixteen checkboxes — and wrote two rules *for* the keyboard that no keyboard has
-driven: the Escape order (dialog, then dropdown, then picker) and the never-redraw rule that keeps
-focus on a ticked box. Every interaction this round was `.click()` from a script.
+**A real phone.** Unchanged as a gap and sharper than it was: the difference between a mouse and a
+finger in the narrow layout is 33px of controls, so the budget sits **4 points from its ceiling on
+the pointer nobody here has tested with**. A headless run can force the `pointer: coarse` block on,
+which is how those numbers were taken, and forcing it is not being on one.
 
-**A real phone.** `pointer: coarse` lifts `.filter-summary` and `.filter-opt` to the 44px floor and
-both are named in that block, so the arithmetic is right. A 15px checkbox inside a 44px row is
-still the thing a thumb has to hit, and 360px was an `<iframe>` — a viewport, not a device.
+**A real keyboard.** Still the oldest debt here, and this round added a control and took another
+out of the page at one width. Focus was asserted in the DOM in both directions and on the Escape
+route, never driven by a hand. Eight places restore focus; a person has driven none of them.
 
-**Anything between 400 and 620px**, where the tools row has already wrapped but the cards have not
-gone single-column.
+**Viewports under about 760px tall.** At 390x664 — a phone with browser chrome showing — the picker
+is 41%, and it cannot be less while the week bar stays. The top bar, the week range row, the day
+chips and the search field are all on the 44px touch floor, and that is 200px before a single gap.
+**You cannot spend a touch floor**, so on a short screen something has to leave the page rather
+than get smaller. Named in
+[decisions.md](decisions.md#height-and-who-gets-the-screen) rather than fixed.
 
-**The storage round was never looked at.** No CSS, no markup, no layout — the only visual
-consequence is a background tab redrawing itself, and that is asserted in the DOM rather than seen.
-Worth thirty seconds with two windows side by side before merging #15. Nor was it tabbed through,
-though it adds no focusable control.
+**The 621-1000px band was asserted, not looked at.** The app shows no name at all there now, and
+Recipes has no back link (the nav pill is on screen, as before). That band is exactly where the
+first cut of this round had *both* back controls visible at once — caught by a probe, not an eye.
 
-**Three or more tabs.** Nothing in the mechanism cares how many there are, but only two were driven.
+**Whether an empty top bar reads right on the week view.** With the brand gone it holds one 32px
+theme button. It matches what the wide layout has always done, and it is in the renders.
 
-**The week view now has no visible heading at all.** Deliberate, seen in two headless renders, and
-the kind of thing that reads differently on a phone.
+**Anything between 400 and 620px**, where the tools row has already collapsed to one line but the
+cards have not gone single-column.
+
+**Three or more tabs.** Nothing in the cross-tab mechanism cares how many there are, but only two
+were ever driven.
 
 ## Next jobs, in the order they'd earn their place
 
-1. **Finish the keyboard pass.** It has been next on this list for four rounds and the reason to do
-   it is now three times what it was: focus restoration is asserted in seven places and driven by a
-   person in none, and the tools row adds an Escape ordering and a "don't redraw" claim on top.
-   Tab through the week, the picker with a dropdown open, both dialogs, and one filter menu end to
-   end.
-2. **A phone.** Same list, and the 44px floor is genuinely untested on the new controls.
-3. **Decide whether the spacing scale gets a check.** Unchanged from last round: a rule writing
-   `margin-bottom: 18px` is legal CSS and passes all 76 checks. Described in
+1. **Finish the keyboard pass.** Five rounds at the top of this list, and the reason is bigger every
+   time: eight places restore focus, one of them is conditional on the *width*, and no keyboard has
+   driven any of it. Tab through the week, the picker with a dropdown open, both dialogs, and one
+   filter menu end to end.
+2. **A phone.** The 44px floor is arithmetic and a forced media block, and the narrow budget now
+   depends on it.
+3. **Decide about short screens.** Either accept 41% on a 664px viewport as the honest limit, or
+   decide what leaves the page there — the week range row is the only candidate that is not a touch
+   floor.
+4. **Decide whether the spacing scale gets a check.** Unchanged: a rule writing `margin-bottom: 18px`
+   is legal CSS and passes all 76 checks. Described in
    [architecture](architecture.md#how-this-gets-tested), deliberately not written, held by review.
-4. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
+5. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
-5. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
-   about fifteen renders and kept none. `*.png` is gitignored and would need a deliberate
-   `!Screenshots/**` exception. Your call.
-6. **Act on the dark-mode findings, or decide not to.**
+6. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced six
+   renders and kept none. `*.png` is gitignored and would need a deliberate `!Screenshots/**`
+   exception. Your call.
+7. **Act on the dark-mode findings, or decide not to.**
    [dark-mode-reference.md](dark-mode-reference.md#8-against-mises-current-dark-tokens) names two:
    nothing sits above `--surface`, so hover and selected have nowhere to go; and `--surface-sunk`
-   is **1.08** from `--bg` in dark. One of its examples has quietly gone away — the time pill is
-   bare text now, which sidesteps that question rather than answering it.
-7. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
-   good deal quieter without it. Worth looking at the week view fresh in a week and deciding on
-   purpose rather than by neglect.
+   is **1.08** from `--bg` in dark.
+8. **Decide whether the week greeting comes back.** It is parked, not deleted, and the page is a
+   good deal quieter without it — quieter still now the brand has gone from the bar above it.
 
-## Two judgement calls left open
+## Three judgement calls left open
+
+**The app has no name on screen under 1000px.** Deliberate, and it reads odder written down than it
+looks: a phone app's name is on its home screen and in its tab title, not repeated above every
+view. The row it used to occupy is doing more useful work. If it feels anonymous on the live site,
+the fix is a name in the picker's row, not the return of the 53px bar.
 
 **The week bar is centred while the meal cards are left-aligned.** Navigation on one axis, content
-on another. This round removed the two headings that used to sit above the bar, so the bar is now
-the first thing on the page and there is nothing centred above it to justify it — the call is more
-exposed than it was, not less.
+on another. The bar is the first thing on the page now, with nothing centred above it to justify
+it — the call is more exposed than it was, not less.
 
-**A past day with meals looks exactly like a past day without.** That is the deliberate cost of
-taking the ring off past days, and it is only right if the week bar is for steering rather than for
-history. If you find yourself wanting to see what you ate last Monday *from the bar*, this was the
-wrong trade.
+**A past day with meals looks exactly like a past day without.** The deliberate cost of taking the
+ring off past days, and only right if the week bar is for steering rather than for history.
 
 ## Three small things open, none urgent
 
@@ -269,8 +189,8 @@ wrong trade.
   not have. `check.mjs` compares all three, so the duplication stays but drifting apart no longer
   goes unnoticed. Listed in [architecture](architecture.md#storage).
 
-These are trade-offs rather than bugs. The known-defect list is empty, and now empty **on the
-live app** as well — both PRs are merged and Pages is `built` at the same commit as `main`.
+These are trade-offs rather than bugs. The known-defect list is empty, and empty **on the live app**
+as well — Pages is `built` at the same commit as `main` and the served files were checked.
 
 ## Screenshots
 
@@ -279,10 +199,11 @@ is worse than none, so stale ones get deleted rather than captioned. The four su
 concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
 
 They are **reproducible on demand** — headless Chrome from the shell renders any state, and this
-round drove it into the states that needed looking at (a dropdown open, list layout, the picker
-filtered to lunch, a meal planted on a past day so the past-and-planned chip existed at all).
-Wanted, if a set is ever committed: the wide layout, an empty day, the picker open, 360px, and dark
-mode.
+round drove it into the six that needed looking at: the narrow day view, the picker, the picker with
+the filter row open, Recipes, the picker in dark mode, and the wide layout as a regression. Windows
+will not open a window under about 500 CSS px, so anything narrower is rendered in an `<iframe>`
+sized to the width, which gets its own viewport for media queries. Wanted, if a set is ever
+committed: the wide layout, an empty day, the picker open, 360px, and dark mode.
 
 `*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Light mode Mockups/*.png` excepted, because a
 camera-named file got committed twice. That exception once named a folder that had been renamed and

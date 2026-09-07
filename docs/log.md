@@ -71,6 +71,11 @@
 | **Two tabs stopped eating each other's work** | Branch `cross-tab-sync`, PR [#15](https://github.com/thelivinsine/meal-planner/pull/15), squash-merged as `98afb27`. Asked to check that `localStorage` was sound; it was — try/catch both directions, validation on load, a four-week prune — and the hole was one level up. Each tab holds its own `state` and `saveState()` writes the *whole* blob, so the tab that saved second replaced whatever the first had added, silently, with the losing tab still showing the meal. A `storage` listener re-reads on another tab's write, and `loadState()` now replaces rather than merges. **Eight lines of code; the rest of the round was proving it** |
 | **A fix that reopened its own bug** | Reviewing #15 before merging it caught a data-loss bug in #15. `loadState()` counted its four-week prune back from `state.weekStart` — today's Monday at start-up, and a different date once you page ahead. Nothing noticed while the function ran once; the new `storage` listener calls it again, so a tab parked six weeks forward pruned the current week out of memory on every write from another tab and then wrote the gap back out. One line, fixed on the branch before the squash, proven with the unfixed code as a negative control. **A value that was constant because a function ran once stops being constant the moment something calls it twice** |
 | **A comment that argued its own bug** | The same review found a second defect in #15, and it was also in the prose: the storage listener carried a comment explaining why it needed no focus handling — the event only arrives in a tab the user is not in, so there is nothing live to restore. A background tab keeps its `activeElement` all the same, and the redraw dropped it to `<body>`. PR [#16](https://github.com/thelivinsine/meal-planner/pull/16), the seventh place focus has to be put back. **Both of #15's bugs were in the reasoning written beside the code, and a comment passes every script here** |
+| **The list got the screen back** | Branch `narrow-list-first`, PR [#17](https://github.com/thelivinsine/meal-planner/pull/17), squash-merged as `c648fad`. From one screenshot of the slot picker on a narrow window: the controls above the recipe list were **540px of a 780px screen** and the list had 132px. Six changes under 620px — the brand out of the top bar for good and the way back in its place, the picker's own back link out of the page at that width, the tools row on one line, the filter dropdowns starting shut, the day strip no longer wrapping until 360px, and four gaps a token lower. **30.6% on a mouse, 34.9% on a finger** |
+| **A breakpoint that was arithmetic, twice** | The day row had wrapped to two rows below 400px since the Concept A round, on a sum computed against the *wide* page padding. Measured against the browser it was 40px early **and** the corrected sum was still wrong — 43.4px against the 44.0px the arithmetic promised — because `.weekbar` carried 2px of its own padding either side. Every phone between 361 and 400px, a 390px iPhone included, had been drawing a row of chips it had the width to avoid |
+| **A value that stopped being constant** | Reviewing #17's own diff found the same class of bug as #15's prune, one layer up: the 620px breakpoint was read into a constant at start-up, so a desktop window *dragged* narrow kept the wide defaults and measured 41% instead of 30.6% at the same width. A `change` listener on the query fixed it, writing the row through `syncTools()` rather than redrawing it. **The case the whole round came from was a dragged window** |
+| **Two dead lines, and the path they hid** | The same review found a `margin-right: auto` the theme button's own auto margin makes redundant, and a `target.blur()` the focus guard never needed. Proving the second meant testing a route the branch had never touched — Escape while the top bar's back link holds focus, which reaches `closeSlotPicker()` without passing the handler at all. It restores focus correctly, which is what showed the blur was doing nothing |
+| **Three stale docs the sweep caught** | Not caused by #17: `architecture.md` still said the storage listener needs no focus restoration — the argument PR #16 disproved, and this was its last copy; the focus-restoration count was six in one file, seven in two others, and the tools row was numbered as a *place* while being the one place that restores nothing; and the README had the 400px figure. **A number written in four files drifts in three of them** |
 
 ---
 
@@ -400,3 +405,49 @@ test. Offered, not taken; the coverage is recorded here, which is what this sect
 consequence is a background tab redrawing, and that is asserted in the DOM rather than seen. The
 keyboard pass is still owed, and this round did not pay it down.
 
+### The narrow height round (PR #17)
+
+**The round started from a measurement, not a look.** One screenshot showed the slot picker with
+one and a bit recipe cards on it. The first thing built was not a fix but a probe that asks the
+running page for the height of every band above the list — and the answer was that no band was
+wrong: the top bar 53px, the week bar 149px, the picker's head 48px, the tools row 195px, gaps
+95px. **540px, 69% of a 780px screen, and 132px of recipes.** Recipes and Saved measured 51-56%.
+
+**Everything was driven in a 390px `<iframe>`, because Windows will not open a Chrome window under
+about 500 CSS px.** An iframe gets its own viewport for media queries, so the narrow layout is
+real; what it does not get is a coarse pointer, which is where most of the height goes. That was
+solved by fetching `style.css` from the page, slicing the `@media (pointer: coarse)` block out of
+it and appending it as a plain `<style>` — so both numbers come from the same run: **30.6% on a
+mouse, 34.9% on a finger.**
+
+**48 assertions across three throwaway probes**, none committed:
+
+- **20 narrow**, at 390x780: the bar's back appearing and labelled in the picker and on Recipes and
+  hidden on the week, the picker's own back link out of the page, the panel keeping focus on open,
+  the filter row shut with the meal still ticked and the badge at 1, the short placeholder, no page
+  scroll with the picker open *or* with the filter row opened inside it, focus handed on in both
+  directions, and the first control after the panel being the search box rather than a dead link.
+- **11 wide**, at 1254px: brand in the sidebar, the bar's back never showing, the filter row open by
+  default, the long placeholder, the picker's own back link visible and returning focus, the summary
+  column intact.
+- **17 across the 620px crossing**, both directions, with a typed search and a ticked filter in
+  place to prove they survive it.
+
+**One harness limit, worth writing down.** An iframe resized by its parent fires neither `resize`
+nor `change` — measured, 0 and 0 — while `matchMedia().matches` flips correctly. So the crossing
+handler cannot be observed that way: the iframe is resized and the event dispatched by hand, at a
+viewport that really is 390px. `app.js` is a classic script, so its top-level `const NARROW_MQ` is
+a global lexical binding and `eval` in the iframe's context reaches the app's own MediaQueryList —
+a fresh `matchMedia()` object is a different EventTarget and would not have worked. **That proves
+the handler; the browser firing it on a real window resize is still unverified.**
+
+**Six renders, looked at:** the narrow day view, the picker, the picker with the filter row open,
+Recipes, the picker in dark mode, and the wide layout as a regression. The 621-1000px band was
+asserted rather than looked at — which is exactly where the first cut of this had both back
+controls on screen at once, caught by a probe and not by an eye.
+
+**What it did not do:** a real phone, a real keyboard. The coarse numbers come from forcing that
+block on, and forcing it is not being on one. The budget is 4 points from its ceiling on the
+pointer nobody here has tested with, and it does not hold at all under about 760px of viewport
+height — named as a limit in [decisions.md](decisions.md#height-and-who-gets-the-screen) rather
+than fixed, because four rows of controls at the 44px touch floor are 200px before a single gap.
