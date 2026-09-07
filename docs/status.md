@@ -4,15 +4,15 @@
 
 | | |
 |---|---|
-| **Live** | The three source files are at `c648fad` (PR [#17](https://github.com/thelivinsine/meal-planner/pull/17), squash-merged) and nothing has touched them since. Pages `built` at `a8fc50c`, which is this file's own docs commit on top — the served `index.html`, `style.css` and `app.js` were fetched back and checked for this round's markers, so the live app is `main`. **The two commits differ on purpose:** the Live row names the last commit that changed the app, the build names the last commit full stop. https://thelivinsine.github.io/meal-planner/ |
+| **Live** | **The app is `c648fad`** — PR [#17](https://github.com/thelivinsine/meal-planner/pull/17), squash-merged — and nothing has touched `index.html`, `style.css` or `app.js` since. All three were fetched off the live site and checked for this round's markers, and the deployed page was rendered at 390px and looked at, so this is confirmed rather than inferred from a green build. **No build hash here on purpose:** Pages rebuilds on every commit including this file's own, so naming the build commit in the file that names it is a hash that is stale the moment it is written — which is how the last four rounds ended up claiming the build and the code were the same commit when they never are. The build to trust is the one at the head of `main`. https://thelivinsine.github.io/meal-planner/ |
 | **Open work** | **No PRs open.** No known defect. Five things parked by choice: the theme button's hover, the accent-on-accent focus ring, the dark-mode token findings, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). **One new limit, named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height — see *What is not verified* |
 | **Confirmed** | **The narrow height budget**, headless at 360/390/412/500/619/800/1254px with `pointer: coarse` forced on for the phone numbers: **30.6% on a mouse, 34.9% on a finger**, against 69% before, and 400-433px of recipe list where there were 132px. 48 assertions across three throwaway probes — 20 narrow, 11 wide, 17 across the 620px crossing — plus six renders looked at, including dark mode and the wide layout as a regression. Before that: **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP, both probes failing against the unfixed code; the tools row at three widths and in dark mode; and **your eyes on the running app** across the card rounds. Still standing from PR #11: the picker replacing the day, the ring on a planned day, the 3px focus ring, the underline on all three grounds, and **the live site on a phone** |
 | **Branches** | `narrow-list-first` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
 
 ## What just shipped
 
-**PR #17, squash-merged as `c648fad`** — four commits, and Pages `built` at the same commit before
-this file was touched.
+**PR #17, squash-merged as `c648fad`** — four commits, and Pages `built` at that commit and checked
+on the live site before this file was touched.
 
 ### The list gets the screen, not the controls
 
