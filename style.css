@@ -850,8 +850,13 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    down the list — they had been landing wherever each name happened to end, 469px, 429px,
    535px. Growing the column keeps that: .card-top is still space-between inside, so the
    minutes still sit at its right edge, and that edge is now the same distance from the
-   foot on every row. Centring the row puts them on the tags' line. */
-.is-list .card-top { flex: 1 1 auto; min-width: 0; align-items: center; }
+   foot on every row. Centring the row puts them on the tags' line.
+   The 178px floor stays, and it is not decoration: growing the column is only generous
+   while there *is* free space. In the slot picker beside the summary panel the column is
+   ~430px, the row runs out, and a grown basis then loses to the tags — measured at 1024px
+   the name fell to 83px over **three** lines while three tags wrapped into three rows
+   beside it. 178px is the width "Overnight Oats with Berries" needs to read in two. */
+.is-list .card-top { flex: 1 1 auto; min-width: 178px; align-items: center; }
 /* No grow — that is what holds the tags against the foot rather than letting them start
    halfway across. Shrink stays on, and so does min-width: `flex: none` refused both, and
    in a narrow column — the slot picker beside the summary panel — three tags then ran
