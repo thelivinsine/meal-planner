@@ -1032,8 +1032,11 @@ function matchingRecipes(list, search, tags) {
 
 // ---------------------------------------------------------------- tools row
 
-// Search, layout and filters, in that order, on one row — and one component draws it for
-// Recipes, Saved and the week's slot picker, the same way cardHtml() draws every card.
+// Filters, the layout toggle, then the search field — left to right on one row, and one
+// component draws it for Recipes, Saved and the week's slot picker, the same way
+// cardHtml() draws every card. .tool-bar is a flex row, so this markup order is the
+// visual order **and the tab order**; a CSS `order` would get the picture and leave a
+// keyboard reaching the two buttons the other way round.
 // Three copies of a filter row is three places for a new tag to go missing.
 //
 // Drawn once at startup and then left alone: syncTools() writes the ticked boxes, the
@@ -1076,6 +1079,9 @@ function searchHint() { return NARROW_MQ.matches ? SEARCH_HINT_NARROW : SEARCH_H
 
 function toolsHtml(name) {
   return '<div class="tool-bar">' +
+      '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
+        'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
+        'Filters<span class="filter-badge" hidden></span></button>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
         VIEW_MODES.map(function (v) {
           return '<button type="button" class="icon-btn" data-action="card-view" ' +
@@ -1083,9 +1089,6 @@ function toolsHtml(name) {
             'aria-label="' + v.label + '" title="' + v.label + '">' + v.icon + '</button>';
         }).join('') +
       '</div>' +
-      '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
-        'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
-        'Filters<span class="filter-badge" hidden></span></button>' +
       '<div class="search">' +
         '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
         '<input type="search" class="tool-search" id="search-' + name + '" ' +
