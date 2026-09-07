@@ -435,7 +435,8 @@ mouse, 34.9% on a finger.**
   hidden on the week, the picker's own back link out of the page, the panel keeping focus on open,
   the filter row shut with the meal still ticked and the badge at 1, the short placeholder, no page
   scroll with the picker open *or* with the filter row opened inside it, focus handed on in both
-  directions, and the first control after the panel being the search box rather than a dead link.
+  directions, and the first control after the panel being a real one rather than a dead link (the
+  search box at the time; the tile/list toggle since the Filters button moved left of the field).
 - **11 wide**, at 1254px: brand in the sidebar, the bar's back never showing, the filter row open by
   default, the long placeholder, the picker's own back link visible and returning focus, the summary
   column intact.

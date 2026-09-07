@@ -1042,12 +1042,6 @@ function searchHint() { return NARROW_MQ.matches ? SEARCH_HINT_NARROW : SEARCH_H
 
 function toolsHtml(name) {
   return '<div class="tool-bar">' +
-      '<div class="search">' +
-        '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
-        '<input type="search" class="tool-search" id="search-' + name + '" ' +
-          'data-surface="' + name + '" placeholder="' + searchHint() + '" ' +
-          'autocomplete="off">' +
-      '</div>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
         VIEW_MODES.map(function (v) {
           return '<button type="button" class="icon-btn" data-action="card-view" ' +
@@ -1058,6 +1052,12 @@ function toolsHtml(name) {
       '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
         'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
         'Filters<span class="filter-badge" hidden></span></button>' +
+      '<div class="search">' +
+        '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
+        '<input type="search" class="tool-search" id="search-' + name + '" ' +
+          'data-surface="' + name + '" placeholder="' + searchHint() + '" ' +
+          'autocomplete="off">' +
+      '</div>' +
     '</div>' +
     // One row of dropdowns rather than five stacks of chips: sixteen tags in the open
     // used a third of the screen before a single recipe. The Clear button is never

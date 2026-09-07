@@ -42,7 +42,7 @@ Nine documents, each with one job:
   and roughly three quarters high-protein; the rest are tagged `balanced`. Both are ordinary tags,
   so the `indian` and `high-protein` chips filter on them
 - Search matches names, tags **and** ingredients — so "chickpea" finds the curry
-- **One row of tools**: the search field, a **tile / list** toggle, and **Filters**, which carries a
+- **One row of tools**: a **tile / list** toggle, **Filters** and then the search field. Filters carries a
   count badge and opens a single row of dropdowns — *Macros*, *Meal*, *Diet*, *Cuisine & style*,
   *Main protein*. Each is a short list of checkboxes with its own count badge, and **Clear** empties
   the lot. Sixteen tags, one line
@@ -155,7 +155,7 @@ search and filters — is held to about a third of the height, measured rather t
 it used to take two thirds and leave one recipe showing. That is why there is no *Mise* logo on a
 narrow screen: the row it sat in carries the way back out of a view instead.
 
-**Two ways to look at a list.** The two small buttons beside every search box switch between cards
+**Two ways to look at a list.** The two small buttons just left of every search box switch between cards
 in a grid and a single column of rows. It's the same recipes either way — the rows just fit more of
 them on the screen at once. A row gives the name the width and gathers the minutes and the tags over
 on the right, next to the buttons that act on them; on a phone the name gets two thirds of it. The

@@ -755,7 +755,11 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
 .tool-bar .search { flex: 1; min-width: 0; }
 
 .search input {
-  width: 100%; max-width: 480px;
+  /* No max-width: the field is the *last* item in the row now, so a cap on it left the
+     row ending 481px short of the card grid it sits above at 1440px — a row that reads as
+     having run out. It fills to the column edge instead, which is the only edge on the
+     page for it to line up with; the row has no tile of its own to end at. */
+  width: 100%;
   padding: 8px 14px; min-height: 36px;
   /* --surface, not --control: the tile went, so this field rests on the *page* rather
      than on a card, and a control on the page goes up to white the same way a card does.
