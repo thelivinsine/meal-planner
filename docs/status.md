@@ -4,125 +4,106 @@
 
 | | |
 |---|---|
-| **Live** | **The app is `ecdd6d4`** — PR [#18](https://github.com/thelivinsine/meal-planner/pull/18), squash-merged. Pages reported `built` at that commit, and all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised) rather than grepped for a marker. The live page was then rendered and looked at. **No build hash here on purpose:** Pages rebuilds on every commit including this file's own, so naming the build commit in the file that names it is a hash that is stale the moment it is written. The build to trust is the one at the head of `main`. https://thelivinsine.github.io/meal-planner/ |
-| **Open work** | **No PRs open.** No known defect. Four things parked by choice: the accent-on-accent focus ring, `--accent-soft` at 1.12 on a dark card, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). The dark-mode token findings are **no longer on this list** — three of the four are done and the fourth is the accent-soft one. **One limit still named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height |
-| **Confirmed** | **This round, in headless Chrome — and the two halves of that are worth keeping apart. Rendered fifteen, looked at eleven:** Recipes list and tile at 1280px light, list at 1280px dark, the narrow list, the week view wide and narrow, both dialogs, both hover renders, and the deployed site. **The four rendered and not opened**, because a render nobody opens is a file rather than a check: tile at 1280px dark, the narrow tile, the week in dark, and the detail sheet. The hover fills were rendered by *injecting* them onto named elements, since headless cannot hover. **Measured rather than rendered** — the other half, and the list row's widths live here rather than in a picture: 1001/1024/1100/700/359px, where the numbers were the whole point. Measured off the live DOM rather than eyeballed: `.card-add` is 44×32 with its label hidden in every list at every width and 251×34 with its words in a wide tile, `card-actions` reports `0px` on both borders, the narrow name column went 149px → 214px, and no width overflows its viewport. `node check.mjs` — **96 checks**. Before this: the narrow height budget (30.6% mouse / 34.9% finger, 48 assertions across three probes); **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP; and **your eyes on the running app** across every card round, including the screenshots that started this one |
-| **Branches** | `controls-and-greys` deleted on merge. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
+| **Live** | **The app is `c3e399f`** — PRs [#20](https://github.com/thelivinsine/meal-planner/pull/20) and [#22](https://github.com/thelivinsine/meal-planner/pull/22), squash-merged in that order. Pages reported `built` at `c3e399f`, and all three served files were fetched back and compared against `main` **byte for byte** (identical once line endings are normalised) rather than grepped for a marker; the live page was then rendered and looked at. #22 was reopened from #21, which GitHub **closed by itself** when the base branch it was stacked on was deleted on merging #20 — a stacked PR does not survive its base, so stack the branches and open the second PR only after the first lands. **No build hash here on purpose:** Pages rebuilds on every commit including this file's own, so naming the build commit in the file that names it is a hash that is stale the moment it is written. The build to trust is the one at the head of `main`. https://thelivinsine.github.io/meal-planner/ |
+| **Open work** | **No PRs open.** No known defect. Four things parked by choice: the accent-on-accent focus ring, `--accent-soft` at 1.12 on a dark card, the dialogs being off the spacing scale, and the week greeting (parked whole in a comment, restorable). **Two new limits this round, both named rather than fixed:** `--surface-past` has almost nothing left on a near-white page (1.04 from a live card), and `--hover`/`--rail` are pinned to within one shade by the floors either side of them, with `--accent-ink` on `--hover` at **4.54** against a 4.5 floor. **One limit still named rather than fixed:** the narrow height budget does not hold under about 760px of viewport height |
+| **Confirmed** | **This round, in headless Chrome, and the two halves are worth keeping apart. Rendered thirteen, looked at twelve:** the Recipes grid at 1280px in both themes on the accent tags and again on the grey ones, the Recipes list at 1280px dark, the week view wide in both themes on the new page, the narrow week at **390px and 359px** through the iframe rig, and the deployed site. **The one rendered and not opened:** the Recipes list at 1280px light. **Measured rather than rendered**, which is the half that caught things: the live page was asked for its computed values — the tag pill reads `#56463c` on `#e8dfd3` over a white card in light and `#c2bebb` on `#3e3e3e` in dark, and the progress track still reads `#f0eae1` / `#212121`, so the two tokens that used to share a shade are demonstrably apart. `node check.mjs` — **127 checks**, up from 96. Before this: the narrow height budget (30.6% mouse / 34.9% finger, 48 assertions across three probes); **storage, hard** — the real `loadState`/`saveState` against 26 cases in a Node VM and cross-tab behaviour in two real Chrome tabs over CDP; and **your eyes on the running app**, which is what started both of this round's changes and rejected the first attempt at the tags |
+| **Branches** | `tag-contrast` and `page-white-rail` deleted on merge; `accent-tags` deleted with the PR that was dropped. Two still on the remote, both safe to delete: `design/bold-consumer` (shipped as `49b3c16`) and `feat/slot-picker-and-indian-recipes`, fully contained in `main` since the second round |
 
 ## What just shipped
 
-**PR #18, squash-merged as `ecdd6d4`** — three commits, two rounds of critique on the same
-screenshots, and the second round **reversed part of the first**. Pages `built` and the live files
-verified before this file was touched.
+**Two PRs, `#20` then `#22`, both from looking at the running app.** The first fixed a fill that
+measured fine and read as a smudge; the second was a request for a whiter page that turned out to
+be a question about which edge in the palette gets to be a colour and which gets to be a line.
 
-### Round one: a focus ring that fired on a mouse click
+### The tags: legal, and still invisible
 
-**Chrome matches `:focus-visible` on a text field however it was focused** — deliberately, because
-a text field is for typing and the caret has to be findable. So the app's shared 3px ring appeared
-on a mouse click and stayed there while you typed, which is the one thing a focus ring exists not to
-do. It read as a CSS mistake and was a browser rule.
+The recipe tags were `--surface-sunk`, the progress-track shade — **1.20** from a white card and
+**1.14** from a dark one. Both clear this project's 1.10 floor and the pills still read as
+smudges, because **a track can afford to be faint and a borderless pill cannot**: the track has an
+accent fill inside it doing the reading. The floor says two surfaces are distinguishable; it does
+not say a shape is legible.
 
-A text field already carries a border, so the border is its focus indicator: `--accent`, doubled to
-2px by an **inset shadow** rather than a wider border, which would shift the field by a pixel every
-time it took focus. `outline: none` on that one control and nowhere else. A keyboard user loses
-nothing — the same accent edge appears either way.
+`--tag-fill` is now its own token at **1.32 both ways**, and it is a token rather than a deeper
+`--surface-sunk` for two reasons. One value cannot serve both themes: down in dark is capped,
+since the card is `#2b2b2b` and the page `#1a1a1a`, so a pill with more contrast below the card is
+darker than the page and reads as a hole punched through it. And `--surface-sunk` was doing two
+jobs again — the exact split `--control` needed two rounds ago — so it keeps the track, unchanged.
 
-The same round shrank the add button to its glyph under 620px, took the vertical rule out of a list
-card, and split `--control` off `--surface-sunk` because a *track* and a *control* want opposite
-directions in dark.
+**The first attempt was dropped, not merged.** It gave the tags the accent wash, `--accent-soft`
+with `--accent-ink`, on the argument that the pills should match the pressed layout toggle in the
+same tools row. Every number cleared, the screenshots looked fine, and on the real page it looked
+worse than the grey it replaced. PR #19 was closed and the branch deleted. **The ask was contrast;
+the answer looked like colour.**
 
-### Round two: the greys were the wrong way up
+### The page: three edges, room for two
 
-Your four points off the next set of screenshots, and the fourth one was a real bug rather than a
-taste call.
+The page went from `#f4f0e9` to **`#faf8f4`** with a **1.04 fade down the viewport**, and the
+sidebar got a fill of its own for the first time. The arithmetic is the whole story:
 
-**`--control` was `#f0eae1` — a step *down* from the card and only 1.05 from the page.** So a search
-field and five filter dropdowns sitting inside a white panel were the same shade as the page around
-that panel, and read as **gaps punched through it** rather than as controls resting on it. The
-project's own file already documents this failure for `--bg`; this was the same failure one token
-along, and round one had walked straight past it while moving the dark half.
+> White to the old page was **1.14 of contrast in total.** The floor between two touching surfaces
+> is **1.10.** So cards, a whiter page, and a rail that reads apart from the page cannot all have
+> a tonal step — 1.10 twice over is 1.21, and there is only 1.14 to spend.
 
-The correction came out of [§3 of the light report](light-mode-reference.md#3-the-nesting-ladder-in-light-mode--and-where-it-runs-out),
-which makes exactly one distinction: **states go down in light, elevation goes up in both themes.**
-An input fill is elevation. Both references prove it — PowerToys puts its input at `#fefefe` on a
-`#fbfbfb` card, Claude at `#fefefd` on `#fcfcfb` chrome. Round one read the first half of that
-sentence and skipped the second.
+One of the three edges had to become a hairline. The card's is the one that already had a border,
+so **page to card is 1.06 now**, carried by `--line` at 1.29 on the page and 1.37 on the card —
+which is what both light references do at the white ceiling (Claude runs content to chrome at
+1.03 and lets the seam do the work). What the room bought is `--rail`: a real **1.12** step, so
+the sidebar reads as a panel rather than as page with a line down it.
 
-| | before | after |
-|---|---|---|
-| `--bg`, the page | `#f6f3ee` | `#f4f0e9` — cards lift off it at 1.14, was 1.11 |
-| `--control`, a control's rest fill | `#f0eae1`, 1.20 **down** from the card | `#fbf7f2`, 1.07 down with `--line-strong` at 1.76 carrying the edge — and 1.07 **above the page** |
-| tag pills | `--control` | `--surface-sunk` — a label has no border, and at 1.07 on white it would not be there |
-| `--hover`, dark | `#2b2b2b` | `#383838` |
+This was put to you as a choice before any of it was written, with the three options measured. It
+is the kind of trade a script cannot make, because every option passes.
 
-So the split is not control-versus-track after all. It is **pressable-versus-not**: everything you
-can press is raised, everything that is only a word is sunk.
+### Four tokens moved because the page overtook them
 
-### The no-op that had been shipped for eight rounds
+- **`--control`** `#fbf7f2` → `#fdfbf8`. It was *below* `#faf8f4`, which made a control on a card
+  darker than the page around the card — the exact reading this token was invented to prevent.
+- **`--surface-past`** → `#fcfaf7`, and it is now nearly out of room: 1.04 from a live card, 1.02
+  from the page. A spent day is told by its `--ink-faint` name and its border, not by its fill.
+- **`--hover`** `#eae4da` → `#e7e0d5`. The nav rows hover on the rail now and the old value sat
+  **1.06** from it — a hover that does nothing, which is the bug this project has shipped twice
+  already. `#e7e0d5` is the only value clearing both ends: 1.11 on the rail below, and
+  `--accent-ink` still 4.54 on it above.
+- **`--rail`** has a **four-shade window** in light — pinned between the page above and `--hover`
+  below, 1.10 each way — and the value is the middle of it. Dark went the other way, **down** to
+  `#0e0e0e`, ChatGPT's arrangement of chrome darker than content, after up was tried and missed
+  the selected pill's floor at **1.0999**.
 
-Moving `--control` up meant no card-level hover could use it — a hover onto a near-white fill is a
-**1.07 no-op**, the exact defect this project has shipped once before. So `--hover` became *the*
-state fill on either ground, page or card. Pointing it at a card is what surfaced the older bug:
+### The gradient, and the two mechanics behind it
 
-**Dark `--hover` had been `#2b2b2b` since PR #10, which *is* `--surface`.** Every hover that landed
-on a card was doing nothing at all in dark mode. It had been recorded as a harmless placeholder on
-the grounds that both of its consumers landed on `--bg`, where it was a real 1.23 step — true when
-written, and it stopped being true the moment a third consumer appeared. `check.mjs` reported
-nothing, because **the pair `--hover`/`--surface` was not on its list**.
+`background-attachment: fixed`, so the fade is anchored to the **viewport** rather than the
+document — it reads the same on the week view and 300px into a list of fifty recipes. Attached to
+the document it stretches over the whole scroll height and disappears.
 
-**A token parked at a neighbour's value is a no-op waiting for a consumer, and the pair has to be
-measured before the consumer arrives, not after.** `#383838` clears both grounds: 1.48 on the page,
-1.21 on a card.
+The stops are tokens, not an `rgba()` overlay, so `check.mjs` can measure the *other* ground
+everything on the page sits on. **The fade goes down in light and up in dark**, which is not
+symmetry for its own sake: a light page has nothing above it to fade towards and a dark page has
+nothing below.
 
-### Half a rule reverted, and why that is not a climbdown
+`--bg` stays a flat token underneath, because three things read the page's colour rather than its
+gradient — `theme-color`, the translucent top bar, and the `transition` on `body`.
 
-Round one moved `.btn:hover` off the accent wash on the argument that hover and *pressed* were the
-same two colours. That is true of `.icon-btn` — the layout toggle's pressed state **is** the accent
-wash, and you could not tell which layout was on by looking at the button under the pointer — and
-false of `.btn`, which has no pressed state anywhere in the app. On a tools row that had just gone
-white-on-white with hairlines, a grey `.btn` hover was the same move as every rest fill beside it
-and read as nothing happening. You said so; the wash is back on `.btn` and `.icon-btn` keeps the
-grey.
+### Docs, and the check
 
-**A rule that is right for one control is not therefore right for the class it inherits from.**
+`check.mjs` went **96 → 127**: eight text pairs on the two new grounds, six surface pairs, and the
+page-to-card pair took the hairline exception, which means the script now measures `--line`
+against both sides of it instead. **`--tag-fill` needed no new pair type** — both of its pairs
+already existed for other tokens.
 
-### The third commit exists because the diff got re-read
+`CLAUDE.md` is still at exactly **200 lines**, and paying for this round cost more than usual:
+four rules changed, one gained a clause about the rail and the fade, and the room came from
+trimming reasoning out of five others. The line count is the only thing that catches "rule or
+reasoning" going the wrong way, and it did its job twice in one session.
 
-Reviewing the branch against its own description — workflow step 4, which earns its place about
-every third round — turned up a regression the round had introduced and neither the script nor the
-wide renders could see.
-
-`.is-list .card-top` had gone from `flex: 0 1 40%; min-width: 178px` to a grown column, and the
-178px floor looked like decoration next to `flex: 1 1 auto`. **Growing a column is only generous
-while there is free space to grow into.** In the slot picker beside the summary panel the column is
-~430px, the row runs out, and a grown basis then loses to the tags: measured at 1024px the recipe
-name fell to **83px over three lines** while three tags wrapped into three rows beside it — worse
-than the fixed basis it replaced.
-
-**The same rule has two very different amounts of room in this app, and the wide one is the one you
-look at.** The floor is back, with the measurement in the comment so it does not look like
-decoration again.
-
-### Docs
-
-`CLAUDE.md` is still at exactly **200 lines**: five rules rewritten, none added, paid for by
-compressing the bookmark rule whose reasoning was already in `decisions.md`. The `--bg` rule now
-names a different token per element, the hover rule is about `--hover` rather than `--control`, and
-the card rule carries the list glyph.
-
-Both colour reference docs gained a **correction to their own previous verdict** rather than a new
-section — the light report's "nothing in the light theme moved" was the wrong thing to have been
-pleased about, and the dark report's `--hover` placeholder was a defect rather than a deferral. That
-is the point of keeping them as evidence: a document that records what it concluded last time is a
-document that can be caught being wrong.
+`index.html`'s `theme-color` copy moved with `--bg` — **caught by the duplicate-value check, not
+by reading the diff**, for the second round running.
 
 ## What is not verified
 
-**No real pointer or keyboard has touched this round.** The five hover fills were rendered by
-*injecting* them onto specific elements, because headless Chrome cannot hover — that proves the
-colours read, not that the rules fire. The focus border was confirmed by computed value in round
-one, not by eye. **Tab into the search field versus clicking it** is the single most useful thing to
-do by hand here, and it is the check the whole round was about.
+**No real pointer or keyboard has touched this round, and `--hover` moved.** Every hover fill in
+the app is a shade different now and **not one of them was rendered** — not the nav rows on the new
+rail, which is the one the token was re-picked for. Nothing was injected this round either, so the
+claim is arithmetic: 1.11 on the rail, 1.24 on the page, 1.31 on a card. **Hovering a nav row and a
+day chip is the single most useful thing to do by hand here.**
 
 **A real phone.** Unchanged as a gap: the difference between a mouse and a finger in the narrow
 layout is 33px of controls, so the budget sits **4 points from its ceiling on the pointer nobody
@@ -133,10 +114,27 @@ without that block, which is one less thing to get wrong and still not a finger.
 **A real keyboard.** Still the oldest debt here. Eight places restore focus; a person has driven
 none of them.
 
-**`--control` at 1.07 below a white card is a deliberate near-invisible fill**, with the border
-doing the work — which is what the references do at the white ceiling and is nobody's favourite
-sentence. If the search field reads as too faint on a real screen, the lever is `--line-strong`, not
-the fill: there is nothing above white to spend.
+**`--control` is at 1.03 below a white card now**, down from 1.07, because it had to move up to
+stay above the whiter page. A deliberate near-invisible fill with the border doing the work — what
+the references do at the white ceiling, and nobody's favourite sentence. If the search field reads
+as too faint on a real screen the lever is `--line-strong`, not the fill: there is nothing above
+white left to spend.
+
+**`--surface-past` is the sharp end of the same squeeze**, at 1.04 from a live card and 1.02 from
+the page. **A past day with no meals on it has not been looked at since the page moved** — the
+render that would show it is a week in the past, and this round's shots were all of the current
+week. If a spent card now reads as a live one, the fill is not the lever either; the name and date
+are already `--ink-faint`.
+
+**The `fixed` background is the one risky mechanic shipped this round.** `background-attachment:
+fixed` is known to misbehave on iOS Safari, and there is no iOS here. If the fade looks wrong or
+scrolls oddly on a phone, that is the line to pull — the flat `--bg` underneath is the fallback and
+needs nothing added.
+
+**The theme switch snaps the gradient.** A gradient image is not interpolable, so on toggle the fade
+jumps while the colour under it transitions. At 1.04 between the stops that is roughly a 1% step
+during a full repaint, and **it has not been watched in a browser slowly enough to be sure it is
+invisible.**
 
 **`--accent-soft` at 1.12 on a dark card is load-bearing in one more place** than it was, since
 `.btn:hover` went back to it. It clears the 1.10 floor by 0.02. Finding (c) of the dark report,
@@ -169,12 +167,12 @@ were ever driven.
    decide what leaves the page there — the week range row is the only candidate that is not a touch
    floor.
 4. **Decide whether the spacing scale gets a check.** Unchanged: a rule writing `margin-bottom: 18px`
-   is legal CSS and passes all 96 checks. Described in
+   is legal CSS and passes all 127 checks. Described in
    [architecture](architecture.md#how-this-gets-tested), deliberately not written, held by review.
 5. **Put the dialogs on the spacing scale, or say why not.** Unchanged: `22px`, `20px`, `18px` and
    `14px` are still doing gap duty inside the sheets.
 6. **Take a screenshot set.** Cheaper than ever and still none in the repo — this round produced
-   fifteen renders and kept none. `*.png` is gitignored and would need a deliberate `!Screenshots/**`
+   thirteen renders and kept none. `*.png` is gitignored and would need a deliberate `!Screenshots/**`
    exception. Your call, and the 1001–1150px band is the one that would earn its place first.
 7. **Decide about `--accent-soft` on a dark card.** The last dark-mode finding, at 1.12. The
    reference answer is to stop making a dark tint work and **invert** the element — PowerToys uses
@@ -197,8 +195,11 @@ of the 53px bar.
 **The week bar is centred while the meal cards are left-aligned.** Navigation on one axis, content
 on another. The bar is the first thing on the page, with nothing centred above it to justify it.
 
-**A past day with meals looks exactly like a past day without.** The deliberate cost of taking the
-ring off past days, and only right if the week bar is for steering rather than for history.
+**A past day with meals looks exactly like a past day without**, and after this round a past *card*
+barely differs from a live one either — `--surface-past` is 1.04 from a white card on a near-white
+page. The first half is the deliberate cost of taking the ring off past days; the second is the
+deliberate cost of the whiter page. Both are only right if the week is for steering rather than for
+history.
 
 ## Three small things open, none urgent
 
@@ -223,16 +224,22 @@ is worse than none, so stale ones get deleted rather than captioned. The four su
 concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
 
 They are **reproducible on demand** — headless Chrome from the shell renders any state, and this
-round drove it into fifteen: Recipes in list and tile at 1280px in both themes, the narrow list and
-narrow tile, the week view wide in both themes and narrow, the add-to-week dialog in both themes,
-the detail sheet, the injected hover states in both themes, and the deployed site as the last check.
-**Eleven of the fifteen were looked at**; the four that were not are named in the Confirmed row at
-the top, because a render nobody opened is a file rather than a check. Windows will not
-open a window under about 500 CSS px, so anything narrower is rendered in an `<iframe>` sized to the
-width, which gets its own viewport for media queries. **One thing to remember about that rig:** CSS
-transitions do not tick under `--virtual-time-budget`, so a transitioned property sits at its start
-value and a render taken mid-animation comes out washed pale. Disable animation and transition in
-the frame before measuring or shooting.
+round drove it into thirteen: the Recipes grid at 1280px in both themes twice over (accent tags,
+then grey), the Recipes list at 1280px in both themes, the week view wide in both themes on the new
+page, the narrow week at 390px and 359px, and the deployed site as the last check. **Twelve of the
+thirteen were looked at**; the one that was not is named in the Confirmed row at the top, because a
+render nobody opened is a file rather than a check.
+
+**Two things about the rig, both of which cost time this round.** Windows will not open a headless
+window under about 500 CSS px — `--window-size=390` reports `innerWidth: 526` and the PNG is a
+390px *crop* of a 526px layout, which looks exactly like a horizontal overflow bug and is not one.
+Anything narrower than that goes in an `<iframe>` sized to the width, which gets its own viewport
+for media queries. And **CSS transitions do not tick under `--virtual-time-budget`**, so a
+transitioned property sits mid-interpolation: a dark-theme render taken after clicking the toggle
+came out with light-mode ink on dark cards, which reads as a contrast defect and is a rig artefact.
+Disable animation and transition in the frame before measuring or shooting — both of these were
+diagnosed by asking the live page for computed values rather than by looking harder at the
+picture.
 
 `*.png`, `*.jpg` and `*.jpeg` are gitignored with `!Light mode Mockups/*.png` excepted, because a
 camera-named file got committed twice. That exception once named a folder that had been renamed and

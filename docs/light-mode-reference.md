@@ -365,26 +365,32 @@ produces backwards hovers, invisible shadows, and a ramp that runs out.
 
 ## 9. Against Mise's current light tokens
 
-Measured from `style.css`, `:root`. First taken on 2026-09-01; re-measured after PR #19, which
-moved `--bg`, `--control` and the tag pills. **Three of the four observations below were acted on
-in PR #10** — each is marked where it stands.
+Measured from `style.css`, `:root`. First taken on 2026-09-01, re-measured after the
+controls-and-greys round, and re-measured again after the **page-white round** moved `--bg`,
+`--control`, `--surface-past`, `--hover` and the tag pills and added three tokens. **Three of the
+four observations below were acted on in PR #10** — each is marked where it stands. *(An earlier
+version of this line credited "PR #19"; that number was written before the PR existed and #19
+turned out to be a different change entirely. Rounds are named here rather than numbered.)*
 
 ```
---bg           #f4f0e9                                       (deepened one step in PR #19)
---surface      #ffffff   1.14 above bg
---surface-sunk #f0eae1   1.20 below surface                  (a recessed *track*, and the tag pills)
---control      #fbf7f2   1.07 below surface, 1.06 above bg   (a control's rest fill; up, see below)
---surface-past #faf8f5   1.07 on bg
---line         #e3dbd0   1.21 on bg, 1.37 on surface
---line-strong  #cabbaa   1.88 on surface, 1.76 on control
+--bg           #faf8f4   1.06 below surface                  (near-white; the *top* of the page)
+--bg-fade      #f6f3ec   1.11 below surface, 1.04 below bg   (the page's gradient, fading down)
+--rail         #f1ebe3   1.12 below bg                       (the sidebar; the one real tonal step)
+--surface      #ffffff                                       (cards; 1.06 above the page now)
+--surface-sunk #f0eae1   1.20 below surface                  (a recessed *track*, and only that)
+--tag-fill     #e8dfd3   1.32 below surface                  (the tag pills; own token, see below)
+--control      #fdfbf8   1.03 below surface, 1.03 above bg   (a control's rest fill; up, see below)
+--surface-past #fcfaf7   1.04 below surface, 1.02 above bg   (nearly out of room; see below)
+--line         #e3dbd0   1.29 on bg, 1.37 on surface, 1.16 on rail
+--line-strong  #cabbaa   1.88 on surface, 1.82 on control
 --ink          #191310   18.39 on surface
 --ink-soft     #56463c   8.99 on surface
---ink-faint    #6a5849   6.76 on surface, 6.34 on control
+--ink-faint    #6a5849   6.76 on surface, 6.55 on control
 --accent       #c8491f   4.74 on surface
---accent-ink   #ad4020   5.95 on surface
+--accent-ink   #ad4020   5.95 on surface, 5.02 on rail, 4.54 on hover   (that last one is the floor)
 --accent-soft  #fbe9e1   1.18 on surface
 --on-accent    #ffffff   4.74 on accent
---hover        #eae4da   1.11 below bg, 1.26 below surface   (added in PR #10; both grounds, PR #19)
+--hover        #e7e0d5   1.24 below bg, 1.31 below surface, 1.11 below rail   (added in PR #10)
 --scrim        rgba(28,20,16,.42)           (added in PR #10; composites to #9a9591, 2.97 on white)
 ```
 
@@ -412,8 +418,8 @@ move.
 >
 > The cost was visible before it was measured. At `#f0eae1` a control on a card sat **1.05 from the
 > page** — the same shade as the page around the card — so a search field and five filter chips read
-> as gaps punched in a white panel rather than controls sitting on one. PR #19 sends `--control`
-> up instead: `#fbf7f2`, 1.07 below the card with `--line-strong` at 1.76 carrying the edge, which
+> as gaps punched in a white panel rather than controls sitting on one. That round sent `--control`
+> up instead, to `#fbf7f2`, 1.07 below the card with `--line-strong` at 1.76 carrying the edge, which
 > is the hand-off to borders this section's third heading describes. The number that matters is the
 > other side — 1.07 **above** the page, so nothing on a card is darker than the page again.
 >
@@ -421,16 +427,36 @@ move.
 > pill at 1.07 on a white card is not there at all; the recessed shade is the only place one still
 > reads. So the split is not control-versus-track after all, it is **pressable-versus-not**:
 > everything you can press is raised, everything that is only a word is sunk.
+>
+> **Corrected a round later, and the correction is about legibility rather than direction.** Down
+> was right; `--surface-sunk` was not. At 1.20 from a white card a tag cleared this project's floor
+> and still read as a smudge on the real page — because a *track* can be faint, its accent fill
+> doing the reading, and a borderless pill cannot. The tags now have `--tag-fill`, 1.32 down in
+> light and 1.32 **up** in dark, where down is capped by the page. **A ratio above the floor is not
+> a promise that a shape is legible**, and this document's own table could not have told anyone
+> that.
 
 Four observations, none urgent:
 
 **a) The ramp is compressed at the same point the references are.** `--bg` to `--surface` was
 1.11 and `--bg` to `--surface-sunk` 1.08 — one barely over the project's 1.10 target and one
-under it. PR #19 deepened the page to `#f4f0e9`, which takes the card to 1.14, and the existing
+under it. That round deepened the page to `#f4f0e9`, which takes the card to 1.14, and the existing
 comment in `style.css` already solves the rest the way both references do, with `--line` carrying
 the edge at 1.21 on the page and 1.37 on a card. That is the right answer and matches PowerToys' 1.14–1.22 hairline
 exactly. No change needed; it is simply worth knowing that this is not a Mise problem but the
 structural limit of light mode from section 2.
+
+**And then the page went the other way, to `#faf8f4`, and the structural limit collected.** Asked
+for a whiter page, the arithmetic in this section stopped being a curiosity and became the whole
+constraint: white to `#f4f0e9` is **1.14 of contrast in total**, the floor between two touching
+surfaces is **1.10**, so cards, a whiter page and a sidebar that reads apart from the page cannot
+all have a tonal step — 1.10 twice over is 1.21. **The card's edge is the one that gave way**:
+page-to-card is 1.06, carried by `--line` at 1.29 and 1.37, which is Claude's 1.03-plus-a-seam
+arrangement rather than PowerToys' 1.07. The step it freed went to `--rail` at 1.12. Three tokens
+moved as consequences — `--control` had been left *below* the page, `--surface-past` is down to
+1.04 from a live card, and `--hover` had to deepen to 1.11 against the new rail — which is section
+2's point stated as a bill rather than as a warning: **in light mode, every new surface is paid for
+by an existing one.**
 
 **b) There is no hover or selected token, in either theme.** — *hover: done for light in PR #10;
 selected: declined; dark: deliberately left.* Section 4 puts light-mode state

@@ -510,3 +510,76 @@ restored floor bites and the tags wrap to three rows. And
 `--control` at 1.07 below a white card is a deliberate near-invisible fill with the border doing the
 work, which is what the references do at the white ceiling and is still worth a look on a real
 screen.
+
+### The tag-fill and page-white rounds (PRs #20 and #22, and a dropped #19)
+
+**A fill that passed every check and read as a smudge.** The recipe tags sat on `--surface-sunk` at
+1.20 from a white card and 1.14 from a dark one — both clear of the 1.10 floor. The complaint was
+that they were invisible, and they were. **The floor says two surfaces are distinguishable; it does
+not say a shape is legible.** A track can be faint because the accent fill inside it does the
+reading; a borderless pill has nothing but its fill. That is the distinction the token split
+records, and no script here can see it.
+
+**The first answer was dropped rather than merged, and that is the entry worth keeping.** Asked to
+reuse the pressed toggle's fill, the tags went `--accent-soft` / `--accent-ink`. Every pair
+measured, the renders looked right, and on the real page it looked worse than the grey it replaced.
+PR #19 closed, branch deleted, and the second attempt read the request differently: **the ask was
+contrast, and the first answer heard colour.**
+
+**Then the page went near-white, and the palette ran out of room in a way that is pure
+arithmetic.** White to the old page `#f4f0e9` is 1.14 of contrast in total. The floor between two
+touching surfaces is 1.10. So cards, a whiter page, and a sidebar that reads apart from the page
+cannot all have a tonal step — 1.10 twice over is 1.21 and there is only 1.14 to spend. **One of
+the three edges had to stop being a colour and start being a line.** Three options were measured
+and put up as a choice, because every one of them passes: the card's edge became the hairline
+(1.06, carried by `--line` at 1.29 and 1.37), which is what both light references do at the white
+ceiling, and the room bought `--rail` at a real 1.12.
+
+**Four tokens moved as consequences, not as decisions.** `--control` was left *below* the new page,
+which made a control on a card darker than the page around it — the exact reading that got the
+token invented one round earlier. `--surface-past` came up and is now nearly out of room.
+`--hover` had to deepen because the nav rows hover on the rail and the old value sat 1.06 from it,
+and it landed on the only shade clearing both ends: 1.11 on the rail below, `--accent-ink` at 4.54
+above. `--rail` itself has a four-shade window in light. **A palette is a system of simultaneous
+constraints, and moving the ground moves everything standing on it.**
+
+**Dark did not follow light.** Its card edge stays tonal, because white is a ceiling and `#1a1a1a`
+is not a floor — the squeeze is a light-mode problem. Its rail goes *down* to `#0e0e0e` after up
+was tried and missed the selected pill's floor at **1.0999**, and its page fades *up* while
+light's fades down.
+
+**The gradient is anchored to the viewport, not the document.** `background-attachment: fixed`, so
+it reads the same on the week view and 300px into fifty recipes; attached to the document it
+stretches over the whole scroll height and disappears. Its stops are tokens rather than an
+`rgba()` overlay so `check.mjs` can measure the other ground everything on the page sits on. `--bg`
+stays flat underneath because three things read the page's colour rather than its gradient:
+`theme-color`, the translucent top bar, and the `transition` on `body`.
+
+**Two harness artefacts, both of which looked exactly like CSS bugs.** A `--window-size=390`
+render came back looking like a horizontal overflow — cards running off the right edge, the week
+bar cut at Friday — and it was a 390px *crop* of a 526px layout, because Windows will not open a
+headless window under about 500 CSS px. And a dark render taken after clicking the theme toggle
+came out with light-mode ink on dark cards, which reads as a contrast defect: transitions do not
+tick under `--virtual-time-budget`, so `body`'s colour sat mid-interpolation. **Both were settled
+by asking the live page for computed values rather than by looking harder at the picture** — the
+third kind of check this project has, and the only one that could have settled either.
+
+**One process note.** #21 was opened stacked on #20's branch and GitHub **closed it by itself**
+when that base branch was deleted on merge. A stacked PR does not survive its base: stack the
+branches if you like, but open the second PR only once the first has landed.
+
+**One numbering note, and it will save somebody an hour.** Several docs written during the
+controls-and-greys round credit changes to "PR #19" — the token moves, `--control` going up, the
+tag pills going to `--surface-sunk`, `--hover` becoming the state fill. **No such PR shipped any of
+that.** Those numbers were written before the PR existed and the work landed in **#18**; the real
+#19 is the accent-tag attempt above, which was closed and never merged. Where "PR #19" appears in
+[light-mode-reference.md](light-mode-reference.md) or
+[dark-mode-reference.md](dark-mode-reference.md), read "the controls-and-greys round". The rounds
+are named rather than numbered from here on, for exactly this reason.
+
+**What it did not do:** a real pointer — and `--hover` moved this round, so every hover in the app
+is a shade different and none were rendered. No keyboard. No phone, and `background-attachment:
+fixed` is the one mechanic here known to misbehave on iOS Safari. No past day on screen since the
+page moved, which is where `--surface-past` at 1.04 from a live card would show. And the theme
+switch snaps the gradient, because a gradient image is not interpolable — about a 1% step during a
+full repaint, not watched slowly enough to be sure it is invisible.
