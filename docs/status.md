@@ -92,11 +92,13 @@ shipped three times. So the search field and the five summaries went to **`--sur
 then works in both themes. `.chip` in the dialogs keeps `--control`/`--line-strong` and is the last
 thing in the app resting on a card.
 
-**One exception to "no bordered icon button" was bought with it.** The pressed layout toggle's
+**One exception to "no bordered icon button" was bought with it** — *and given back two rounds
+later; the rest of this paragraph is what it cost while it stood.* The pressed layout toggle's
 `--accent-soft` wash is 1.18 on the white tile it used to sit on and **1.06** against the faded end
-of the page it sits on now, with nothing carrying the edge. It takes an `--accent` border —
-`.icon-btn` already declared a transparent 1px one, so colouring it shifts nothing, and `--accent`
-measures 4.03 on the wash and 4.28 on the page.
+of the page it sits on now, with nothing carrying the edge. It took an `--accent` border —
+`.icon-btn` already declared a transparent 1px one, so colouring it shifted nothing, and `--accent`
+measures 4.03 on the wash and 4.28 on the page. On a 30px control that hairline read as a thick
+orange outline, and the fill went to the full `--accent` instead.
 
 `check.mjs` went **127 → 136**, and every addition is the same sentence: a control that was on a
 card is on the page now. `--line`, `--hover` and `--accent` gained the faded end of the page as a

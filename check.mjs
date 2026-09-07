@@ -192,15 +192,29 @@ const SURFACE_PAIRS = [
   /* Three grounds the untiled tools row created, all of them the *faded* end of the
      page: the row sits near the top of a view, but a short viewport puts it well down
      the gradient. --line is every edge on the row now, --hover is the layout buttons'
-     hover, and --accent is the pressed one's border plus the search field's focus edge. */
+     hover, and --accent is the *pressed* layout button's whole fill, plus the search
+     field's focus edge and the Filters button's hover border. */
   ['--line', '--bg-fade'],
   ['--hover', '--bg-fade'],
   ['--accent', '--bg-fade'],
-  /* The pressed layout button, and the one pair the tile was hiding: 1.18 on the white
-     card it used to sit on, 1.11 on --bg and **1.06** here. It is an .icon-btn, so the
-     glyph rather than a word is what the fill has to hold — hence a border, and hence
-     --accent rather than --line as the thing measured. */
+  /* The wash on the page, and the one pair the tile was hiding: 1.18 on the white card
+     it used to sit on, 1.11 on --bg and **1.06** here. This used to be the pressed layout
+     button, which gave up on the tint and took the full --accent fill instead. The pair is
+     still real, and .btn:hover is the whole of why: the Filters and Clear buttons sit on
+     the page and wash accent-soft on hover, with an --accent border coming too — hence
+     --accent rather than --line as the thing measured. (.meal-add:hover washes the same
+     colour and is *not* this pair: it lives inside .meal, so its ground is a card. That is
+     the two rows below.) */
   ['--accent-soft', '--bg-fade', { line: '--accent' }],
+  /* The "+" circle on an empty meal, and the wash behind it when the row is hovered —
+     both inside .meal, so both land on a card, and on a day gone by that card is
+     --surface-past. Missed for as long as --surface-past has existed: the accent-soft
+     half of it was measured against --surface and nothing else, and a past day with an
+     empty meal is the one place in the app where this pair is on screen. The dashed
+     --line-strong edge is what carries the button; the circle inside it has none, so it
+     is measured bare. */
+  ['--accent-soft', '--surface-past'],
+  ['--accent', '--surface-past'],
 ];
 
 function measure(name, theme) {

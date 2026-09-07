@@ -694,6 +694,40 @@ function escapeHtml(text) {
   });
 }
 
+// ---------------------------------------------------------------- handing focus on
+// A redraw destroys focus and eight places put it back on whatever replaced the control
+// that was pressed. The problem those eight created: **Chrome paints the shared
+// :focus-visible ring on programmatic focus**, and on the focus a <dialog> hands back
+// when it closes. Measured in headless Chrome with no keyboard input on the page at all
+// — a bare .focus() on a button matched :focus-visible, and so did the element a closed
+// dialog restored to. So a plain mouse click left a ring behind it, which is the one
+// thing a focus ring exists not to do (the same complaint the search field's border
+// answers, one browser heuristic over).
+//
+// The fix is to say which one we mean instead of leaving it to the heuristic:
+// focus({ focusVisible }) is honoured by Chrome and Firefox and ignored by Safari, where
+// the ring simply stays as it is today. And the answer is not a modality flag tracking
+// the pointer — it is read off the control that was activated. If *it* was wearing a
+// ring, the thing that replaces it wears one; a keypress on a button means it was, a
+// mouse click on the same button means it was not. No second heuristic to keep in step.
+let ringed = true;                 // keyboard-safe default: a ring too many, never one too few
+function handOff(target) {
+  if (target) target.focus({ focusVisible: ringed });
+}
+// A dialog restores focus to its opener by itself, ring and all, so there is nothing to
+// pass an option to. Re-focusing the element does not help — the flag only moves when
+// focus does (measured: still true) — so it takes a blur first. Focus lands back on the
+// same element either way, which is what keeps this an appearance fix and not a
+// focus-management one.
+function quietRestore() {
+  const back = document.activeElement;
+  // Asking whether there is a ring to take off is also the guard: <body> never matches,
+  // and neither does an element the redraw behind the dialog has already destroyed.
+  if (ringed || !back || !back.matches || !back.matches(':focus-visible')) return;
+  back.blur();
+  back.focus({ focusVisible: false });
+}
+
 let toastTimer = null;
 function toast(message) {
   el.toast.textContent = message;
@@ -998,8 +1032,11 @@ function matchingRecipes(list, search, tags) {
 
 // ---------------------------------------------------------------- tools row
 
-// Search, layout and filters, in that order, on one row — and one component draws it for
-// Recipes, Saved and the week's slot picker, the same way cardHtml() draws every card.
+// Filters, the layout toggle, then the search field — left to right on one row, and one
+// component draws it for Recipes, Saved and the week's slot picker, the same way
+// cardHtml() draws every card. .tool-bar is a flex row, so this markup order is the
+// visual order **and the tab order**; a CSS `order` would get the picture and leave a
+// keyboard reaching the two buttons the other way round.
 // Three copies of a filter row is three places for a new tag to go missing.
 //
 // Drawn once at startup and then left alone: syncTools() writes the ticked boxes, the
@@ -1042,6 +1079,9 @@ function searchHint() { return NARROW_MQ.matches ? SEARCH_HINT_NARROW : SEARCH_H
 
 function toolsHtml(name) {
   return '<div class="tool-bar">' +
+      '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
+        'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
+        'Filters<span class="filter-badge" hidden></span></button>' +
       '<div class="view-toggle" role="group" aria-label="Card layout">' +
         VIEW_MODES.map(function (v) {
           return '<button type="button" class="icon-btn" data-action="card-view" ' +
@@ -1049,9 +1089,6 @@ function toolsHtml(name) {
             'aria-label="' + v.label + '" title="' + v.label + '">' + v.icon + '</button>';
         }).join('') +
       '</div>' +
-      '<button type="button" class="btn btn-quiet filter-toggle" data-action="filters-toggle" ' +
-        'data-surface="' + name + '" aria-expanded="false" aria-controls="filter-row-' + name + '">' +
-        'Filters<span class="filter-badge" hidden></span></button>' +
       '<div class="search">' +
         '<label class="sr-only" for="search-' + name + '">Search recipes</label>' +
         '<input type="search" class="tool-search" id="search-' + name + '" ' +
@@ -1243,9 +1280,16 @@ function openSlotPicker(iso, meal, opener) {
   // one — and on a phone it throws the keyboard up over the recipes. It still has to go
   // *somewhere*: the "+ Add" that was pressed has just been hidden along with the day,
   // and focus left on a hidden element drops to <body>. The panel is the thing that
-  // replaced it, and from here Tab reaches the back link, then the search, then the
-  // cards, in the order they are read — under 620px the back link is not in the page at
-  // all (it is the top bar's, above the panel), so there Tab starts at the search.
+  // replaced it, and from here Tab reaches the back link, then the tools row — Filters,
+  // the two layout buttons, the search field, in that markup order — then the cards, in
+  // the order they are read. Under 620px the back link is not in the page at all (it is
+  // the top bar's, above the panel), so there Tab starts at Filters.
+  //
+  // A bare .focus(), against the rule: the panel is one of two elements in the app that
+  // take focus without ever wearing a ring (.slot-picker and .meals, both `outline: none`
+  // — a 2px accent ring around the whole content column is not a focus indicator, it is a
+  // border). Nothing to hand on, so nothing to read. Give either of them a visible ring
+  // and this line has to go through handOff() the same as the other eight.
   el.slotPicker.focus();
 }
 
@@ -1289,8 +1333,8 @@ function closeSlotPicker() {
   // picker if it's still there, otherwise to the week itself. Both targets are visible
   // again by now — focusing a hidden element does nothing at all.
   if (!el.slotPicker.contains(document.activeElement) && document.activeElement !== document.body) return;
-  if (opener && opener.isConnected) opener.focus();
-  else el.weekGrid.focus();
+  if (opener && opener.isConnected) handOff(opener);
+  else el.weekGrid.focus();      // bare on purpose: `outline: none`, see openSlotPicker()
 }
 
 function renderSlotPicker() {
@@ -1381,6 +1425,11 @@ document.addEventListener('click', function (event) {
   if (!target) return;
   const action = target.dataset.action;
 
+  // Read the ring off the control that was just activated, before anything redraws it
+  // away: a keypress on a button leaves it :focus-visible and a mouse click does not, so
+  // this one line is what every handOff() below and both dialogs' quietRestore() spend.
+  ringed = target.matches(':focus-visible');
+
   if (action === 'nav') {
     setView(target.dataset.view);
     return;
@@ -1402,7 +1451,7 @@ document.addEventListener('click', function (event) {
     } else {
       setView('week');
       el.navButtons.forEach(function (btn) {
-        if (btn.dataset.view === 'week') btn.focus();
+        if (btn.dataset.view === 'week') handOff(btn);
       });
     }
     return;
@@ -1425,7 +1474,7 @@ document.addEventListener('click', function (event) {
     // it — focus would drop to <body>. The week's arrows need no such handling: they are
     // static markup and survive the redraw. Focus goes where the button was taking you.
     const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
-    if (again) again.focus();
+    handOff(again);
     return;
   }
 
@@ -1437,7 +1486,7 @@ document.addEventListener('click', function (event) {
     // dropping focus to <body> — the same move closeSlotPicker() already makes. The
     // strip is on screen at every width now, so its replacement chip is where focus goes.
     const again = el.dayStrip.querySelector('[data-i="' + state.focusDay + '"]');
-    if (again) again.focus();
+    handOff(again);
     return;
   }
 
@@ -1476,7 +1525,7 @@ document.addEventListener('click', function (event) {
       : !el.slotPicker.hidden ? el.slotPicker
       : document.querySelector('.view:not([hidden])');
     const again = scope && scope.querySelector('[data-action="bookmark"][data-id="' + id + '"]');
-    if (again) again.focus();
+    handOff(again);
     return;
   }
 
@@ -1514,7 +1563,7 @@ document.addEventListener('click', function (event) {
     // The meal row that held this button is now an empty one, so focus goes to what
     // replaced it: the Add button for the same meal.
     const again = el.weekGrid.querySelector('[data-action="slot-add"][data-meal="' + meal + '"]');
-    if (again) again.focus();
+    handOff(again);
     return;
   }
 
@@ -1629,6 +1678,11 @@ window.addEventListener('storage', function (event) {
   // data-iso, data-meal, data-i — so the element is already its own selector. Read off
   // the attributes rather than the dataset: no camelCase to convert back.
   const had = document.activeElement;
+  // Nothing was activated in *this* tab, so there is no click to read the ring off — read
+  // it off the element that is about to be destroyed instead. Same rule, one step earlier:
+  // a keyboard user who tabbed here and walked away keeps their ring, and a mouse user
+  // does not get one handed to them by another tab's save.
+  ringed = !!(had && had.matches && had.matches(':focus-visible'));
   const sig = had && had.dataset && had.dataset.action
     ? Array.prototype.filter.call(had.attributes, function (a) { return a.name.indexOf('data-') === 0; })
         .map(function (a) { return '[' + a.name + '="' + CSS.escape(a.value) + '"]'; }).join('')
@@ -1651,7 +1705,7 @@ window.addEventListener('storage', function (event) {
       : !el.slotPicker.hidden ? el.slotPicker
       : document.querySelector('.view:not([hidden])');
     const again = scope && scope.querySelector(sig);
-    if (again) again.focus({ preventScroll: true });
+    if (again) again.focus({ preventScroll: true, focusVisible: ringed });
   }
 });
 
@@ -1662,11 +1716,12 @@ window.addEventListener('storage', function (event) {
 // is always on screen.
 document.addEventListener('keydown', function (event) {
   if (event.key !== 'Escape') return;
+  ringed = true;                 // whatever this hands focus to, a keyboard is asking for it
   if (el.detail.open || el.picker.open) return;  // that Escape belongs to the dialog
   const drop = document.querySelector('.filter-drop[open]');
   if (drop) {
     drop.open = false;
-    drop.querySelector('summary').focus();
+    handOff(drop.querySelector('summary'));
     return;
   }
   if (el.slotPicker.hidden) return;
@@ -1676,10 +1731,15 @@ document.addEventListener('keydown', function (event) {
 el.detail.addEventListener('close', function () { detailSlot = null; });
 
 // Click on the backdrop (outside the panel) closes either dialog.
+// And take the ring back off the opener either dialog restores to. This is the only
+// handoff neither handler above can reach — the browser makes it, after the close, to an
+// element nothing here named. Both dialogs, because both are opened by a card button that
+// is left sitting under the pointer when they shut.
 [el.detail, el.picker].forEach(function (dialog) {
   dialog.addEventListener('click', function (event) {
     if (event.target === dialog) dialog.close();
   });
+  dialog.addEventListener('close', quietRestore);
 });
 
 // ---------------------------------------------------------------- start

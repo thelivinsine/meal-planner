@@ -42,7 +42,7 @@ Nine documents, each with one job:
   and roughly three quarters high-protein; the rest are tagged `balanced`. Both are ordinary tags,
   so the `indian` and `high-protein` chips filter on them
 - Search matches names, tags **and** ingredients — so "chickpea" finds the curry
-- **One row of tools**: a **tile / list** toggle, **Filters** and then the search field. Filters carries a
+- **One row of tools**: **Filters**, a **tile / list** toggle and then the search field. Filters carries a
   count badge and opens a single row of dropdowns — *Macros*, *Meal*, *Diet*, *Cuisine & style*,
   *Main protein*. Each is a short list of checkboxes with its own count badge, and **Clear** empties
   the lot. Sixteen tags, one line

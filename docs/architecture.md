@@ -273,7 +273,8 @@ views, and the pair list did not grow at all.** Every ground in it was already m
 values here are the ones that held while the row still had a tile under it: the dropdown menu was
 `--surface` inside a `--surface` card with a `--line-strong` hairline; a summary chip was
 `--control` with `--ink-soft`; a ticked option hovers to `--hover` with `--ink`;
-the pressed layout button is the `--accent-soft` wash with `--accent-ink` on it; the count badge is
+the pressed layout button was the `--accent-soft` wash with `--accent-ink` (the full `--accent`
+fill since); the count badge is
 `--on-accent` on `--accent`; the checkbox's `accent-color` is `--accent` on a card. That is the
 happy version of the rule below — reusing a ground costs nothing, and it is why the count stayed at
 76 through that round.
@@ -302,7 +303,9 @@ measures `--line-strong` against both sides instead of the pair.
 control that was on a card is on the page now. `--line`, `--hover` and `--accent` all gained the
 faded end of the page as a ground, and `--accent-soft` gained it as a pair that **fails** — 1.06,
 against 1.18 on the white tile it used to sit on — which is how the pressed layout button came to be
-the only bordered `.icon-btn` in the app. `--control` beside `--bg` is still in the list with
+the only bordered `.icon-btn` in the app, until the wash was given up for the full `--accent` fill
+and the border went with it. The pairs the round created all outlived it: `--accent-soft` still
+lands on the faded page as `.btn:hover`, with the same `--accent` border carrying it. `--control` beside `--bg` is still in the list with
 nothing filling it: kept as a guard, like `--surface-sunk` beside `--bg` before it, and its comment
 says so. **A layout change that moves a control from a card to the page is a palette change**, and
 the script is the only thing that says which of its colours stopped working.

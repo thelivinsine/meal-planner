@@ -497,7 +497,8 @@ question for the browser, not the script.
 None of this was written as a proposal to change tokens. `check.mjs` and a browser both had to
 agree before anything moved, and in PR #10 they did — with one correction from the browser that the
 numbers could not have given. **Section 6's focus ring is 4px; built at 4px here it was too loud,
-and shipped at 3px.** Nothing about the measurement was wrong; this accent is simply louder than the
-reference's blue at the same width. Two other items from section 8 were checked and needed nothing:
+and shipped at 3px — and 3px was too loud too, on the running app, so it is 2px now.** Nothing
+about the measurement was wrong; this accent is simply louder than the reference's blue at the same
+width, and the *gap* is what carries the reference's intent here rather than the width. Two other items from section 8 were checked and needed nothing:
 the dialog already carries a `--line-strong` rim plus `--shadow-lg` (item 8), and the toast is
 already a full inversion (item 12).
