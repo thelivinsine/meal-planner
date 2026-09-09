@@ -197,4 +197,4 @@ anything touching layout, never an optional extra. **I check the app in a browse
 so never write that it has never been looked at. Name what a change has *not* been seen against.
 
 **Screenshots:** none in the repo; `*.png`/`*.jpg` gitignored (`!Light mode Mockups/*.png` excepted,
-and that exception must name a folder that exists). Stale ones get deleted, not captioned.
+and that exception must name a folder that exists). Stale ones move to `archive/`, not captioned.

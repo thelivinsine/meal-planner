@@ -1,6 +1,6 @@
 # Dark mode reference — colour, hover and edge treatment
 
-Written from `Dark mode references/`: eight screenshots of the ChatGPT desktop app and the
+Written from `docs/Dark mode references/`: eight screenshots of the ChatGPT desktop app and the
 Windows PowerToys settings app. Every hex here was **read out of the pixels**, not eyeballed —
 the PNGs were decoded and sampled at named coordinates, and every ratio is the WCAG relative
 luminance formula, the same one `check.mjs` uses.

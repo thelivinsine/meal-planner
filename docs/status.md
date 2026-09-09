@@ -474,9 +474,12 @@ than assumed from a green build.
 
 ## Screenshots
 
-**None of the app in the repo**, and the standing policy is unchanged: a shot of the wrong version
-is worse than none, so stale ones get deleted rather than captioned. The four supplied design
-concepts *are* tracked, under `Light mode Mockups/`; shots of the running app are not.
+**None of the app in the repo**, and the half of the policy that matters is unchanged: a shot of
+the wrong version is worse than none, so a stale one is never captioned as current. What changed is
+where it goes — **`archive/screenshots/`, not the bin**, still gitignored and still never cited. The
+four supplied design concepts *are* tracked, under `Light mode Mockups/`; shots of the running app
+are not. The reference shots the palette was read from live on disk too, under
+`docs/Dark mode references/` and `docs/Light mode references/`.
 
 They are **reproducible on demand** — headless Chrome from the shell renders any state. This round
 drove it into six, all named in the Confirmed row. An earlier round drove it into thirteen: the Recipes grid at 1280px in both themes twice over (accent tags,

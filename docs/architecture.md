@@ -12,16 +12,16 @@ see [decisions.md](decisions.md).*
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
 
 `Light mode Mockups/` holds the four supplied design concepts the current layout was built
-against — the only images tracked here. There is no `Screenshots/` — see
-[status](status.md#screenshots).
+against — the only images tracked here. Loose captures go to `archive/screenshots/`, gitignored
+and untracked — see [status](status.md#screenshots).
 
 The **reference UIs** the palette was measured against are a different thing and are *not* in the
-repo: `Dark mode references/` and `Light mode Mockups/Other references/` are gitignored shots on
-disk. What they showed is no longer lost with them, though. Both were decoded pixel by pixel and
-written up as [dark-mode-reference.md](dark-mode-reference.md) and
+repo: `docs/Dark mode references/` and `docs/Light mode references/` are gitignored shots sitting
+on disk beside the write-ups. Both were decoded pixel by pixel and written up as
+[dark-mode-reference.md](dark-mode-reference.md) and
 [light-mode-reference.md](light-mode-reference.md) — every surface hex, state delta and edge
-treatment, with the contrast ratios computed the same way `check.mjs` computes them. The pictures
-are still missing; the numbers in them are not.
+treatment, with the contrast ratios computed the same way `check.mjs` computes them. Clone the
+repo and the pictures are not there; the numbers read out of them are.
 
 Two bits of markup are placed where they are for a reason, and moving either breaks something that
 looks unrelated:

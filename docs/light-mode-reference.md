@@ -1,7 +1,7 @@
 # Light mode reference — colour, hover and edge treatment
 
 Companion to [`dark-mode-reference.md`](dark-mode-reference.md), same method and same structure.
-Written from `Light mode Mockups/Other references/`: six screenshots of the Claude desktop app
+Written from `docs/Light mode references/`: six screenshots of the Claude desktop app
 and the Windows PowerToys settings app. Every hex was **read out of the pixels** — the PNGs
 were decoded and sampled at named coordinates, and every ratio is the WCAG relative luminance
 formula, the same one `check.mjs` uses.
