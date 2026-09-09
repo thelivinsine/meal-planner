@@ -353,8 +353,22 @@ button, input, select { font: inherit; color: inherit; }
   border-radius: 5px;
 }
 /* The only copy of the brand. Hidden until there is a sidebar to put it in: under
-   1000px the app is nameless and the top bar carries the way back instead. */
+   1000px the app is nameless and the top bar carries the way back instead — which is
+   also why the link it now carries has no visible copy at that width; index.html says
+   what that costs. */
 .brand-side { display: none; }
+
+/* The wordmark links to the landing page. No underline at rest, and no fill on hover:
+   a fill here would read as a fourth nav button directly above three real ones, and the
+   nav's own hover is exactly that shape. So hover moves the *word* to --accent-ink —
+   accent writes, per the token rule — and the lozenge is left alone as the one fixed
+   accent mark in the rail. The focus ring is the shared :focus-visible above.
+   This is the app's one hover-only affordance, and it is sound only because the element
+   renders over 1000px and nowhere else: a phone never sees it, so it never has to show
+   its clickability without a pointer. If the brand ever appears narrow, it needs a mark
+   at rest — the recipe-name rule, for the same reason. */
+a.brand-side { text-decoration: none; }
+a.brand-side:hover { color: var(--accent-ink); }
 
 /* The way out of a view, in the row the brand used to fill. It shares .slot-back's
    shape because it is the same control, so this class only places it: hard left, with
@@ -1233,9 +1247,12 @@ h1 { font-size: clamp(1.625rem, 3.4vw, 2.125rem); }
    in the file has to be named here too, or it outranks this block on source order and
    quietly breaks the floor — .weekbar-arrow and .meal-clear are exactly that case. */
 @media (pointer: coarse) {
+  /* a.brand-side is here because the wordmark became a link: it is 27px of text, and a
+     tablet over 1000px is a coarse pointer at a width where the sidebar exists. It is
+     the one entry in this block that never renders narrow. */
   .btn, .btn-sm, .btn-icon, .nav-btn, .chip, .segmented .chip,
   .meal-open, .meal-add, .day-strip .day-chip, .slot-back,
-  .filter-summary, .filter-opt {
+  .filter-summary, .filter-opt, a.brand-side {
     min-height: var(--tap);
   }
   .btn-icon { width: var(--tap); }

@@ -206,9 +206,19 @@
        docked over the content as a pill, and the brand above is hidden — there is no
        brand anywhere at this width. One set of nav markup, one nav landmark, two layouts.
        It lives at body level on purpose: .topbar has a backdrop-filter, and a filtered
-       ancestor becomes the containing block for position: fixed. -->
+       ancestor becomes the containing block for position: fixed.
+
+       The brand is a link to the landing page, and it is the *only* route there from
+       inside the app. Under 1000px it is display: none, so it leaves the tab order
+       cleanly rather than stranding focus on something invisible — but there is then no
+       way to landing.html at all, which is a named exception to "a control may go
+       display: none only where a visible copy does the same job". Taken deliberately:
+       the alternative was a fourth item in a docked pill that is already tight at
+       360px, and the landing page is where you arrive from, not somewhere the app needs
+       to send you. The .sr-only suffix is what tells a screen reader where the wordmark
+       goes; "Mise" alone would announce as the name it already is. -->
   <nav class="nav-wrap" aria-label="Main views">
-    <p class="brand brand-side"><span class="brand-mark" aria-hidden="true"></span>Mise</p>
+    <a class="brand brand-side" href="landing.html"><span class="brand-mark" aria-hidden="true"></span>Mise<span class="sr-only"> · about this app</span></a>
     <ul class="nav" id="nav">
       <li><button type="button" class="nav-btn" data-action="nav" data-view="week">
         <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

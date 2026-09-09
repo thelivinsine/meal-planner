@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs';
 const css = readFileSync('style.css', 'utf8');
 const js = readFileSync('app.js', 'utf8');
 const html = readFileSync('index.html', 'utf8');
+const landing = readFileSync('landing.html', 'utf8');
 
 let failures = 0;
 let checks = 0;
@@ -274,11 +275,19 @@ function wiring() {
 
 /* ---------- values written twice --------------------------------------- */
 
-/* Three values genuinely have to live in two files: the inline <head> script
+/* Some values genuinely have to live in two files: the inline <head> script
    runs before app.js loads, and the sidebar icon is in the markup rather than
    rendered. They cannot be de-duplicated without a build step, which this
    project does not have — so they get measured instead. The theme-color hex
-   has already been left stale once. */
+   has already been left stale once.
+
+   landing.html widened this from three values to a whole palette. It is a
+   second page with its own inline <style>, so it cannot @import the tokens
+   without either a build step or the app's 80KB of rules and its colliding
+   class names (.page, .brand, .day, .btn all exist in both). What it can do is
+   be measured: every token it declares is compared against style.css below, so
+   a hex changed in one place and not the other fails the check rather than
+   drifting quietly. This is the mechanism the CLAUDE.md rule points at. */
 function duplicates() {
   section('Values written twice');
 
@@ -296,6 +305,52 @@ function duplicates() {
     report(found && a === b, label,
       !found ? 'could not find both copies — has one been renamed?'
         : a === b ? 'both copies agree' : `app/css has ${a}, index.html has ${b}`);
+  }
+
+  /* The landing page's copies. Its storage key and theme-color fallback are the
+     same two values again, in a third file; its tokens are compared name by
+     name against whatever style.css declares for that name, in both themes. */
+  const landingPairs = [
+    ['landing storage key', /const STORAGE_KEY = '([^']+)'/.exec(js)?.[1],
+      /localStorage\.getItem\('([^']+)'/.exec(landing)?.[1]],
+    ['landing theme-color', /--bg:\s*(#[0-9a-fA-F]{3,6})/.exec(css)?.[1]?.toLowerCase(),
+      /<meta name="theme-color" content="(#[0-9a-fA-F]{3,6})"/.exec(landing)?.[1]?.toLowerCase()],
+  ];
+  for (const [label, a, b] of landingPairs) {
+    const found = a !== undefined && b !== undefined;
+    report(found && a === b, label,
+      !found ? 'could not find both copies — has one been renamed?'
+        : a === b ? 'both copies agree' : `app has ${a}, landing.html has ${b}`);
+  }
+
+  /* Split both files on their dark-theme selector so a light token is never
+     compared against a dark one. */
+  const blocks = (src, marker) => {
+    const at = src.indexOf(marker);
+    return at === -1 ? [src, ''] : [src.slice(0, at), src.slice(at)];
+  };
+  const [cssLight, cssDark] = blocks(css, '[data-theme="dark"]');
+  const [lpLight, lpDark] = blocks(landing, '[data-theme="dark"]');
+  const read = (src) => {
+    const out = {};
+    for (const m of src.matchAll(/(--[a-z0-9-]+):\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
+      if (!(m[1] in out)) out[m[1]] = m[2].toLowerCase();
+    }
+    return out;
+  };
+
+  for (const [theme, appSrc, lpSrc] of [['light', cssLight, lpLight], ['dark', cssDark, lpDark]]) {
+    const app = read(appSrc), page = read(lpSrc);
+    const names = Object.keys(page);
+    const drifted = names.filter((n) => app[n] !== undefined && app[n] !== page[n])
+      .map((n) => `${n}: style.css ${app[n]} vs landing.html ${page[n]}`);
+    const unknown = names.filter((n) => app[n] === undefined);
+    report(names.length > 0 && drifted.length === 0 && unknown.length === 0,
+      `landing.html tokens match style.css (${theme})`,
+      names.length === 0 ? 'found no tokens in landing.html — has the block moved?'
+        : drifted.length ? drifted.join('; ')
+          : unknown.length ? `not in style.css: ${unknown.join(', ')}`
+            : `${names.length} tokens agree`);
   }
 }
 
