@@ -10,17 +10,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
-  <!-- Same stored theme as the app, read before first paint so a dark-mode visitor
-       gets no white flash. The key and the shape match index.html deliberately: the
-       landing page is not a second preference. -->
-  <script>
-    try {
-      var saved = JSON.parse(localStorage.getItem('p5:mealplanner') || '{}');
-      if (saved && (saved.theme === 'dark' || saved.theme === 'light')) {
-        document.documentElement.dataset.theme = saved.theme;
-      }
-    } catch (err) { /* private mode, or nothing stored yet */ }
-  </script>
   <style>
     /* ------------------------------------------------------------------
        Mise — landing page. "Mise en place": everything laid out before
@@ -45,6 +34,7 @@
       --accent-ink: #ad4020;
       --on-accent: #ffffff;
       --radius: 13px;
+      --tap: 44px;
       --shadow: 0 1px 2px rgba(28, 20, 16, .05), 0 10px 26px -16px rgba(28, 20, 16, .30);
       --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
       --font-body: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -100,6 +90,13 @@
     }
     a { color: var(--accent-ink); }
 
+    /* Page-wide, and it has to sit ABOVE every component: the radius here is at the
+       same specificity as .btn's 999px, so below it this squared the CTA pill off on
+       focus. Measured. The app's copy of this rule is at style.css:320 for the same
+       reason. It was also written per component once, which left every link on the
+       page with Chrome's 1px default. */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
     /* ---------- masthead: a rule, a name, a date line ---------- */
     .masthead {
       display: flex;
@@ -117,7 +114,7 @@
       letter-spacing: -.02em;
       margin: 0;
     }
-    .brand .dot { color: var(--accent); }
+    .brand .dot { color: var(--accent-ink); }
     .masthead .kicker {
       margin: 0;
       font-size: 12px;
@@ -147,7 +144,7 @@
     }
     .hero h1 em {
       font-style: normal;
-      color: var(--accent);
+      color: var(--accent-ink);
       /* The one flourish: the verb gets an underline that sits low and thick,
          the way a pencil marks a printed page. */
       box-shadow: inset 0 -.07em 0 color-mix(in srgb, var(--accent) 22%, transparent);
@@ -175,10 +172,6 @@
       border-color: var(--line-strong);
     }
     .btn-ghost:hover { border-color: var(--ink); }
-    /* Page-wide, not per component: this reached .btn and a .day that is never
-       focusable, which left every link on the page with Chrome's 1px default.
-       Same shape as the app's own rule, radius included. */
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
     /* ---------- the week strip, which is the product's whole idea ---------- */
     .week {
@@ -218,8 +211,15 @@
     }
     .day.planned b { border-color: var(--accent); }         /* a ring, never a fill */
     .day.on b { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    /* A day gone by is quieter in its name *and* its date, and it never wears a ring —
+       the ring is about what is still to come. The mock used to ring the 8th with the
+       9th as today, which is a state the app never renders. */
+    .day.past, .day.past b { color: var(--ink-faint); }
+    /* Every child of .week is a div, so a :first-of-type here selects .week-head and
+       never a .meal — the rule that used to sit below this one was dead. The hairline
+       above Breakfast is kept on purpose: it is the seam between the day strip and the
+       plan under it. */
     .meal { display: grid; gap: 2px; padding: 12px 0; border-top: 1px solid var(--line); }
-    .meal:first-of-type { border-top: 0; }
     .meal span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
     .meal a { font-weight: 600; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); }
     .meal small { color: var(--ink-faint); }
@@ -244,8 +244,7 @@
       font-weight: 800;
       font-size: 48px;
       line-height: 1;
-      color: var(--accent);
-      opacity: .28;
+      color: var(--line-strong);
       margin-bottom: 8px;
     }
     .steps h3 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0 0 8px; letter-spacing: -.01em; }
@@ -286,6 +285,21 @@
       @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
     }
 
+    /* The app's blanket rule, which the tokens came over without: the load-in was
+       already behind no-preference, but .btn's transition and its translateY hover lift
+       were not. */
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+      .btn:hover { transform: none; }
+    }
+
+    /* No control here sets its own size except .btn, which is 48px already, so this
+       block is the two link rows that are plain text: 20px and 16px tall measured at
+       360px, against a 44px floor. */
+    @media (pointer: coarse) {
+      .meal a, footer a { display: inline-flex; align-items: center; min-height: var(--tap); }
+    }
+
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; align-items: start; padding-top: 40px; }
       .steps, .facts dl { grid-template-columns: 1fr 1fr; gap: 32px; }
@@ -297,6 +311,19 @@
       .btn { width: 100%; justify-content: center; }
     }
   </style>
+  <!-- Same stored theme as the app, read before first paint so a dark-mode visitor
+       gets no white flash. The key and the shape match index.html deliberately: the
+       landing page is not a second preference. -->
+  <script>
+    try {
+      var saved = JSON.parse(localStorage.getItem('p5:mealplanner') || '{}');
+      if (saved && (saved.theme === 'dark' || saved.theme === 'light')) {
+        document.documentElement.dataset.theme = saved.theme;
+      }
+      document.querySelector('meta[name="theme-color"]').content =
+        getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    } catch (err) { /* private mode, or nothing stored yet */ }
+  </script>
 </head>
 <body>
   <div class="wrap">
@@ -323,17 +350,17 @@
       <div class="week rise" role="group" aria-label="Example of a planned day">
         <div class="week-head"><span>Mon 7 — Sun 13 Sep</span><span>Wed</span></div>
         <div class="days">
-          <div class="day"><span>M</span><b>7</b></div>
-          <div class="day planned"><span>T</span><b>8</b></div>
+          <div class="day past"><span>M</span><b>7</b></div>
+          <div class="day past"><span>T</span><b>8</b></div>
           <div class="day on"><span>W</span><b>9</b></div>
           <div class="day planned"><span>T</span><b>10</b></div>
-          <div class="day"><span>F</span><b>11</b></div>
+          <div class="day planned"><span>F</span><b>11</b></div>
           <div class="day"><span>S</span><b>12</b></div>
           <div class="day"><span>S</span><b>13</b></div>
         </div>
-        <div class="meal"><span>Breakfast</span><a href="index.html">Masala oats with peanuts</a><small>10 min · High protein</small></div>
-        <div class="meal"><span>Lunch</span><a href="index.html">Rajma chawal</a><small>35 min · High protein · Indian</small></div>
-        <div class="meal"><span>Dinner</span><a href="index.html">Grilled paneer salad</a><small>20 min · Balanced</small></div>
+        <div class="meal"><span>Breakfast</span><a href="index.html">Spinach and Feta Omelette</a><small>12 min · High protein</small></div>
+        <div class="meal"><span>Lunch</span><a href="index.html">Greek Salad with Halloumi</a><small>15 min · High protein</small></div>
+        <div class="meal"><span>Dinner</span><a href="index.html">Chicken Tikka Masala</a><small>45 min · High protein · Indian</small></div>
       </div>
     </section>
 
@@ -363,13 +390,14 @@
       <dl>
         <div><dt>50</dt><dd>recipes, over half Indian, about three quarters high&#8209;protein</dd></div>
         <div><dt>0</dt><dd>accounts, servers and API calls — it all stays on your machine</dd></div>
-        <div><dt>3</dt><dd>files: one HTML, one CSS, one JS. No framework, no build step</dd></div>
+        <div><dt>4</dt><dd>static files: two HTML, one CSS, one JS. No framework, no build step</dd></div>
         <div><dt>2</dt><dd>themes, light and dark, and it remembers which one you chose</dd></div>
       </dl>
       <ul class="tags">
         <li>high-protein</li><li>balanced</li><li>indian</li><li>vegan</li>
         <li>vegetarian</li><li>quick</li><li>breakfast</li><li>lunch</li>
-        <li>dinner</li><li>chicken</li><li>paneer</li><li>lentils</li>
+        <li>dinner</li><li>chicken</li><li>fish</li><li>beef</li>
+        <li>pasta</li><li>salad</li><li>soup</li><li>batch-cook</li>
       </ul>
     </section>
 
