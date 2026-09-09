@@ -11,10 +11,10 @@ Everything is saved in your own browser — no account, no server, nothing leave
 
 | | |
 |---|---|
-| **Stack** | One HTML file, one CSS file, one JS file. Vanilla — no frameworks, no libraries, no build step |
+| **Stack** | Four static files: the app is one HTML, one CSS and one JS, plus `landing.html`, a self-contained landing page. Vanilla — no frameworks, no libraries, no build step |
 | **Data** | `localStorage` only. No server, no database, no API calls |
-| **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root |
-| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 140 checks: contrast in both themes, action and id wiring, and the values that have to be written twice. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
+| **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root. [`landing.html`](https://thelivinsine.github.io/meal-planner/landing.html) sits beside it; the sidebar wordmark links to it |
+| **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 144 checks: contrast in both themes, action and id wiring, the values that have to be written twice, and every token `landing.html` copies, compared against `style.css` in both themes. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
 The one place the "static files only" rule bends is Google Fonts, the app's single external
 request; blocked or offline, you get the fallback stack.
@@ -27,7 +27,7 @@ Nine documents, each with one job:
 |---|---|
 | **This file** | What the app is and what it does |
 | [docs/status.md](docs/status.md) | **Start here in a new session.** Live commit, open work, next jobs, what isn't verified. The only doc that goes stale |
-| [docs/architecture.md](docs/architecture.md) | The three files, the data model, storage, rendering, and how it gets tested |
+| [docs/architecture.md](docs/architecture.md) | The four files, the data model, storage, rendering, and how it gets tested |
 | [docs/decisions.md](docs/decisions.md) | Why each choice was made — including the CSS traps that each cost a real bug |
 | [docs/log.md](docs/log.md) | What happened in what order, and what each round of testing covered |
 | [docs/dark-mode-reference.md](docs/dark-mode-reference.md) | How ChatGPT and PowerToys build their dark greys — the nesting ladder (deeper means lighter), measured hexes, hover deltas, edge and shadow treatment, and where Mise's dark tokens differ |
@@ -196,9 +196,27 @@ The full set is in [docs/decisions.md](docs/decisions.md). These five cost the m
   careful readings of the CSS missed it and one screenshot found it — which is why a rendered look
   is the check for anything touching layout, not the optional extra.
 
+## The landing page
+
+[`landing.html`](https://thelivinsine.github.io/meal-planner/landing.html) is a second page and the
+only one that is not the app: an editorial prep-card layout — hairline rules instead of tiles, an
+oversized headline, the method as three numbered steps, and a mock week strip showing a planned
+Wednesday. Its CTAs go to the app.
+
+It is **self-contained on purpose**: its own inline `<style>`, and the palette **copied** out of
+`style.css` rather than imported. Importing would mean either a build step or 80KB of app rules with
+class names that collide — `.page`, `.brand`, `.day` and `.btn` all exist in both files. So the
+duplication is measured instead: `check.mjs` compares every token it declares against `style.css` in
+both themes, and a hex changed in one file and not the other fails the check.
+
+**The sidebar wordmark is the way there, and it exists over 1000px only** — under that the app is
+nameless, so there is no route to the landing page at all. A deliberate exception, with the
+reasoning in [decisions.md](docs/decisions.md#the-landing-page).
+
 ## Running it locally
 
-Open `index.html` in a browser. That's it — nothing to install.
+Open `index.html` in a browser, or `landing.html` for the landing page. That's it — nothing to
+install.
 
 For a cleaner test of the saving behaviour, serve it over HTTP instead — over `file://` every local
 page on your machine shares one storage box, which muddies testing:

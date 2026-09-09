@@ -19,7 +19,7 @@ Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
   the rules; the test is "rule or reasoning", and the line count is what catches you failing it.
 
 ## Hard constraints
-- **Never commit code to `main` directly.** Any change to `index.html`, `style.css` or `app.js`
+- **Never commit code to `main` directly.** Any change to a tracked `.html`, `.css` or `.js` file
   goes on its own branch and comes back through a PR. Markdown may go straight to `main`.
 - Vanilla HTML, CSS, JavaScript only. No frameworks, no libraries, no build step.
 - All data persists in the browser (`localStorage`). No server, no database, no API calls.
@@ -31,8 +31,7 @@ Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
 2. Build it, then check it — see *Testing*. A visual change means a browser, mine or yours.
 3. Open a PR saying what changed and what was **not** verified. Be honest in the second half;
    it's the part that gets read before merging.
-4. Review it against its own description, re-reading the diff if commits landed after — a branch
-   can grow into a different change than the one reviewed.
+4. Review it against its own description, re-reading the diff if commits landed after.
 5. Squash-merge, delete the branch.
 6. Watch the Pages build to `built` (command in `docs/architecture.md`), then update
    `docs/status.md`. Part of merging, not an optional tidy afterwards.
@@ -80,6 +79,8 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
 - **A fill must differ from what the control sits on**, not the page behind it. No script sees one.
 - **One shape for one idea.** Saving a recipe is a **bookmark**, not a star — the sidebar *Saved*
   icon's path (`BOOKMARK_PATH` in `app.js`, inline in `index.html` too; change both).
+- **`landing.html` is a second page**, tokens **copied** in and compared by `check.mjs`. **Its
+  wordmark link exists over 1000px only:** the one control allowed `display: none` with no copy.
 - **The page carries the warmth; the cards are the light.** `--bg` near-white and warm, `--rail`
   the one real tonal step in light, `--surface` white for cards, `--control` a rest fill *up*
   towards white, `--surface-sunk` a recessed *track* down, `--surface-past` back *towards* the
@@ -183,13 +184,12 @@ Follow them or say why not. Full reasoning for each: `docs/decisions.md`.
   silently breaks the floor. Name anything there that sets its own size.
 
 ## Scope
-Not in v1, deliberately: month calendar, shopping list, user-added recipes, drag-and-drop,
-sharing/syncing, recipe photography. Don't add these unless asked; reasoning in
-`docs/decisions.md#deliberately-not-built`. Photography is the trap — fetching one breaks "no API calls".
+Not in v1: month calendar, shopping list, user-added recipes, drag-and-drop, sharing/syncing,
+photography. Don't add these unless asked; reasoning in `docs/decisions.md#deliberately-not-built`.
 
 ## Testing
 No test framework unless asked. **`node check.mjs`** is the one saved check — contrast both ways,
-action and id wiring, the three values written twice. Run it after touching `style.css` tokens, and
+action and id wiring, the values written twice. Run it after touching `style.css` tokens, and
 **add the new pairs** when a colour token appears. Gaps: `docs/architecture.md#how-this-gets-tested`
 
 **Read, look and measure — each catches what the other two miss.** A rendered look is the check for

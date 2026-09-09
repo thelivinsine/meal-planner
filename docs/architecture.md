@@ -3,13 +3,14 @@
 *Changes when the shape of the code changes, not otherwise. For **why** any of it is this way,
 see [decisions.md](decisions.md).*
 
-## Three files
+## Four files
 
 | File | Contains |
 |---|---|
 | `index.html` | The page shell: top bar (the theme button, plus the way back under 1000px), three `<section>` views, the week bar, the day's meal cards, the summary column, the inline slot picker that replaces them, the view switch and two `<dialog>` panels. Plus an inline `<script>` in `<head>` that paints the stored theme and sets `theme-color` before first paint |
 | `style.css` | All styling. Custom properties first — the palette, the radii, and `--space-1/2/3/4`, the four-step scale every vertical gap *between* components names — then the rules, then **every media query at the end of the file**: three `max-width` breakpoints (1000px, 620px, 359px, descending), one `min-width: 1001px` for the sidebar layout, a `pointer: coarse` block, and `prefers-reduced-motion` |
 | `app.js` | The recipe catalogue, the app state, rendering, and one event handler |
+| `landing.html` | The landing page, and the only file here that is not the app. **Self-contained**: its own inline `<style>` with the palette copied out of `style.css`, its own type sizes, and an inline `<head>` script that reads the same stored theme. It shares no code with the app and the app loads none of it — the only link between them is the sidebar wordmark's `href` and the CTAs pointing back at `index.html` |
 
 `Light mode Mockups/` holds the four supplied design concepts the current layout was built
 against — the only images tracked here. Loose captures go to `archive/screenshots/`, gitignored
@@ -156,15 +157,21 @@ five times. What it covers:
 - **Wiring.** Every `data-action` the app emits has a branch in the dispatcher, every branch is
   reachable from some emitted action, and every `getElementById` finds an id that exists in the
   HTML. All typo-shaped failures, all silent, all invisible in a diff.
-- **The three values written twice** — storage key, bookmark path, `theme-color` fallback — checked
+- **The values written twice** — storage key, bookmark path, `theme-color` fallback — checked
   against each other. The `theme-color` one has already been left stale once.
+- **Every token `landing.html` copies**, compared name by name against `style.css` in both themes,
+  plus that file's own storage key and `theme-color` fallback. This is the whole reason the
+  duplicated palette is allowed to stay duplicated: 12 tokens per theme, and a hex changed in one
+  file and not the other fails rather than drifting. Both files are split on their
+  `[data-theme="dark"]` selector first, so a light value is never compared against a dark one.
+  **Gap:** `--shadow` is an `rgba()` list, so the hex comparison skips it.
 
 **The pair list is the part that rots.** A colour combination not in it is a combination nobody
 measures, so a new surface or ink token means adding its pairs by hand.
 
 **Nothing checks the spacing scale**, and it is worth saying out loud now that there is one.
 `--space-1/2/3/4` are honoured by convention: a rule that writes `margin-bottom: 18px` is legal
-CSS, passes all 140 checks, and puts the file straight back where it was before the scale existed.
+CSS, passes all 144 checks, and puts the file straight back where it was before the scale existed.
 A shape check could catch it — a vertical `margin`/`gap` whose value is a raw pixel figure and not
 a `var(--space-*)` — and it belongs on the list above with the other CSS-shape checks, to be folded
 in the next time one bites. Until then the scale is held by review, not by the script.
@@ -182,7 +189,7 @@ Still done by hand, not in the script:
 `README.md` links the per-round record of what each of these actually found; the running history is
 in [log.md](log.md).
 
-**Two things `check.mjs` cannot reach, and what PR #15 used instead.** It reads the three files as
+**Two things `check.mjs` cannot reach, and what PR #15 used instead.** It reads the four files as
 text, so it can see neither what `loadState()` does with a corrupt blob nor what two tabs do to
 each other. That round wrote a throwaway for each, and both are recorded in
 [log.md](log.md#the-storage-round-pr-15) rather than committed:
@@ -237,7 +244,7 @@ moves again.
   a third kind of check this project now has and had not used before, and it is the one that suits
   anything measured rather than drawn.
 
-**All 140 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
+**All 144 checks pass.** The pair that once did not — `--surface-sunk` beside `--bg` at **1.08**,
 known since PR #7 — was fixed rather than excused, twice over. The first fix sent
 `.nav-btn:hover` in the sidebar — where the nav unwinds to no fill of its own and so lands on the
 page — *up* to `--surface`, which cleared the floor at 1.11 light and 1.23 dark and was the

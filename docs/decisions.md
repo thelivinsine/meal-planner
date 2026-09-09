@@ -360,6 +360,68 @@ panel it sits in. The order is dialog, then dropdown, then picker — a dialog's
 browser's and is left alone. Written from reading the code rather than from being bitten, and
 **still unverified by an actual keyboard**, which is the standing gap in this section.
 
+## The landing page
+
+`landing.html` was asked for as a test of two frontend-design skills, one per branch, and shipped
+because it earned its place rather than because the experiment produced it.
+
+**Why it is a second file and not a second view.** The app's three views are `state.view`; a fourth
+would have put marketing copy inside the thing it markets, and given `app.js` a view that renders no
+user data. A separate static page also keeps the entry point rule intact: `index.html` is still the
+app, and Pages serves `landing.html` beside it.
+
+**Why the tokens are copied rather than imported.** This is the decision most likely to look wrong
+later, so the alternatives, all of which were considered:
+
+- **Link `style.css`.** Rejected on class collisions, not on weight. `.page`, `.brand`, `.day`,
+  `.btn` and `.card` all exist in both files with different meanings — the landing page would have
+  inherited the app's sidebar, top bar and nav rules and every one of those names would have needed
+  renaming on one side or the other. 80KB of app CSS on a marketing page is the smaller objection.
+- **Extract a `tokens.css` both files link.** The honest fix, and still available. Rejected for now
+  as more moving parts than the duplication removes: it is a third file, a second request, a
+  repoint of `check.mjs`, and it makes false the rule that says the palette lives at the top of
+  `style.css`.
+- **Copy them and measure the copy.** What was done. `check.mjs` compares every token
+  `landing.html` declares against `style.css`, name by name, in both themes, so the copy cannot
+  drift silently — a hex changed in one file and not the other fails the check. The duplication is
+  a fact the script enforces rather than a rule someone has to remember. Its own comment says the
+  `theme-color` hex had already been left stale once, which is the precedent for not trusting prose
+  here.
+
+**Why the wordmark link exists over 1000px only.** `.brand-side` is `display: none` under 1000px —
+the app is nameless on a phone, decided when the top bar traded a 53px nameplate for the way out of
+a view. Making the wordmark a link therefore creates a control that vanishes narrow, which collides
+with *a control may go `display: none` only where a visible copy does the same job*.
+
+Three options were put up, and the smallest was chosen deliberately:
+
+- A fourth item in the docked nav pill, which is the row already tight at 360px, and *About* would
+  have been a fourth view-shaped button that is not a view.
+- A second way back in the top bar, which under 620px is already carrying one — the two would have
+  competed for the same hard-left slot.
+- **The link alone, and no route on a phone.** Taken. What makes it defensible is that
+  `display: none` genuinely leaves the tab order: measured at 390px, `focus()` puts
+  `activeElement` on `<body>` and the element is absent from all 16 tabbables, so nothing is
+  hidden-but-focusable, which is the failure that rule guards. What is lost is a route, and the
+  landing page is where you arrive from rather than somewhere the app needs to send you.
+
+**Why its hover is hover-only**, which nothing else in the app is allowed to be. A fill on the
+wordmark would read as a fourth nav button sitting directly above three real ones, since the nav's
+own hover is exactly that shape; and an underline at rest on a wordmark reads as a mistake. So
+hover moves the word to `--accent-ink` and nothing marks it at rest. That is sound *only* because
+the element renders over 1000px and nowhere else — a phone never sees it, so it never has to show
+its clickability without a pointer. If the brand ever appears narrow, it needs a mark at rest, for
+the same reason the recipe name has one.
+
+**What two rounds of checking found**, recorded because the split is the point: tabbing the page
+found five defects and the review found seven more, and between them **only one was visible in a
+screenshot**. The rest were a focus rule that squared the CTA pill off, a `:first-of-type` matching
+nothing, `aria-label` on a roleless `<div>`, the wordmark as the `h1`, two mock recipes that do not
+exist, tags no recipe carries, a file count the diff itself falsified, and numerals at 1.47:1. Two
+of the fixes were then broken in ways only measuring caught — `var(--tap)` undeclared in that file,
+so the whole `min-height` was dropped, and a `theme-color` line reading `--bg` from a `<style>`
+block that comes *after* it.
+
 ## Deliberately not built
 
 Left out on purpose, roughly in the order they'd earn their place:
@@ -375,3 +437,6 @@ Left out on purpose, roughly in the order they'd earn their place:
 - **Recipe photography** — the newest of these, and the one most likely to be asked for: the
   mockups show a photo per meal, the catalogue has none, and fetching any would break "static
   files, no API calls". The meta line carries the same job in text
+
+**Nothing has come off this list.** The landing page was never on it — it was outside v1's scope
+rather than ruled out, and [its own section](#the-landing-page) above says why it now exists.

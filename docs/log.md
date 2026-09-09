@@ -85,6 +85,7 @@
 | **Half a rule reverted, and it was not a climbdown** | The round had moved `.btn:hover` off the accent wash because hover and *pressed* were the same two colours. True of `.icon-btn` — the layout toggle's pressed state **is** the wash — and false of `.btn`, which has no pressed state anywhere. On a tools row that had just gone white-on-white, a grey `.btn` hover was the same move as every rest fill beside it and read as nothing happening. You said so; the wash is back on `.btn` and `.icon-btn` keeps the grey. **A rule that is right for one control is not therefore right for the class it inherits from** |
 | **Re-reading the diff caught a regression** | Workflow step 4, third round in a row it has earned its place. `.is-list .card-top` had gone from `flex: 0 1 40%; min-width: 178px` to a grown column, and the floor looked like decoration beside `flex: 1 1 auto`. **Growing a column is only generous while there is free space to grow into.** In the slot picker beside the summary panel the column is ~430px, the row runs out, and a grown basis loses to the tags: at 1024px the name fell to **83px over three lines** while three tags wrapped into three rows — worse than the basis it replaced. **The same rule has two very different amounts of room in this app, and the wide one is the one you look at** |
 | **The duplicate-value check earned its keep** | Moving `--bg` left the `theme-color` copy in `index.html` behind. `check.mjs` failed on it before the commit — the first time that particular check has caught anything, and the reason three values written twice are allowed to stay written twice. 96 checks now, up from 91 with **no new token**: two existing tokens landed on new ground and `--control` beside `--surface` split into its two hairline measures |
+| **A landing page, out of a plugin comparison** | Two branches, the same brief, a different frontend-design skill on each. The first round gave them different *directions* too, which made the comparison worthless; the second put one editorial direction on both. `/frontend-design` produced the better-looking page and said nothing about structure — the wordmark was its `h1`, sizes were picked per rule, gaps sat off the spacing scale. `/agent-skills:frontend-ui-engineering` is a checklist with no art direction: handed the aesthetic, it enforced a type scale, heading ranks, `.sr-only` text behind every colour-only signal and a coarse-pointer block. **Neither skill found any of the twelve defects** — tabbing found five and `/code-review` found seven. `A` shipped as PR [#26](https://github.com/thelivinsine/meal-planner/pull/26); `B` stays local and unpushed |
 
 ---
 
@@ -585,3 +586,57 @@ fixed` is the one mechanic here known to misbehave on iOS Safari. No past day on
 page moved, which is where `--surface-past` at 1.04 from a live card would show. And the theme
 switch snaps the gradient, because a gradient image is not interpolable — about a 1% step during a
 full repaint, not watched slowly enough to be sure it is invisible.
+
+### The landing-page round (PR #26)
+
+Two new things in this round's coverage: the first page in this repo that `check.mjs` had never
+read, and the first control added to the app that was not a `<button>`.
+
+**Measured, and it is again the half that found things.** All seven of the landing page's
+focusables focused the way a Tab does, at 1280px and 620px — the first pass returned **five with
+`auto 1px rgb(16,16,16)`**, Chrome's default, because `:focus-visible` had been written as
+`.btn:focus-visible, .day:focus-visible` rather than page-wide. After the fix, all seven read
+`solid 2px rgb(200,73,31)`. The CTA's `border-radius` read `999px` at rest and **`4px` on focus**
+before the rule moved above `.btn`; `999px` both ways after. `querySelectorAll('.meal:first-of-type')`
+returned **0**. Heading ranks came off the DOM as `H1,H2,H3,H3,H3,H2`. `document.documentElement.scrollWidth`
+matched `clientWidth` at 1440/1024/768/390/375/320. On a coarse pointer, `under44` went from three
+`282x20` recipe rows and two 16px footer links to **none**.
+
+**The brand link, measured on both pointer types and both sides of the breakpoint.** `href`
+`landing.html`, accessible name "Mise · about this app", `207x27` fine and `207x44` coarse,
+`:focus-visible` true with `solid 2px rgb(200,73,31)`. At 390px: `display: none`, `focus()` leaves
+`activeElement` on `<body>`, and the element is **absent from all 16 tabbables** — the measurement
+the whole exception rests on.
+
+**A rig limit found and worked around, and a memory note corrected.** Chrome on Windows will not
+open a window under about **511 CSS px** — `--window-size=390` lays the page out at 511 and crops
+the screenshot to 390, which looks like a blank render rather than an error. Narrow widths go
+through an `<iframe>` sized by hand, as before. Two things previously written down turned out to be
+wrong or needlessly hard: `file://` URLs load fine as long as the argument is a real
+`file:///C:/...` URL (a bare relative path is read as a hostname and silently screenshots Chrome's
+own error page), a `file://` iframe of another `file://` page needs `--allow-file-access-from-files`
+or `contentDocument` is null, and **`pointer: coarse` has a flag** —
+`--blink-settings=primaryPointerType=2,availablePointerTypes=2` — which reaches inside an iframe
+and replaces slicing the block out of `style.css`. Reading a stylesheet's `cssRules` needs
+same-origin, so confirming the hover rule meant serving over `python -m http.server` rather than
+`file://`.
+
+**Live verification.** Pages `built` at `f55a6d7`; **all four served files fetched back and compared
+byte for byte** against `main`, identical once line endings are normalised; both deployed pages
+rendered; `landing.html` returns 200 and the live app's markup reads
+`class="brand brand-side" href="landing.html"`. `style.css` needed `curl --http1.1` — HTTP/2 reset
+that one file three times.
+
+**What it did not do:** no real pointer, so the wordmark has never been clicked and nothing has been
+hovered — the hover rule was confirmed by reading `cssText` out of the CSSOM, not by seeing it. No
+keyboard on the deployed page. No phone. Nothing in Safari or Firefox, where `text-wrap: balance`
+and `color-mix()` in the landing headline are the two most likely to differ. The paper grain is
+invisible at screenshot fidelity and may read differently on a real display. And `--shadow` is
+outside the new token comparison, being an `rgba()` list.
+
+---
+
+**A gap in this section, not caused by this round:** it jumps from *the tag-fill and page-white
+rounds (PRs #20 and #22)* straight to PR #26. **PRs #23, #24 and #25 were never written up here** —
+their coverage is recorded in [status.md](status.md)'s rolling *Confirmed* row instead, which is the
+one place that keeps it. Worth backfilling from there before those entries roll off.
