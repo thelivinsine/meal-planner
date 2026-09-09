@@ -22,7 +22,7 @@ Mise — a weekly meal planner web app. Goal: intuitive, modern, useful, simple.
 - **Never commit code to `main` directly.** Any change to a tracked `.html`, `.css` or `.js` file
   goes on its own branch and comes back through a PR. Markdown may go straight to `main`.
 - Vanilla HTML, CSS, JavaScript only. No frameworks, no libraries, no build step.
-- All data persists in the browser (`localStorage`). No server, no database, no API calls.
+- All data in `localStorage`. No server, no database, no API calls — bar `landing.html`'s fonts.
 - Hosted on GitHub Pages: static files over plain HTTP. Relative paths only (no leading `/`),
   entry point `index.html` at the repo root.
 

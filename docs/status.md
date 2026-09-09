@@ -580,6 +580,16 @@ page, the narrow week at 390px and 359px, and the deployed site as the last chec
 thirteen were looked at**; the one that was not is named in the Confirmed row at the top, because a
 render nobody opened is a file rather than a check.
 
+**A fourth thing about the rig, and it is not the third one.** `curl` to the Pages host fails here
+intermittently — exit `35`, an SSL error, reported as status `000` — about one try in three across
+fifteen during this sweep. **`--http1.1` does not cure it**, and that is what separates it from the
+HTTP/2 reset noted in *Live* above: that one is per-file and has a fix, this one is the local TLS
+stack and only retrying gets past it. Two things follow. **Retry before concluding a file is
+missing** — `landing.html` read `000` twice before reading `200`, and nothing was wrong with it.
+And **hash what you get**, because a truncated response arrives looking like a whole one: a short
+read here gave a digest that did not match `git show main:landing.html` and looked for a minute like
+a deploy mismatch. The live file is byte-identical to `main`.
+
 **A third thing about the rig — and it was half wrong for four rounds.** Chrome does exit `21`
 here the moment `--remote-debugging-port` is asked for, so there is no CDP session to drive the
 *deployed* site with, and a `file://` rig cannot script a cross-origin iframe. The conclusion drawn

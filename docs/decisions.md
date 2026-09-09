@@ -436,7 +436,9 @@ Left out on purpose, roughly in the order they'd earn their place:
   clear/replace already covers moving meals
 - **Recipe photography** — the newest of these, and the one most likely to be asked for: the
   mockups show a photo per meal, the catalogue has none, and fetching any would break "static
-  files, no API calls". The meta line carries the same job in text
+  files, no API calls". That rule has one exception now — `landing.html`'s fonts — and it does not
+  reach this: one stylesheet that degrades to a fallback stack is not a request per recipe that
+  degrades to a hole. The meta line carries the same job in text
 
 **Nothing has come off this list.** The landing page was never on it — it was outside v1's scope
 rather than ruled out, and [its own section](#the-landing-page) above says why it now exists.

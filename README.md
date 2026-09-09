@@ -12,7 +12,7 @@ Everything is saved in your own browser — no account, no server, nothing leave
 | | |
 |---|---|
 | **Stack** | Four static files: the app is one HTML, one CSS and one JS, plus `landing.html`, a self-contained landing page. Vanilla — no frameworks, no libraries, no build step |
-| **Data** | `localStorage` only. No server, no database, no API calls |
+| **Data** | `localStorage` only. No server, no database, no API calls — with the one exception below |
 | **Hosting** | GitHub Pages, static files, relative paths, `index.html` at the root. [`landing.html`](https://thelivinsine.github.io/meal-planner/landing.html) sits beside it; the sidebar wordmark links to it |
 | **Tests** | No test framework, per the constraints. One saved script, `node check.mjs` — 144 checks: contrast in both themes, action and id wiring, the values that have to be written twice, and every token `landing.html` copies, compared against `style.css` in both themes. No dependencies, no config, never served to the browser — [how that works](docs/architecture.md#how-this-gets-tested) |
 
