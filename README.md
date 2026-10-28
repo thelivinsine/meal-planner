@@ -35,6 +35,26 @@ Nine documents, each with one job:
 | [docs/claude-md-starter.md](docs/claude-md-starter.md) | Not about Mise: the portable `CLAUDE.md` skeleton for starting a new project, and the four structural moves worth copying |
 | `CLAUDE.md` | Rules for the AI assistant working in this repo |
 
+## Planning a week, start to finish
+
+```mermaid
+flowchart TD
+    A([Open the app]) --> B[Week view opens on today]
+    B --> C[Pick a day from the week bar]
+    C --> D{How do you want to add a meal?}
+    D -->|From the week| E[Tap + Add on an empty meal]
+    E --> F[Recipe list opens, filtered to that meal]
+    F --> G[Tap Add on a recipe]
+    D -->|From a recipe| H[Browse Recipes or Saved]
+    H --> I[Tap Add to week]
+    I --> J[Choose the day and meal]
+    G --> K[Meal appears on the day]
+    J --> K
+    K --> L{More to plan?}
+    L -->|Yes| C
+    L -->|No| M([Your week is planned, saved in your browser])
+```
+
 ## What it does
 
 **Recipes** — the cookbook.
