@@ -21,7 +21,7 @@ request; blocked or offline, you get the fallback stack.
 
 ## Where to read what
 
-Nine documents, each with one job:
+Ten documents, each with one job:
 
 | | |
 |---|---|
@@ -29,6 +29,7 @@ Nine documents, each with one job:
 | [docs/status.md](docs/status.md) | **Start here in a new session.** Live commit, open work, next jobs, what isn't verified. The only doc that goes stale |
 | [docs/architecture.md](docs/architecture.md) | The four files, the data model, storage, rendering, and how it gets tested |
 | [docs/decisions.md](docs/decisions.md) | Why each choice was made — including the CSS traps that each cost a real bug |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version, for a teammate. The version numbers are proposed; there are no tags yet |
 | [docs/log.md](docs/log.md) | What happened in what order, and what each round of testing covered |
 | [docs/dark-mode-reference.md](docs/dark-mode-reference.md) | How ChatGPT and PowerToys build their dark greys — the nesting ladder (deeper means lighter), measured hexes, hover deltas, edge and shadow treatment, and where Mise's dark tokens differ |
 | [docs/light-mode-reference.md](docs/light-mode-reference.md) | The companion for light — why the ladder runs out at white, why hovers point the other way, and why light mode has shadows and dark mode has none |
@@ -50,6 +51,8 @@ flowchart TD
     I --> J[Choose the day and meal]
     G --> K[Meal appears on the day]
     J --> K
+    K -->|Changed your mind| R[Tap × on the meal to remove it]
+    R --> C
     K --> L{More to plan?}
     L -->|Yes| C
     L -->|No| M([Your week is planned, saved in your browser])
